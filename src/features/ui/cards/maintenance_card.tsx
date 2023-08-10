@@ -1,7 +1,7 @@
 
 import Box from '@mui/material/Box';
 
-function MaintenanceCard() {
+export function MaintenanceCard() {
   return (
     <>
       <Box>
@@ -15,5 +15,3 @@ function MaintenanceCard() {
     </>
   );
 }
-
-export default MaintenanceCard;
