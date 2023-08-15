@@ -8,19 +8,21 @@ import { LocationSummaryProps, LatestObservation } from './types';
 import { Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-export default function LocationSummary(props: LocationSummaryProps, latestObservation?: LatestObservation) {
+export default function LocationSummary(props: {locationSummary: LocationSummaryProps, latestObservation?: LatestObservation | {}}) {
+  
 
   function renderLatestObservation(latestObservation: LatestObservation) {
+    console.log(latestObservation)
     return (
       <>
-        <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {latestObservation.air_temp}
+        <Typography sx={{ mb: 1.5 }} color="text">
+          Air temp: {latestObservation.air_temp}
         </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {latestObservation.water_temp}
+        <Typography sx={{ mb: 1.5 }} color="text">
+          Water temp: {latestObservation.water_temp}
         </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {latestObservation.significant_wave_height}
+        <Typography sx={{ mb: 1.5 }} color="text">
+          Swell: {latestObservation.significant_wave_height}
         </Typography>
       </>
     ) 
@@ -30,21 +32,21 @@ export default function LocationSummary(props: LocationSummaryProps, latestObser
     <Card sx={{ minWidth: 275 }}>
       <CardContent>
         <Typography variant="h5" component="div">
-          {props.name}
+          {props.locationSummary.name}
         </Typography>
         <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {props.url}
+          {props.locationSummary.url}
         </Typography>
         <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          {props.location}
+          {props.locationSummary.location}
         </Typography>
         <Divider variant="middle" />
         <Typography variant="h5">
           Current Conditions
         </Typography>
-        { !isEmpty(latestObservation) ? (
+        { !isEmpty(props.latestObservation) ? (
           <>
-            {renderLatestObservation(latestObservation)}
+            {renderLatestObservation(props.latestObservation)}
           </>
         ) : (
           <>
@@ -53,7 +55,7 @@ export default function LocationSummary(props: LocationSummaryProps, latestObser
         )}
       </CardContent>
       <CardActions>
-        <Link to={`/location/${props.location_id}`}>View Details</Link>
+        <Link to={`/location/${props.locationSummary.location_id}`}>View Details</Link>
       </CardActions>
     </Card>
   );

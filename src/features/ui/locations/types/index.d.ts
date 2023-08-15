@@ -9,12 +9,14 @@ export type LocationSummaryProps = {
   date_updated: string;
 };
 
-export type LatestObservation = {
+export interface LatestObservation {
+  id: number,
   location_id: string,
+  date_created: string,
   timestamp: string,
-  title: string,
-  href: string,
-  published: string,
+  title?: string,
+  href?: string,
+  published?: string,
   wind_speed?: string,
   dominant_wave_period?: string,
   dew_point?: string,
@@ -26,5 +28,6 @@ export type LatestObservation = {
   wind_direction?: string,
   air_temp?: string,
   atmospheric_pressure?: string,
-  significant_wave_height?: string
+  significant_wave_height?: string,
+  dominant_wave_period?: string,
 }
