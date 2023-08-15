@@ -1,16 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AppProvider } from './providers/app'
-// import './index.css'
-import {MaintenanceCard} from '@features/ui/cards'
-import Home from 'pages/home'
-
-const isMaintenanceMode = false
+import {
+  RouterProvider,
+} from "react-router-dom";
+import { router } from 'routes'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <AppProvider >
-      {isMaintenanceMode ? <MaintenanceCard /> : <Home />}
+      <RouterProvider router={router} />
     </AppProvider>
   </React.StrictMode>,
 )

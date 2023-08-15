@@ -1,10 +1,11 @@
-import { Container, Grid } from "@mui/material";
+import LocationSummary from "@features/ui/locations/summary";
+import { Container, Grid, Stack } from "@mui/material";
 import Paper from '@mui/material/Paper';
 import styled from '@mui/material/styles/styled';
+import {LOCATION_1, LOCATION_2} from '../test/mocks/location'
 
 const Item = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),
-  textAlign: 'center',
   elevation: 1
 }));
 
@@ -16,7 +17,13 @@ const Home = () => {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <p>Latest Conditions Section. Put some components for individual location data here.</p>
-          <Item sx={{ bgcolor: '#cfe8fc'}}>xs=8</Item>
+          <Item sx={{ bgcolor: '#cfe8fc'}}>
+            <Stack direction="row" spacing={2}>
+              <LocationSummary {...LOCATION_1} />
+              <LocationSummary {...LOCATION_2} />
+              <LocationSummary {...LOCATION_1} />
+            </Stack>
+          </Item>
         </Grid>
         <Grid item xs={4}>
           place holders for now

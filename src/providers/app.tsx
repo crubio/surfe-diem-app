@@ -3,6 +3,7 @@ import { ToastContainer } from 'react-toastify';
 import CssBaseline from '@mui/material/CssBaseline';
 import SearchAppBar from "@features/ui/header";
 import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material';
+import { BrowserRouter } from 'react-router-dom';
 // import './App.css'
 
 
@@ -40,7 +41,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         <CssBaseline />
         
         <SearchAppBar />
-        {children}
+          {children}
       </ErrorBoundary>
     </ThemeProvider>
   )
