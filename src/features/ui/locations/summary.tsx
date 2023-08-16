@@ -4,14 +4,14 @@
  */
 
 import isEmpty from 'lodash/isEmpty'
-import { LocationSummaryProps, LatestObservation } from './types';
+import { LocationSummaryProps, LocationLatestObservation } from './types';
 import { Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-export default function LocationSummary(props: {locationSummary: LocationSummaryProps, latestObservation?: LatestObservation | {}}) {
+export default function LocationSummary(props: {locationSummary: LocationSummaryProps, latestObservation?: LocationLatestObservation | {}}) {
   
 
-  function renderLatestObservation(latestObservation: LatestObservation) {
+  function renderLatestObservation(latestObservation: LocationLatestObservation) {
     console.log(latestObservation)
     return (
       <>

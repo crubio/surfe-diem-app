@@ -9,7 +9,8 @@ export default defineConfig({
     alias: {
       src: "/src",
       features: "/src/features",
-      config: "/src/config"
+      config: "/src/config",
+      lib: "/src/lib",
     },
   },
 })
