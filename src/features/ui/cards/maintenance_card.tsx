@@ -6,7 +6,7 @@ export function MaintenanceCard() {
   return (
     <>
     <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px' }}>
-      <Box>
+      <Box sx={{ textAlign: 'center', marginTop: '40vh'}}>
         <h1>surfe diem</h1>
         <div className="card">
           <p>
@@ -18,3 +18,5 @@ export function MaintenanceCard() {
     </>
   );
 }
+
+export default MaintenanceCard;

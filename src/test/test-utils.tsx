@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { render as rtlRender, screen, waitForElementToBeRemoved, RenderOptions } from '@testing-library/react';
 import AppProvider from 'providers/app';
 import { FunctionComponent, ReactElement } from 'react';
@@ -7,7 +8,6 @@ import userEvent from '@testing-library/react';
  * This file is a wrapper for react testing library's render function.
  * Add other stuff here you need to use in all tests, like providers, etc. 
  */
-
 const AllTheProviders = ({children}: any) => {
   return (
     <AppProvider>
@@ -27,7 +27,6 @@ export const waitForLoadingToFinish = () =>
     { timeout: 4000 }
   );
 
-// eslint-disable-next-line import/export
 export const render = async (
   ui: any,
   { wrapper: AllTheProviders, route = '/', user, ...renderOptions }: Record<string, any> = {}
@@ -49,6 +48,5 @@ export const render = async (
   return returnValue;
 };
 
-// eslint-disable-next-line import/export
 export * from '@testing-library/react';
 export { userEvent, rtlRender, customRender };

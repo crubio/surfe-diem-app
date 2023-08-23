@@ -4,6 +4,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 
 
 export default function ErrorPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const error: unknown | any = useRouteError();
 
   return (
