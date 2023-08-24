@@ -37,7 +37,6 @@ export const LATEST_OBSERVATION_1 = {
   "href": "https://www.ndbc.noaa.gov/station_page.php?station=46026",
   "published": "2023-07-31T17:31:17",
   "wind_speed": "11.7 knots",
-  "dominant_wave_period": null,
   "dew_point": null,
   "water_temp": "52.7°F (11.5°C)",
   "mean_wave_direction": null,

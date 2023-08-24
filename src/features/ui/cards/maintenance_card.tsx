@@ -1,10 +1,12 @@
 
+import { Container } from '@mui/material';
 import Box from '@mui/material/Box';
 
 export function MaintenanceCard() {
   return (
     <>
-      <Box>
+    <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px' }}>
+      <Box sx={{ textAlign: 'center', marginTop: '40vh'}}>
         <h1>surfe diem</h1>
         <div className="card">
           <p>
@@ -12,6 +14,9 @@ export function MaintenanceCard() {
           </p>
         </div>
       </Box>
+    </Container>
     </>
   );
 }
+
+export default MaintenanceCard;

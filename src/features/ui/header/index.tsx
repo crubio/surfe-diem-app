@@ -52,18 +52,21 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 export default function SearchAppBar() {
   return (
+    <>
     <Box sx={{ flexGrow: 1 }} id={'search-bar-header'} data-testid={'search-bar-header'}>
       <AppBar position="static">
         <Toolbar>
-          <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' }, marginRight: '40px' }}
-          >
-            sarfe diem
-          </Typography>
+          {/* <Link to={'/'}> */}
+            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ display: { xs: 'none', sm: 'block' }, marginRight: '40px' }}
+            >
+              surfe diem
+            </Typography>
+          {/* </Link> */}
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
@@ -76,5 +79,6 @@ export default function SearchAppBar() {
         </Toolbar>
       </AppBar>
     </Box>
+    </>
   );
 }

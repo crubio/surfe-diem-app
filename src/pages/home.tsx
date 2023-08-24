@@ -1,32 +1,54 @@
-import { Container, Grid } from "@mui/material";
+import LocationSummary from "@features/ui/locations/summary";
+import {Container, Grid} from "@mui/material";
 import Paper from '@mui/material/Paper';
 import styled from '@mui/material/styles/styled';
+import { useQuery } from "@tanstack/react-query";
+import { getLocations } from "@features/ui/locations/api/locations";
+import { isEmpty } from "lodash";
+import { Location } from "@features/ui/locations/types";
+import { Item } from "components/layout";
 
-const Item = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1),
-  textAlign: 'center',
-  elevation: 1
-}));
 
-// TODO: refactor into some demo type component. used for basic layout testing for now.
 const Home = () => {
+
+  const {data} = useQuery(['locations'], async () => getLocations())
+  
+  const locationsData = data || []
+
+  function renderLocations(data: Location[], n: number = 3) {
+    if (isEmpty(data)) {
+      return (
+        <p>loading...</p>
+      )
+    }
+    return (
+      <>
+        {data.slice(0, n).map((location: Location) => {
+          return (
+            <Grid item xs className="summary-card" key={location.id}>
+              <LocationSummary locationSummary={location} />
+            </Grid>
+          )
+        })}
+      </>
+    )
+  }
+
+
   return (
     <>
-    <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px' }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <p>Latest Conditions Section. Put some components for individual location data here.</p>
-          <Item sx={{ bgcolor: '#cfe8fc'}}>xs=8</Item>
+    {/* TODO: refactor into some demo type component. used for basic layout testing for now. */}
+    <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px" }}>
+    <p>Latest buoy conditions</p>
+      <Item sx={{ bgcolor: '#cfe8fc'}}>
+        <Grid container spacing={1} direction="row">
+          {data && !isEmpty(data)? (
+              renderLocations(locationsData, 3)
+          ) : (
+            <p>loading...</p>
+          )}
         </Grid>
-        <Grid item xs={4}>
-          place holders for now
-          <Item>xs=4</Item>
-        </Grid>
-        <Grid item xs={4}>
-          place holders for now
-          <Item>xs=4</Item>
-        </Grid>
-      </Grid>
+      </Item>
     </Container>
     </>
   );

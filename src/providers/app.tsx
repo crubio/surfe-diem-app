@@ -1,8 +1,13 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import { ToastContainer } from 'react-toastify';
 import CssBaseline from '@mui/material/CssBaseline';
-import SearchAppBar from "@features/ui/header";
 import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from 'lib/react-query';
+import {
+  RouterProvider,
+} from "react-router-dom";
+import { router } from 'routes'
 // import './App.css'
 
 
@@ -34,15 +39,18 @@ const theme = createTheme(themeOptions);
 export const AppProvider = ({ children }: AppProviderProps) => {
 
   return(
-    <ThemeProvider theme={theme}>
-      <ToastContainer />
+    <>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <CssBaseline />
-        
-        <SearchAppBar />
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <ToastContainer />
+          <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+              {children}
+          </ThemeProvider>
+        </QueryClientProvider>
       </ErrorBoundary>
-    </ThemeProvider>
+    </>
   )
 }
 
