@@ -2,7 +2,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { ToastContainer } from 'react-toastify';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from 'lib/react-query';
 import {
   RouterProvider,
 } from "react-router-dom";
@@ -40,7 +41,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
   return(
     <>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider client={queryClient}>
           <ToastContainer />
           <ThemeProvider theme={theme}>
           <CssBaseline />

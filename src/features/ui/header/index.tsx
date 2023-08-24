@@ -64,7 +64,7 @@ export default function SearchAppBar() {
               component="div"
               sx={{ display: { xs: 'none', sm: 'block' }, marginRight: '40px' }}
             >
-              sarfe diem
+              surfe diem
             </Typography>
           {/* </Link> */}
           <Search>

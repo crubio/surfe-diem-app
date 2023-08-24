@@ -18,6 +18,9 @@ export default function LocationSummary(props: {locationSummary: Location}) {
   function renderLatestObservation(latestObservation: LocationLatestObservation) {
     return (
       <>
+      <Typography sx={{ mb: 1 }} color="text.secondary">
+          {latestObservation.published}
+        </Typography>
         <Typography sx={{ mb: 1.5 }} color="text">
           Air temp: {latestObservation.air_temp}
         </Typography>
@@ -32,7 +35,7 @@ export default function LocationSummary(props: {locationSummary: Location}) {
   }
 
   return (
-    <Card>
+    <Card data-testid="location-summary-card">
       <CardContent>
         <Typography sx={{ fontSize: '1.6rem'}} variant="h2" component="div">
           {props.locationSummary.name}
