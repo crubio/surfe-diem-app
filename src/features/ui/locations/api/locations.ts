@@ -2,8 +2,15 @@ import {axios} from '../../../../lib/axios';
 import {API_ROUTES} from '../../../../utils/routing'
 import { Location, LocationLatestObservation} from '../types';
 
-export const getLocations = (): Promise<Location[]> => {
-  return axios.get(API_ROUTES.LOCATIONS).then((response) => {
+type QueryParams = {
+  limit?: number;
+  search?: string;
+}
+
+export const getLocations = (params?: QueryParams): Promise<Location[]> => {
+  return axios.get(API_ROUTES.LOCATIONS, {
+    params: params
+  }).then((response) => {
     return response.data;
   })
 } 

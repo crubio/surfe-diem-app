@@ -1,3 +1,8 @@
+export type LocationQueryParams = {
+  search?: string,
+  limit?: number
+}
+
 export interface Location {
   name: string,
   url: string,

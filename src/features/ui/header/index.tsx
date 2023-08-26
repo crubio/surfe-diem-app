@@ -1,63 +1,60 @@
-import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
-import AdbIcon from '@mui/icons-material/Adb';
-
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  minWidth: '25%',
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(1),
-    width: 'auto',
-  },
-}));
-
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      width: '12ch',
-      '&:focus': {
-        width: '20ch',
-      },
-    },
-  },
-}));
+import { Link } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { getLocations } from '../locations/api/locations';
+import { useEffect, useState } from 'react';
+import { Search, SearchIconWrapper, StyledInputBase } from 'components/search/search';
+import { SearchResultsDialog } from 'components';
+import { random } from 'lodash';
+import { LocationQueryParams } from '../locations/types';
 
 export default function SearchAppBar() {
+
+  const [searchQuery, setSearchQuery] = useState<LocationQueryParams>({search: '', limit: 10})
+  const [queryEnabled, setQueryEnabled] = useState<boolean>(false)
+  const [searchOpen, setSearchOpen] = useState<boolean>(false)
+  // Used to make sure the query is unique if the same params are used
+  const [queryId, setQueryId] = useState<number>(random(1, 1000))
+
+  const {data} = useQuery(['locations', queryId ,searchQuery], () => getLocations(searchQuery), {
+    enabled: queryEnabled,
+  })
+
+  const locationData = data || []
+
+  const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key === "Enter") {
+      const query = e.currentTarget.value
+      setSearchQuery({search: query, limit: 10})
+      setQueryId(random(1, 1000))
+      setQueryEnabled(true)
+    }
+  }
+
+  const handleClose = () => {
+    setSearchOpen(false);
+    return
+  };
+
+  useEffect(() => {
+    if (data?.length) {
+      setSearchOpen(true)
+    } else {
+      setSearchOpen(false)
+    }
+  }, [data])
+
   return (
     <>
+    <SearchResultsDialog open={searchOpen} onClose={handleClose} searchTerm={searchQuery.search} results={locationData} />
     <Box sx={{ flexGrow: 1 }} id={'search-bar-header'} data-testid={'search-bar-header'}>
       <AppBar position="static">
         <Toolbar>
-          {/* <Link to={'/'}> */}
-            <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          <Link href="/" underline="none" color="inherit" sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography
               variant="h6"
               noWrap
@@ -66,12 +63,13 @@ export default function SearchAppBar() {
             >
               surfe diem
             </Typography>
-          {/* </Link> */}
+          </Link>
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
             <StyledInputBase
+              onKeyDown={(e) => handleSubmit(e)}
               placeholder="/api/v1/locations?search="
               inputProps={{ 'aria-label': 'search' }}
             />

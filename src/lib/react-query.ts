@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { AxiosError } from 'axios';
 import { QueryClient, UseQueryOptions, UseMutationOptions, DefaultOptions } from '@tanstack/react-query';
 import { PromiseValue } from 'type-fest';

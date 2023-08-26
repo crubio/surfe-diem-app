@@ -18,5 +18,3 @@ export function MaintenanceCard() {
     </>
   );
 }
-
-export default MaintenanceCard;
