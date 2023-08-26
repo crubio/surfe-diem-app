@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, render, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { screen, render } from '@testing-library/react';
 import LocationSummary from '../summary';
 import { LOCATION_1 } from '../../../../test/mocks/location';
 

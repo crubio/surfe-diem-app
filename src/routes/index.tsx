@@ -4,10 +4,9 @@ import Home from "pages/home";
 import { Outlet, createBrowserRouter } from "react-router-dom";
 import SearchAppBar from "@features/ui/header";
 import { Container } from "@mui/material";
-import React from "react";
+import { MAINTENANCE_MODE } from "config";
 
-
-const isMaintenanceMode = false;
+const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
 /**
  * A wrapper for the child routes of the app

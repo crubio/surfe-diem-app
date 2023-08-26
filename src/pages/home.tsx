@@ -1,12 +1,10 @@
 import LocationSummary from "@features/ui/locations/summary";
 import {Container, Grid} from "@mui/material";
-import Paper from '@mui/material/Paper';
-import styled from '@mui/material/styles/styled';
 import { useQuery } from "@tanstack/react-query";
 import { getLocations } from "@features/ui/locations/api/locations";
 import { isEmpty } from "lodash";
 import { Location } from "@features/ui/locations/types";
-import { Item } from "components/layout";
+import { Item } from "components";
 
 
 const Home = () => {
