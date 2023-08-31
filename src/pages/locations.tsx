@@ -1,25 +1,17 @@
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { BuoyLocationLatestObservation } from "@features/locations/types"
-import { Box, CircularProgress, Container, Divider, Paper, Stack, Typography } from "@mui/material"
+import { Box, Container, Divider, Paper, Stack, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatDate } from "utils/common"
 
-const Loading = () => {
-  return (
-    <Box sx={{ display: 'flex' }}>
-      <CircularProgress />
-    </Box>
-  )
-}
-
 const LocationsPage = () => {
   const params = useParams()
   const { locationId } = params
 
-  const { data: locationData, isLoading: locationIsLoading } = useQuery(
+  const { data: locationData } = useQuery(
     ['location', locationId],
     () => getLocation(locationId)
   )
@@ -92,45 +84,39 @@ const LocationsPage = () => {
   return (
     <div>
       <Container>
-        {locationIsLoading ? 
-          (
-            <Loading />
-          ) : (
+        <h1>{locationData?.name}</h1>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Item>{locationData?.description}</Item>
+          <Item>{locationData?.depth}</Item>
+          <Item>{locationData?.location?.split("(")[0]}</Item>
+        </Stack>
+        <Box>
+          <h2>Current conditions</h2>
+          {lastestReported  && !isEmpty(lastestReported)? (
             <>
-              <h1>{locationData?.name}</h1>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <Item>{locationData?.description}</Item>
-                <Item>{locationData?.depth}</Item>
-                <Item>{locationData?.location?.split("(")[0]}</Item>
+              <Stack spacing={2}>
+                {renderLastReported(lastestReported)}
               </Stack>
-              <Box>
-                <h2>Current conditions</h2>
-                {lastestReported  && !isEmpty(lastestReported)? (
-                  <>
-                    <Stack spacing={2}>
-                      {renderLastReported(lastestReported)}
-                    </Stack>
-                  </>
-                ) : (
-                  <Item><p>No current data</p></Item>
-                )}
-                
-              </Box>
-              <Box>
-                <h2>Hourly conditions</h2>
-                <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-                { obsData && (
-                  renderLatestObservation(obsData)
-                )}
-                </Stack>
-              </Box>
-              <Box>
-                <h2>Forecast</h2>
-                <Item><p>No current data</p></Item>
-              </Box>
             </>
-          )
-        }
+          ) : (
+            <Item><p>No current data</p></Item>
+          )}
+          
+        </Box>
+        <Box>
+          <h2>Hourly conditions</h2>
+          { obsData && !isEmpty(obsData) ? (
+            <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
+              {renderLatestObservation(obsData)}
+            </Stack>
+          ): (
+            <Item><p>No current data</p></Item>
+          )}
+        </Box>
+        <Box>
+          <h2>Forecast</h2>
+          <Item><p>No current data</p></Item>
+        </Box>
       </Container>
     </div>
   )
