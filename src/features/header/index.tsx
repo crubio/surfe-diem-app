@@ -70,7 +70,7 @@ export default function SearchAppBar() {
             </SearchIconWrapper>
             <StyledInputBase
               onKeyDown={(e) => handleSubmit(e)}
-              placeholder="/api/v1/locations?search="
+              placeholder="e.g., Santa Cruz, CA"
               inputProps={{ 'aria-label': 'search' }}
             />
           </Search>

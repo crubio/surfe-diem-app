@@ -3,7 +3,7 @@ export type LocationQueryParams = {
   limit?: number
 }
 
-export interface Location {
+export interface BuoyLocation {
   name: string,
   url: string,
   active: boolean,
@@ -17,11 +17,11 @@ export interface Location {
   date_updated: string
 }
 
-export interface Locations {
+export interface BuoyLocations {
   locations: Location[]
 }
 
-export type LocationSummaryProps = {
+export type BuoyLocationSummaryProps = {
   location_id: string;
   name: string;
   url: string;
@@ -32,7 +32,7 @@ export type LocationSummaryProps = {
   date_updated: string;
 };
 
-export interface LocationLatestObservation {
+export interface BuoyLocationLatestObservation {
   id: number,
   location_id: string,
   date_created: string,
@@ -55,6 +55,6 @@ export interface LocationLatestObservation {
   dominant_wave_period?: string,
 }
 
-export interface LocationLatestObservations {
-  latest_observations: LatestObservation[]
+export interface BuoyLocationLatestObservations {
+  latest_observations: BuoyLatestObservation[]
 }

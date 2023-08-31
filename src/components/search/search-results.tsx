@@ -3,12 +3,12 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { Location } from '@features/ui/locations/types';
+import { BuoyLocation } from '@features/locations/types';
 import { useNavigate } from "react-router-dom";
 import { Support } from '@mui/icons-material';
 
 export interface SimpleDialogProps {
-  results?: Location[];
+  results?: BuoyLocation[];
   open: boolean;
   searchTerm?: string;
   onClose: () => void;

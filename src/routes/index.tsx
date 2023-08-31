@@ -1,10 +1,11 @@
-import { MaintenanceCard } from "@features/ui";
+import { MaintenanceCard } from "@features/index";
 import ErrorPage from "pages/error";
 import Home from "pages/home";
 import { Outlet, createBrowserRouter } from "react-router-dom";
-import SearchAppBar from "@features/ui/header";
+import SearchAppBar from "@features/header";
 import { Container } from "@mui/material";
 import { MAINTENANCE_MODE } from "config";
+import LocationsPage from "pages/locations";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
@@ -37,7 +38,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "location/:locationId",
-        element: <div>Location</div>,
+        element: <LocationsPage />,
         errorElement: <ErrorPage />,
       },
     ]
