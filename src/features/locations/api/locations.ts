@@ -25,7 +25,7 @@ export const getLatestObservations = (): Promise<BuoyLocationLatestObservation[]
   return axios.get(`${API_ROUTES.LATEST_OBSERVATIONS}`);
 }
 
-export const getLatestObservation = (id: string | undefined): Promise<BuoyLocationLatestObservation[]> => {
+export const getLatestObservation = (id: string): Promise<BuoyLocationLatestObservation[]> => {
   return axios.get(`${API_ROUTES.LOCATIONS}/${id}/latest-observation`).then((response) => {
     return response.data;
   })

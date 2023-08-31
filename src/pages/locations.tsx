@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Item } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
-import { formatDate } from "utils/common"
+import { formatDate, validateIsCurrent } from "utils/common"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -16,13 +16,13 @@ const LocationsPage = () => {
     () => getLocation(locationId)
   )
 
-  const {data: latestObservationData} = useQuery(['latest_observation'], () => getLatestObservation(locationId), {
+  const {data: latestObservationData} = useQuery(['latest_observation'], () => getLatestObservation(locationId!), {
     enabled: !!locationData?.location_id
   })
 
   const obsData = latestObservationData || []
 
-  const lastestReported = obsData[0] || {}
+  const lastestReported = obsData.shift() || {}
 
   function renderLatestObservation(obsData: BuoyLocationLatestObservation[] | undefined) {
     if (!obsData || obsData.length === 0) return
@@ -48,11 +48,19 @@ const LocationsPage = () => {
   }
 
   function renderLastReported(row: BuoyLocationLatestObservation) {
+    if (!row || isEmpty(row)) return
     const {published, significant_wave_height, mean_wave_direction, dominant_wave_period, water_temp, wind_speed, wind_direction} = row
+    const validReport = validateIsCurrent(published);
     return (
       <>
         <Paper sx={{ p: 2, maxWidth: 400 }}>
-          <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>{published && formatDate(published)}</Typography>
+          {!validReport && (
+            <Typography variant="subtitle2" color={"text.secondary"}>{`Last reported (report is not current)`}</Typography>
+          )}
+          <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
+            {!validReport && (<span>"Last reported"</span>)}
+            {published && formatDate(published)}
+          </Typography>
           <Stack direction="row" spacing={2}>
             <Stack direction="column" spacing={2}>
               <Typography variant="subtitle2" color={"text.secondary"}>wave height</Typography>
@@ -95,7 +103,7 @@ const LocationsPage = () => {
           {lastestReported  && !isEmpty(lastestReported)? (
             <>
               <Stack spacing={2}>
-                {renderLastReported(lastestReported)}
+                {renderLastReported(lastestReported as BuoyLocationLatestObservation)}
               </Stack>
             </>
           ) : (

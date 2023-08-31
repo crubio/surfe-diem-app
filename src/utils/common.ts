@@ -20,3 +20,12 @@ export const formatDate = (date: number | string) => {
   const timeZone = dayjs.tz.guess()
   return d.utc().tz(timeZone).local().format('MMMM D, YYYY h:mm A');
 }
+
+export function validateIsCurrent(observedAt: string | undefined) {
+  if (!observedAt) return false
+  const now = new Date()
+  const observedAtDate = new Date(observedAt)
+  const diff = now.getTime() - observedAtDate.getTime()
+  const diffHours = Math.floor(diff / (1000 * 60 * 60))
+  return diffHours < 1
+}
