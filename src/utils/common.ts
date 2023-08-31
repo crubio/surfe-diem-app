@@ -1,3 +1,8 @@
+import { default as dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import tz from 'dayjs/plugin/timezone'
+dayjs.extend(utc)
+dayjs.extend(tz)
 
 export const formatDateTime = (date: string | undefined) => {
   if (!date) return '';
@@ -10,6 +15,8 @@ export const formatDateTime = (date: string | undefined) => {
   });
 }
 
-import { default as dayjs } from 'dayjs';
-
-export const formatDate = (date: number | string) => dayjs(date).format('MMMM D, YYYY h:mm A');
+export const formatDate = (date: number | string) => {
+  const d = dayjs.utc(date)
+  const timeZone = dayjs.tz.guess()
+  return d.utc().tz(timeZone).local().format('MMMM D, YYYY h:mm A');
+}
