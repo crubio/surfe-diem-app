@@ -4,18 +4,18 @@
  */
 
 import isEmpty from 'lodash/isEmpty'
-import { Location, LocationLatestObservation } from './types';
+import { BuoyLocation, BuoyLocationLatestObservation } from './types';
 import { Box, Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { LocationOn } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { getLatestObservation } from './api/locations';
 
-export default function LocationSummary(props: {locationSummary: Location}) {
+export default function LocationSummary(props: {locationSummary: BuoyLocation}) {
   const {location_id} = props.locationSummary
   const {data} = useQuery([location_id], () => getLatestObservation(location_id))
   
-  function renderLatestObservation(latestObservation: LocationLatestObservation) {
+  function renderLatestObservation(latestObservation: BuoyLocationLatestObservation) {
     return (
       <>
       <Typography sx={{ mb: 1 }} color="text.secondary">
@@ -54,7 +54,7 @@ export default function LocationSummary(props: {locationSummary: Location}) {
             Current Conditions
           </Typography>
           {data && !isEmpty(data) ? (
-            renderLatestObservation(data)
+            renderLatestObservation(data[0])
           ) : (
             <p>No data available</p>
           )}

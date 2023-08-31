@@ -1,9 +1,9 @@
-import LocationSummary from "@features/ui/locations/summary";
+import LocationSummary from "@features/locations/summary";
 import {Container, Grid} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { getLocations } from "@features/ui/locations/api/locations";
+import { getLocations } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
-import { Location } from "@features/ui/locations/types";
+import { BuoyLocation } from "@features/locations/types";
 import { Item } from "components";
 
 
@@ -13,7 +13,7 @@ const Home = () => {
   
   const locationsData = data || []
 
-  function renderLocations(data: Location[], n: number = 3) {
+  function renderLocations(data: BuoyLocation[], n: number = 3) {
     if (isEmpty(data)) {
       return (
         <p>loading...</p>
@@ -21,7 +21,7 @@ const Home = () => {
     }
     return (
       <>
-        {data.slice(0, n).map((location: Location) => {
+        {data.slice(0, n).map((location: BuoyLocation) => {
           return (
             <Grid item xs className="summary-card" key={location.id}>
               <LocationSummary locationSummary={location} />
