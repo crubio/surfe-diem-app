@@ -10,6 +10,8 @@ export interface DailyForecastProps {
 
 export const DailyForecast = (props: DailyForecastProps) => {
   const {forecast} = props
+  const dash: JSX.Element = (<code>&#8212;</code>)
+
   function renderForecast(data: ForecastDataDaily) {
     if (!data || isEmpty(data)) return
     const result = []
@@ -18,7 +20,7 @@ export const DailyForecast = (props: DailyForecastProps) => {
           <Item key={data.daily.time[i]}>
             {formatDateShortWeekday(data.daily.time[i])}
             <Typography variant="subtitle2" color={"text.secondary"}>max wave height</Typography>
-            <Typography variant="h3" sx={{marginBottom: "2px"}}>{data.daily.wave_height_max[i] ? data.daily.wave_height_max[i].toFixed(1)+' ft' : "N/A"}</Typography>
+            <Typography variant="h3" sx={{marginBottom: "2px"}}>{data.daily.wave_height_max[i] ? data.daily.wave_height_max[i].toFixed(1)+' ft' : dash}</Typography>
           </Item>
       )
     }
