@@ -4,7 +4,7 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { Box, Container, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { Item } from "components"
+import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
@@ -12,16 +12,13 @@ import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common
 const LocationsPage = () => {
   const params = useParams()
   const { locationId } = params
-  // Set up state for enabling/disabling hourly or daily data
-  // const [hourlyDataEnabled, setHourlyDataEnabled] = useState(false)
-  // const [dailyDataEnabled, setDailyDataEnabled] = useState(false)
 
   const { data: locationData } = useQuery(
     ['location', locationId],
     () => getLocation(locationId)
   )
 
-  const {data: latestObservationData} = useQuery(['latest_observation', params], () => getLatestObservation(locationId!), {
+  const {data: latestObservationData, isLoading: isLatestObsvLoading} = useQuery(['latest_observation', params], () => getLatestObservation(locationId!), {
     enabled: !!locationData?.location_id
   })
 
@@ -36,7 +33,7 @@ const LocationsPage = () => {
     enabled: !!locationData?.location_id
   })
 
-  const {data: forecastDataDaily } = useQuery(['forecast_daily', locationData?.location_id], () => getOpenMeteoForecastDaily({
+  const {data: forecastDataDaily, isLoading: isForecastLoading } = useQuery(['forecast_daily', locationData?.location_id], () => getOpenMeteoForecastDaily({
     latitude: latLong[0],
     longitude: latLong[1],
     start_date: getTodaysDate(),
@@ -61,7 +58,7 @@ const LocationsPage = () => {
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
         <Box>
-          {latestReported  && !isEmpty(latestReported)? (
+          {latestReported  && !isEmpty(latestReported) ? (
             <>
               <Stack
                 direction="row"
@@ -79,6 +76,8 @@ const LocationsPage = () => {
                 </Box>
               </Stack>
             </>
+          ) : isLatestObsvLoading ? (
+            <Item><Loading /></Item>
           ) : (
             <Item><p>No current data</p></Item>
           )}
@@ -91,7 +90,9 @@ const LocationsPage = () => {
             <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
               <DailyForecast forecast={forecastDataDaily} />
             </Stack>
-          ): (
+          ): isForecastLoading ? (
+            <Item><Loading /></Item>
+          ) : (
             <Item><p>No current data</p></Item>
           )}
         </Box>
