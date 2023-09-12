@@ -10,6 +10,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { LocationOn } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { getLatestObservation } from './api/locations';
+import { formatLatLong } from 'utils/common';
 
 export default function LocationSummary(props: {locationSummary: BuoyLocation}) {
   const {location_id} = props.locationSummary
@@ -37,11 +38,11 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
   return (
     <Card data-testid="location-summary-card">
       <CardContent>
-        <Typography sx={{ fontSize: '1.6rem'}} variant="h2" component="div">
+        <Typography sx={{ fontSize: '1.6rem'}} variant="h3" component="div">
           {props.locationSummary.name}
         </Typography>
         <Typography sx={{ mb: 1 }} color="text.secondary">
-          <LocationOn /> {props.locationSummary.location}
+          <LocationOn /> {props.locationSummary.location && formatLatLong(props.locationSummary.location).join(', ')}
         </Typography>
         <Typography sx={{ mb: 1 }} color="text.secondary">
           {props.locationSummary.description}

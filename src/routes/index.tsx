@@ -1,4 +1,4 @@
-import { MaintenanceCard } from "@features/index";
+import { MaintenanceCard } from "@features/cards/maintenance_card";
 import ErrorPage from "pages/error";
 import Home from "pages/home";
 import { Outlet, createBrowserRouter } from "react-router-dom";

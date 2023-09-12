@@ -1,11 +1,13 @@
+import { DailyForecast, getOpenMeteoForecastDaily, getOpenMeteoForecastHourly } from "@features/forecasts"
+import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
+import { LatestReportedForecast } from "@features/forecasts/components/latest_reported_forecast"
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
-import { BuoyLocationLatestObservation } from "@features/locations/types"
-import { Box, Container, Divider, Paper, Stack, Typography } from "@mui/material"
+import { Box, Container, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { Item } from "components"
+import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
-import { formatDate, validateIsCurrent } from "utils/common"
+import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -16,78 +18,35 @@ const LocationsPage = () => {
     () => getLocation(locationId)
   )
 
-  const {data: latestObservationData} = useQuery(['latest_observation'], () => getLatestObservation(locationId!), {
+  const {data: latestObservationData, isLoading: isLatestObsvLoading} = useQuery(['latest_observation', params], () => getLatestObservation(locationId!), {
     enabled: !!locationData?.location_id
   })
 
+  const latLong = formatLatLong(locationData?.location || "")
+
+  const {data: forecastDataHourly } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
+    latitude: latLong[0],
+    longitude: latLong[1],
+    start_date: getTodaysDate(),
+    end_date: getTodaysDate(1)
+  }), {
+    enabled: !!locationData?.location_id
+  })
+
+  const {data: forecastDataDaily, isLoading: isForecastLoading } = useQuery(['forecast_daily', locationData?.location_id], () => getOpenMeteoForecastDaily({
+    latitude: latLong[0],
+    longitude: latLong[1],
+    start_date: getTodaysDate(),
+    end_date: getTodaysDate(5)
+  }), {
+    enabled: !!locationData?.location_id
+  })
+
+  const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour())
+
   const obsData = latestObservationData || []
 
-  const lastestReported = obsData.shift() || {}
-
-  function renderLatestObservation(obsData: BuoyLocationLatestObservation[] | undefined) {
-    if (!obsData || obsData.length === 0) return
-    return (
-      obsData.map((observation) => {
-        return (
-          <Box key={observation.id}>
-            <Item>
-              <Typography variant="subtitle2" color={"text.secondary"}>
-                {observation.published && formatDate(observation.published)}
-              </Typography>
-            </Item>
-            <Item>
-              <Typography variant="h4" sx={{marginBottom: "2px"}}>{observation.significant_wave_height}</Typography>
-              <Box>{observation.mean_wave_direction}</Box>
-              <Box>{observation.dominant_wave_period}</Box>
-              <Box>{observation.water_temp}</Box>
-            </Item>
-          </Box>
-        )
-      })
-    ) 
-  }
-
-  function renderLastReported(row: BuoyLocationLatestObservation) {
-    if (!row || isEmpty(row)) return
-    const {published, significant_wave_height, mean_wave_direction, dominant_wave_period, water_temp, wind_speed, wind_direction} = row
-    const validReport = validateIsCurrent(published);
-    return (
-      <>
-        <Paper sx={{ p: 2, maxWidth: 400 }}>
-          {!validReport && (
-            <Typography variant="subtitle2" color={"text.secondary"}>{`Last reported (report is not current)`}</Typography>
-          )}
-          <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
-            {!validReport && (<span>"Last reported"</span>)}
-            {published && formatDate(published)}
-          </Typography>
-          <Stack direction="row" spacing={2}>
-            <Stack direction="column" spacing={2}>
-              <Typography variant="subtitle2" color={"text.secondary"}>wave height</Typography>
-              <Typography variant="h3" sx={{marginBottom: "2px"}}>{significant_wave_height}</Typography>
-            </Stack>
-            <Divider orientation="vertical" flexItem />
-            <Stack direction="column" spacing={2}>
-              <Box><Typography variant="subtitle2" color={"text.secondary"}>mean direction</Typography>{mean_wave_direction}</Box>
-              <Box><Typography variant="subtitle2" color={"text.secondary"}>wave period</Typography>{dominant_wave_period}</Box>
-              <Box><Typography variant="subtitle2" color={"text.secondary"}>temperature</Typography>{water_temp}</Box>
-            </Stack>
-          </Stack>
-        </Paper>
-        { wind_direction && wind_speed && (
-          <Box>
-            <p>Wind data</p>
-            <Item>
-              {wind_speed}
-            </Item>
-            <Item>
-              {wind_direction}
-            </Item>
-          </Box>
-        )}
-      </>
-    )
-  }
+  const latestReported = obsData[0] || {}
   
   return (
     <div>
@@ -99,31 +58,43 @@ const LocationsPage = () => {
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
         <Box>
-          <h2>Current conditions</h2>
-          {lastestReported  && !isEmpty(lastestReported)? (
+          {latestReported  && !isEmpty(latestReported) ? (
             <>
-              <Stack spacing={2}>
-                {renderLastReported(lastestReported as BuoyLocationLatestObservation)}
+              <Stack
+                direction="row"
+                justifyContent="flex-start"
+                alignItems="flex-start"
+                spacing={4}
+              >
+                <Box>
+                  <h2>Current conditions</h2>
+                  <LatestReportedForecast forecast={latestReported} />
+                </Box>
+                <Box>
+                  <h2>Next hour</h2>
+                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
+                </Box>
               </Stack>
             </>
+          ) : isLatestObsvLoading ? (
+            <Item><Loading /></Item>
           ) : (
             <Item><p>No current data</p></Item>
           )}
           
         </Box>
         <Box>
-          <h2>Hourly conditions</h2>
-          { obsData && !isEmpty(obsData) ? (
+          {/* Add tooltip for weekly height max definition */}
+          <h2>Forecast</h2>
+          { !isEmpty(forecastDataDaily) ? (
             <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-              {renderLatestObservation(obsData)}
+              <DailyForecast forecast={forecastDataDaily} />
             </Stack>
-          ): (
+          ): isForecastLoading ? (
+            <Item><Loading /></Item>
+          ) : (
             <Item><p>No current data</p></Item>
           )}
-        </Box>
-        <Box>
-          <h2>Forecast</h2>
-          <Item><p>No current data</p></Item>
         </Box>
       </Container>
     </div>
