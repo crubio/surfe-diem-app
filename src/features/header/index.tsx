@@ -52,7 +52,7 @@ export default function SearchAppBar() {
     <>
     <SearchResultsDialog open={searchOpen} onClose={handleClose} searchTerm={searchQuery.search} results={locationData} />
     <Box sx={{ flexGrow: 1 }} id={'search-bar-header'} data-testid={'search-bar-header'}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{backgroundColor: 'primary.dark'}}>
         <Toolbar>
           <Link href="/" underline="none" color="inherit" sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography

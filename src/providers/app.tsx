@@ -1,13 +1,14 @@
 import { ErrorBoundary } from 'react-error-boundary';
 import { ToastContainer } from 'react-toastify';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from 'lib/react-query';
 import {
   RouterProvider,
 } from "react-router-dom";
 import { router } from 'routes'
+import { themeOptions } from 'config/theme';
 // import './App.css'
 
 
@@ -21,19 +22,6 @@ const ErrorFallback = () => {
   )
 }
 
-// TODO: put this in a separate file
-const themeOptions: ThemeOptions = {
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#3f51b5',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-  },
-};
-
 const theme = createTheme(themeOptions);
 
 export const AppProvider = ({ children }: AppProviderProps) => {
@@ -44,9 +32,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         <QueryClientProvider client={queryClient}>
           <ToastContainer />
           <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-              {children}
+            <CssBaseline />
+            <RouterProvider router={router} />
+                {children}
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
