@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { screen, render } from '@testing-library/react';
 import LocationSummary from '../summary';
-import { LOCATION_1 } from '../../../../test/mocks/location';
 
 import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from '../../../../lib/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { LOCATION_1 } from 'test/mocks/location';
+import { queryClient } from 'lib/react-query';
 
 
 const props = LOCATION_1
