@@ -1,7 +1,8 @@
 import { isEmpty } from "lodash"
 import { ForecastDataHourly } from ".."
-import { Box, Divider, Paper, Stack, Typography } from "@mui/material"
+import { Box, Divider, Stack, Typography } from "@mui/material"
 import { formatDateWeekday } from "utils/common"
+import { Item } from "components"
 
 export interface HourlyForecastProps {
   forecast: ForecastDataHourly | undefined
@@ -14,7 +15,7 @@ export const CurrentHourForecast = (props: HourlyForecastProps) => {
   if (!forecast || isEmpty(forecast)) return
 
   return (
-    <Paper sx={{ p: 2}}>
+    <Item>
       <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
         {formatDateWeekday(forecast.hourly.time[startingIndex])}
       </Typography>
@@ -29,6 +30,6 @@ export const CurrentHourForecast = (props: HourlyForecastProps) => {
           <Box><Typography variant="subtitle2" color={"text.secondary"}>wave period</Typography>{forecast.hourly.wave_period[startingIndex]}</Box>
         </Stack>
       </Stack>
-    </Paper>
+    </Item>
   )
 }

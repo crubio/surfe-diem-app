@@ -1,6 +1,6 @@
 import { BuoyLocationLatestObservation } from "@features/locations/types"
 import { WarningAmberOutlined } from "@mui/icons-material";
-import { Box, Divider, Paper, Stack, Typography } from "@mui/material";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 import { Item } from "components";
 import { formatDate, validateIsCurrent } from "utils/common";
 
@@ -15,7 +15,7 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps) => {
 
   return (
     <>
-      <Paper sx={{ p: 2}}>
+      <Item>
         <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
           {!validReport && (<><WarningAmberOutlined color="warning"/> Last reported{' '}</>)}
           {forecast.published && formatDate(forecast.published)}
@@ -32,18 +32,18 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps) => {
             <Box><Typography variant="subtitle2" color={"text.secondary"}>temperature</Typography>{validReport ? forecast.water_temp: dash}</Box>
           </Stack>
         </Stack>
-      </Paper>
-      { forecast.wind_direction && forecast.wind_speed && (
-        <Box>
-          <p>Wind data</p>
-          <Item>
-            {forecast.wind_speed}
-          </Item>
-          <Item>
-            {forecast.wind_direction}
-          </Item>
-        </Box>
-      )}
+        { forecast.wind_direction && forecast.wind_speed && (
+          <Box>
+            <p>Wind data</p>
+            <Item>
+              {forecast.wind_speed}
+            </Item>
+            <Item>
+              {forecast.wind_direction}
+            </Item>
+          </Box>
+        )}
+      </Item>
     </>
   )
 }

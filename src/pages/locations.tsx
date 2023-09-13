@@ -24,7 +24,7 @@ const LocationsPage = () => {
 
   const latLong = formatLatLong(locationData?.location || "")
 
-  const {data: forecastDataHourly } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
+  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
     latitude: latLong[0],
     longitude: latLong[1],
     start_date: getTodaysDate(),
@@ -61,18 +61,26 @@ const LocationsPage = () => {
           {latestReported  && !isEmpty(latestReported) ? (
             <>
               <Stack
-                direction="row"
+                direction={{ xs: 'column', sm: 'column', md: 'row' }}
                 justifyContent="flex-start"
                 alignItems="flex-start"
                 spacing={4}
               >
                 <Box>
                   <h2>Current conditions</h2>
-                  <LatestReportedForecast forecast={latestReported} />
+                  { isLatestObsvLoading ? (
+                    <Loading />
+                  ) : (
+                    <LatestReportedForecast forecast={latestReported} />
+                  )}
                 </Box>
                 <Box>
                   <h2>Next hour</h2>
-                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
+                  { isHourlyForecastLoading ? (
+                    <Loading />
+                  ) : (
+                    <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
+                  )}
                 </Box>
               </Stack>
             </>
