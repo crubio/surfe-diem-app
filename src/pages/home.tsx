@@ -1,5 +1,5 @@
 import LocationSummary from "@features/locations/summary";
-import {Box, Container, Grid, Typography} from "@mui/material";
+import {Box, Container, Stack, Typography} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
@@ -13,7 +13,7 @@ const Home = () => {
   
   const locationsData = data || []
 
-  function renderLocations(data: BuoyLocation[], n: number = 3) {
+  function renderLocations(data: BuoyLocation[], n = 3) {
     if (isEmpty(data)) {
       return (
         <p>loading...</p>
@@ -23,9 +23,7 @@ const Home = () => {
       <>
         {data.slice(0, n).map((location: BuoyLocation) => {
           return (
-            <Grid item xs className="summary-card" key={location.id}>
-              <LocationSummary locationSummary={location} />
-            </Grid>
+            <LocationSummary locationSummary={location} />
           )
         })}
       </>
@@ -40,13 +38,13 @@ const Home = () => {
       <Box sx={{ marginTop: "20px", marginBottom: "20px"}}>
         <Typography variant="h4" sx={{marginBottom: "10px"}}>Latest buoy conditions</Typography>
         <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
-          <Grid container spacing={1} direction="row">
+          <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
             {data && !isEmpty(data)? (
                 renderLocations(locationsData, 4)
             ) : (
-              <p>loading...</p>
+              <p>No data available</p>
             )}
-          </Grid>
+          </Stack>
         </Item>
       </Box>
     </Container>

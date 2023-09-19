@@ -9,7 +9,8 @@ import {
 } from "react-router-dom";
 import { router } from 'routes'
 import { themeOptions } from 'config/theme';
-// import './App.css'
+import 'react-toastify/dist/ReactToastify.css';
+import './App.css'
 
 
 type AppProviderProps = {
@@ -28,9 +29,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
   return(
     <>
+      <ToastContainer theme='dark' />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <QueryClientProvider client={queryClient}>
-          <ToastContainer />
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <RouterProvider router={router} />

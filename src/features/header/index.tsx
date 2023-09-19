@@ -11,9 +11,10 @@ import { Search, SearchIconWrapper, StyledInputBase } from 'components/search/se
 import { SearchResultsDialog } from 'components';
 import { random } from 'lodash';
 import { LocationQueryParams } from '../locations/types';
+import { toast } from 'react-toastify';
 
 export default function SearchAppBar() {
-
+  const notify = () => toast("No results found");
   const [searchQuery, setSearchQuery] = useState<LocationQueryParams>({search: '', limit: 10})
   const [queryEnabled, setQueryEnabled] = useState<boolean>(false)
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
@@ -22,6 +23,15 @@ export default function SearchAppBar() {
 
   const {data} = useQuery(['locations', queryId ,searchQuery], () => getLocations(searchQuery), {
     enabled: queryEnabled,
+    onError: (error) => {
+      console.log(error)
+    },
+    onSuccess: (data) => {
+      console.log(data)
+      if (data.length === 0) {
+        notify()
+      }
+    }
   })
 
   const locationData = data || []

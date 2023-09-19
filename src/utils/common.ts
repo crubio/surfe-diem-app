@@ -31,7 +31,7 @@ export const formatDateShortWeekday = (date: string | undefined) => {
   return dayjs(date).format('MMMM D');
 }
 
-export const getTodaysDate = (n: number = 0) => {
+export const getTodaysDate = (n = 0) => {
   const d = dayjs()
   if (n > 0) {
     const newDate = d.add(n, 'd')
@@ -51,13 +51,13 @@ export const formatDate = (date: number | string) => {
   return d.utc().tz(timeZone).local().format('MMMM D, YYYY h:mm A');
 }
 
-export function validateIsCurrent(observedAt: string | undefined): boolean {
+export function validateIsCurrent(observedAt: string | undefined, nHours = 1): boolean {
   if (!observedAt) return false
   const now = new Date()
   const observedAtDate = new Date(observedAt)
   const diff = now.getTime() - observedAtDate.getTime()
   const diffHours = Math.floor(diff / (1000 * 60 * 60))
-  return diffHours < 1
+  return diffHours < nHours
 }
 
 /**
