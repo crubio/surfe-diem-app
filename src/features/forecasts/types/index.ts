@@ -4,6 +4,9 @@ export interface ForecastDataHourly {
     wave_height: number[],
     wave_period: number[],
     wave_direction: number[]
+  },
+  hourly_units: {
+    [key: string]: string
   }
 }
 

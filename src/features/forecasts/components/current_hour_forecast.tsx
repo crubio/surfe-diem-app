@@ -26,7 +26,7 @@ export const CurrentHourForecast = (props: HourlyForecastProps) => {
         </Stack>
         <Divider orientation="vertical" flexItem />
         <Stack direction="column" spacing={2}>
-          <Box><Typography variant="subtitle2" color={"text.secondary"}>wave direction</Typography>{forecast.hourly.wave_direction[startingIndex]}</Box>
+          <Box><Typography variant="subtitle2" color={"text.secondary"}>wave direction</Typography>{forecast.hourly.wave_direction[startingIndex]}{forecast.hourly_units.wave_direction}</Box>
           <Box><Typography variant="subtitle2" color={"text.secondary"}>wave period</Typography>{forecast.hourly.wave_period[startingIndex]}</Box>
         </Stack>
       </Stack>
