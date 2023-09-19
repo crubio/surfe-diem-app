@@ -42,7 +42,7 @@ const Home = () => {
         <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
           <Grid container spacing={1} direction="row">
             {data && !isEmpty(data)? (
-                renderLocations(locationsData, 3)
+                renderLocations(locationsData, 4)
             ) : (
               <p>loading...</p>
             )}

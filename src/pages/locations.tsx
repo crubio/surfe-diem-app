@@ -52,13 +52,12 @@ const LocationsPage = () => {
     <div>
       <Container>
         <h1>{locationData?.name}</h1>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
           <Item>{locationData?.description}</Item>
-          <Item>{locationData?.depth}</Item>
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
         <Box>
-          {latestReported  && !isEmpty(latestReported) ? (
+          {latestReported ? (
             <>
               <Stack
                 direction={{ xs: 'column', sm: 'column', md: 'row' }}
