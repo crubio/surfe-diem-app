@@ -10,7 +10,7 @@ import {
 import { router } from 'routes'
 import { themeOptions } from 'config/theme';
 import 'react-toastify/dist/ReactToastify.css';
-import './App.css'
+import '/src/providers/app.css'
 
 
 type AppProviderProps = {
