@@ -14,6 +14,7 @@ const Home = () => {
   const locationsData = data || []
 
   function renderLocations(data: BuoyLocation[], n = 3) {
+    console.log(data)
     if (isEmpty(data)) {
       return (
         <p>loading...</p>
@@ -22,6 +23,7 @@ const Home = () => {
     return (
       <>
         {data.slice(0, n).map((location: BuoyLocation) => {
+          console.log(location)
           return (
             <LocationSummary locationSummary={location} />
           )
