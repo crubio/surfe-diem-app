@@ -5,32 +5,37 @@
 
 import isEmpty from 'lodash/isEmpty'
 import { BuoyLocation, BuoyLocationLatestObservation } from './types';
-import { Box, Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
 import { getLatestObservation } from './api/locations';
-import { formatDate, formatLatLong } from 'utils/common';
-import { LinkRouter, Loading } from 'components';
+import { formatLatLong } from 'utils/common';
+import { Loading } from 'components';
+import { Link } from 'react-router-dom';
 
 export default function LocationSummary(props: {locationSummary: BuoyLocation}) {
   const {location_id} = props.locationSummary
-  const {data, isLoading} = useQuery([location_id], () => getLatestObservation(location_id))
+  const {data, isLoading, isError} = useQuery([location_id], () => getLatestObservation(location_id))
   
   function renderLatestObservation(latestObservation: BuoyLocationLatestObservation) {
+    if (!latestObservation) return (
+      <p>No data available</p>
+    )
     return (
       <>
-      <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
-          {latestObservation.published && formatDate(latestObservation.published)}
+        <Typography variant="h3" sx={{marginBottom: "2px"}}>
+          {latestObservation.wave_height}
         </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text">
-          Air temp: {latestObservation.air_temp}
-        </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text">
-          Water temp: {latestObservation.water_temp}
-        </Typography>
-        <Typography sx={{ mb: 1.5 }} color="text">
-          Swell: {latestObservation.significant_wave_height}
-        </Typography>
+        { latestObservation.peak_period && (
+          <Typography sx={{ mb: 1.5 }} color="text">
+            {latestObservation.peak_period}
+          </Typography>
+        )}
+        {latestObservation.water_temp && (
+          <Typography sx={{ mb: 1.5 }} color="text">
+            {latestObservation.water_temp}
+          </Typography>
+        )}
       </>
     ) 
   }
@@ -40,7 +45,13 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
       { isLoading ? (
         <Loading />
       ) : (
-        <Card data-testid="location-summary-card">
+        <Card data-testid="location-summary-card"
+          sx={{ 
+            height: "100%",
+            display: "flex",
+            flexDirection: "column"
+          }}
+        >
           <CardContent>
             <h2>{props.locationSummary.name}</h2>
             <Typography sx={{ mb: 1 }} color="text.secondary">
@@ -56,15 +67,17 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
               <Typography>
                 Current Conditions
               </Typography>
-              {data && !isEmpty(data) ? (
+              {data && !isEmpty(data) && !isError ? (
                 renderLatestObservation(data[0])
               ) : (
                 <p>No data available</p>
               )}
             </Box>
           </CardContent>
-          <CardActions>
-            <LinkRouter color="secondary.main" to={`/location/${props.locationSummary.location_id}`}>View Details</LinkRouter>
+          <CardActions disableSpacing sx={{ mt: "auto" }}>
+            <Button color="secondary" component={Link} to={`/location/${props.locationSummary.location_id}`}>
+              View forecast
+            </Button>
           </CardActions>
         </Card>
       )}

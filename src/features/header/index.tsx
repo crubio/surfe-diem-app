@@ -27,7 +27,6 @@ export default function SearchAppBar() {
       console.log(error)
     },
     onSuccess: (data) => {
-      console.log(data)
       if (data.length === 0) {
         notify()
       }
