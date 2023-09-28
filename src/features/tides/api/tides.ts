@@ -1,8 +1,9 @@
 import { axios } from "lib/axios";
+import { API_ROUTES } from "utils/routing";
 
-
+// TODO: TBD params for more specific queries
 interface TidesQueryParams {
-  stationId: string;
+  station?: string;
 }
 
 export interface TidesDataDaily {
@@ -13,8 +14,10 @@ export interface TidesDataDaily {
   }[];
 }
 
-export const getDailyTides = (params: TidesQueryParams): Promise<any> => {
-  return axios.get(`/tides/${params.stationId}`).then((response) => {
+export const getDailyTides = (params: TidesQueryParams): Promise<TidesDataDaily> => {
+  return axios.get(API_ROUTES.TIDES_URL, {
+    params: params
+  }).then((response) => {
     return response.data;
   })
 }

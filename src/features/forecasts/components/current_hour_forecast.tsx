@@ -3,6 +3,7 @@ import { ForecastDataHourly } from ".."
 import { Box, Divider, Stack, Typography } from "@mui/material"
 import { formatDateWeekday } from "utils/common"
 import { Item } from "components"
+import { NoData } from "@features/cards/no_data"
 
 export interface HourlyForecastProps {
   forecast: ForecastDataHourly | undefined
@@ -12,7 +13,7 @@ export interface HourlyForecastProps {
 export const CurrentHourForecast = (props: HourlyForecastProps) => {
   const {forecast, idx} = props
   const startingIndex = idx || 0
-  if (!forecast || isEmpty(forecast)) return
+  if (!forecast || isEmpty(forecast)) return <NoData />
 
   return (
     <Item>

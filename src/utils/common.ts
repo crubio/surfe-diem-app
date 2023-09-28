@@ -4,6 +4,11 @@ import tz from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(tz)
 
+export const formatNumber = (value: number, n: number = 2) => {
+  const number = Math.round(value * 100) / 100
+  return number.toFixed(n)
+}
+
 /**
  * Get the current time and format it to ISO 8601 to the nearest next hour.
  * e.g., 2023-08-05T15:00
@@ -43,6 +48,11 @@ export const getTodaysDate = (n = 0) => {
 export const formatDateWeekday = (date: string | undefined) => {
   if (!date) return '';
   return dayjs(date).format('MMMM D, h:mm A');
+}
+
+export const formatDateHour = (date: string | undefined) => {
+  if (!date) return '';
+  return dayjs(date).format('h:mm A');
 }
 
 export const formatDate = (date: number | string) => {

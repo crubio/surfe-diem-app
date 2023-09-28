@@ -14,7 +14,8 @@ export interface BuoyLocation {
   location_id: string,
   id: number,
   date_created: string,
-  date_updated: string
+  date_updated: string,
+  station_id?: string,
 }
 
 export interface BuoyLocations {
