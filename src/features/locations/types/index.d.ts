@@ -14,7 +14,8 @@ export interface BuoyLocation {
   location_id: string,
   id: number,
   date_created: string,
-  date_updated: string
+  date_updated: string,
+  station_id?: string,
 }
 
 export interface BuoyLocations {
@@ -33,26 +34,16 @@ export type BuoyLocationSummaryProps = {
 };
 
 export interface BuoyLocationLatestObservation {
-  id: number,
-  location_id: string,
-  date_created: string,
-  timestamp: string,
-  title?: string,
-  href?: string,
-  published?: string,
-  wind_speed?: string,
-  dominant_wave_period?: string,
-  dew_point?: string,
-  water_temp?: string,
-  mean_wave_direction?: string,
-  wind_gust?: string,
-  average_period?: string,
-  location?: string,
-  wind_direction?: string,
-  air_temp?: string,
-  atmospheric_pressure?: string,
-  significant_wave_height?: string,
-  dominant_wave_period?: string,
+  wave_height?: string
+  peak_period?: string
+  water_temp?: string
+  atmospheric_pressure?: string
+  air_temp?: string
+  dew_point?: string
+  swell_height?: string
+  period?: string
+  direction?: string
+  wind_wave_height?: string
 }
 
 export interface BuoyLocationLatestObservations {

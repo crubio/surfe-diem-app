@@ -8,4 +8,5 @@ export const API_ROUTES = {
   LATEST_OBSERVATIONS: `${API_PREFIX}/locations/latest-observations`,
   POINTS_URL: `/points`,
   FORECAST_URL: `${API_PREFIX}/forecast`,
+  TIDES_URL: `${API_PREFIX}/tides`,
 }

@@ -7,6 +7,21 @@ type QueryParams = {
   search?: string;
 }
 
+/**
+ * Type for observations
+ * Sample response:
+ * [
+ * {
+      "wave_height": "3.6 ft",
+      "peak_period": "18 sec",
+      "water_temp": "68.9 °F"
+    }
+ * ]
+ */
+type LatestObservationItem = {
+  [key: string]: string
+}
+
 export const getLocations = (params?: QueryParams): Promise<BuoyLocation[]> => {
   return axios.get(API_ROUTES.LOCATIONS, {
     params: params
@@ -25,7 +40,7 @@ export const getLatestObservations = (): Promise<BuoyLocationLatestObservation[]
   return axios.get(`${API_ROUTES.LATEST_OBSERVATIONS}`);
 }
 
-export const getLatestObservation = (id: string): Promise<BuoyLocationLatestObservation[]> => {
+export const getLatestObservation = (id: string): Promise<LatestObservationItem[]> => {
   return axios.get(`${API_ROUTES.LOCATIONS}/${id}/latest-observation`).then((response) => {
     return response.data;
   })

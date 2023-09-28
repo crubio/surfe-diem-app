@@ -23,7 +23,7 @@ const Home = () => {
       <>
         {data.slice(0, n).map((location: BuoyLocation) => {
           return (
-            <LocationSummary locationSummary={location} />
+            <LocationSummary key={location.location_id} locationSummary={location} />
           )
         })}
       </>

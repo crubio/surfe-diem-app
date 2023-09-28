@@ -1,7 +1,10 @@
+import { NoData } from "@features/cards/no_data"
 import { DailyForecast, getOpenMeteoForecastDaily, getOpenMeteoForecastHourly } from "@features/forecasts"
 import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
 import { LatestReportedForecast } from "@features/forecasts/components/latest_reported_forecast"
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
+import { getDailyTides } from "@features/tides"
+import { DailyTide } from "@features/tides/components/daily_tide"
 import { Box, Container, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
@@ -23,6 +26,10 @@ const LocationsPage = () => {
   })
 
   const latLong = formatLatLong(locationData?.location || "")
+
+  const {data: tideData, isLoading: isTideDataLoading} = useQuery(['latest_tides', params], () => getDailyTides({ station: locationData?.station_id}), {
+    enabled: !!locationData?.station_id
+  })
 
   const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
     latitude: latLong[0],
@@ -46,7 +53,7 @@ const LocationsPage = () => {
 
   const obsData = latestObservationData || []
 
-  const latestReported = obsData[0] || {}
+  const latestReported = obsData || []
   
   return (
     <div>
@@ -70,7 +77,7 @@ const LocationsPage = () => {
                   { isLatestObsvLoading ? (
                     <Loading />
                   ) : (
-                    <LatestReportedForecast forecast={latestReported} />
+                    <LatestReportedForecast {...latestReported} />
                   )}
                 </Box>
                 <Box>
@@ -79,6 +86,14 @@ const LocationsPage = () => {
                     <Loading />
                   ) : (
                     <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
+                  )}
+                </Box>
+                <Box>
+                  <h2>Tide</h2>
+                  {isTideDataLoading ? (
+                    <Loading />
+                  ) : tideData && (
+                    <DailyTide {...tideData} />
                   )}
                 </Box>
               </Stack>
@@ -91,7 +106,6 @@ const LocationsPage = () => {
           
         </Box>
         <Box>
-          {/* Add tooltip for weekly height max definition */}
           <h2>Forecast</h2>
           { !isEmpty(forecastDataDaily) ? (
             <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
@@ -100,7 +114,7 @@ const LocationsPage = () => {
           ): isForecastLoading ? (
             <Item><Loading /></Item>
           ) : (
-            <Item><p>No current data</p></Item>
+            <NoData />
           )}
         </Box>
       </Container>
