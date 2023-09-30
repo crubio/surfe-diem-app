@@ -11,6 +11,8 @@ import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
+import { MarkerF } from "@react-google-maps/api";
+import { Map } from "@features/maps"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -63,6 +65,15 @@ const LocationsPage = () => {
           <Item>{locationData?.description}</Item>
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
+        { locationData?.location && (
+          <Map
+            center={{lat: latLong[0], lng: latLong[1]}}
+            zoom={8}
+            options={{disableDefaultUI: true}}
+          >
+            <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
+          </Map>
+        )}
         <Box>
           {latestReported ? (
             <>
