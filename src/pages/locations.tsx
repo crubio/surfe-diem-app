@@ -11,19 +11,12 @@ import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import { MarkerF } from "@react-google-maps/api";
 import { Map } from "@features/maps"
 
 const LocationsPage = () => {
   const params = useParams()
   const { locationId } = params
-  
-  const center = { lat: 33.860, lng: -118.641 };
-
-  const containerStyle = {
-    width: '400px',
-    height: '200px'
-  };
 
   const { data: locationData } = useQuery(
     ['location', locationId],
@@ -72,19 +65,15 @@ const LocationsPage = () => {
           <Item>{locationData?.description}</Item>
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
-        <p>google map here:</p>
-        {/* Google map test */}
-        <Map
-          mapContainerStyle={containerStyle}
-          mapContainerClassName="map-container"
-          center={center}
-          zoom={9}
-          options={{
-            disableDefaultUI: true
-          }}
-        >
-          <Marker position={{ lat: 37.78, lng: -122.63 }} />
-        </Map>
+        { locationData?.location && (
+          <Map
+            center={{lat: latLong[0], lng: latLong[1]}}
+            zoom={8}
+            options={{disableDefaultUI: true}}
+          >
+            <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
+          </Map>
+        )}
         <Box>
           {latestReported ? (
             <>
