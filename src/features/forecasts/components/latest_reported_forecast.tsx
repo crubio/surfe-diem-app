@@ -20,7 +20,7 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps[]) => 
             <NoData />
           </>
         ) : (
-          <>
+          <Box>
             <Stack direction="row" spacing={2} marginBottom={"20px"}>
               <Stack direction="column" spacing={2}>
                 <Typography variant="subtitle2" color={"text.secondary"}>overall height</Typography>
@@ -32,36 +32,39 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps[]) => 
                 <Box><Typography variant="subtitle2" color={"text.secondary"}>temperature</Typography>{wave.water_temp}</Box>
               </Stack>
             </Stack>
-          </>
-        )}
-        { wind && (
-          <Box marginTop={"8px"} marginBottom={"8px"}>
-            <Typography variant="subtitle2" color={"text.secondary"}>wind</Typography>
-            <Box>
-              height: {wind.wind_height ? wind.wind_height : dash}
-            </Box>
-            <Box>
-              period: {wind.period ? wind.period : dash}
-            </Box>
-            <Box>
-              direction: {wind.direction ? wind.direction : dash}
-            </Box>
           </Box>
-          
         )}
         { swell && (
-          <Box marginTop={"8px"} marginBottom={"8px"}>
-            <Typography variant="subtitle2" color={"text.secondary"}>swell</Typography>
-            <Box>
-              height: {swell.swell_height ? swell.swell_height : dash}
-            </Box>
-            <Box>
-              period: {swell.period ? swell.period : dash}
-            </Box>
-            <Box>
-              direction: {swell.direction ? swell.direction : dash}
-            </Box>
-          </Box>
+          <Stack direction="column" spacing={2} marginBottom={"20px"} className="swell-forecast-latest">
+            <Typography variant="subtitle2" color={"text.secondary"}>Swell</Typography>
+            <Stack direction={"row"} spacing={2}>
+              <Box>
+                <Typography variant="h5" sx={{marginBottom: "2px"}}>{swell.swell_height ? swell.swell_height : dash}</Typography>
+              </Box>
+              <Box>
+              <Typography variant="h5" sx={{marginBottom: "2px"}}>{swell.period ? swell.period : dash}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="h5" sx={{marginBottom: "2px"}}>{swell.direction ? swell.direction : dash}</Typography>
+              </Box>
+            </Stack>
+          </Stack>
+        )}
+        { wind && (
+          <Stack direction="column" spacing={2} marginBottom={"20px"} className="wind-forecast-latest">
+            <Typography variant="subtitle2" color={"text.secondary"}>Wind</Typography>
+            <Stack direction={"row"} spacing={2}>
+              <Box>
+                <Typography variant="h5" sx={{marginBottom: "2px"}}>{wind.wind_wave_height ? wind.wind_wave_height : dash}</Typography>
+              </Box>
+              <Box>
+              <Typography variant="h5" sx={{marginBottom: "2px"}}>{wind.period ? wind.period : dash}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="h5" sx={{marginBottom: "2px"}}>{wind.direction ? wind.direction : dash}</Typography>
+              </Box>
+            </Stack>
+          </Stack>
         )}
       </Item>
     </>

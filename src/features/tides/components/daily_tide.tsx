@@ -12,7 +12,7 @@ enum TideType {
 export const DailyTide = (props: TidesDataDaily | undefined) => {
   if (!props) return <NoData />
   return (
-    <Item sx={{minWidth: "160px"}}>
+    <Item sx={{minWidth: "160px", textAlign: {xs: 'center', sm: 'left'}}}>
       <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>{formatDateShortWeekday(props.predictions[0].t)}</Typography>
       {props.predictions.map((item, index) => (
         <Box key={index} marginBottom={"20px"}>
