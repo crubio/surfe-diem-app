@@ -5,7 +5,7 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Container, Stack} from "@mui/material"
+import { Box, Container, Grid, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
@@ -76,39 +76,32 @@ const LocationsPage = () => {
         )}
         <Box>
           {latestReported ? (
-            <>
-              <Stack
-                direction={{ xs: 'column', sm: 'column', md: 'row' }}
-                justifyContent="flex-start"
-                alignItems="flex-start"
-                spacing={4}
-              >
-                <Box>
-                  <h2>Current conditions</h2>
-                  { isLatestObsvLoading ? (
-                    <Loading />
-                  ) : (
-                    <LatestReportedForecast {...latestReported} />
-                  )}
-                </Box>
-                <Box>
-                  <h2>Next hour</h2>
-                  { isHourlyForecastLoading ? (
-                    <Loading />
-                  ) : (
-                    <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
-                  )}
-                </Box>
-                <Box>
-                  <h2>Tide</h2>
-                  {isTideDataLoading ? (
-                    <Loading />
-                  ) : tideData && (
-                    <DailyTide {...tideData} />
-                  )}
-                </Box>
-              </Stack>
-            </>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={12} md={3} lg={3}>
+                <h2>Current conditions</h2>
+                { isLatestObsvLoading ? (
+                  <Loading />
+                ) : (
+                  <LatestReportedForecast {...latestReported} />
+                )}
+              </Grid>
+              <Grid item xs={12} sm={12} md={3} lg={3}>
+                <h2>Next hour</h2>
+                { isHourlyForecastLoading ? (
+                  <Loading />
+                ) : (
+                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
+                )}
+              </Grid>
+              <Grid item xs={12} sm={12} md={3} lg={3}>
+                <h2>Tide</h2>
+                {isTideDataLoading ? (
+                  <Loading />
+                ) : tideData && (
+                  <DailyTide {...tideData} />
+                )}
+              </Grid>
+            </Grid>
           ) : isLatestObsvLoading ? (
             <Item><Loading /></Item>
           ) : (
