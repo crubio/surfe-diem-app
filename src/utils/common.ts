@@ -4,7 +4,7 @@ import tz from 'dayjs/plugin/timezone'
 dayjs.extend(utc)
 dayjs.extend(tz)
 
-export const formatNumber = (value: number, n: number = 2) => {
+export const formatNumber = (value: number, n = 2) => {
   const number = Math.round(value * 100) / 100
   return number.toFixed(n)
 }
