@@ -13,12 +13,13 @@ import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
 import { MarkerF } from "@react-google-maps/api";
 import { Map } from "@features/maps"
+import ErrorPage from "./error"
 
 const LocationsPage = () => {
   const params = useParams()
   const { locationId } = params
 
-  const { data: locationData } = useQuery(
+  const { data: locationData, isError: isLocationError, error } = useQuery(
     ['location', locationId],
     () => getLocation(locationId)
   )
@@ -59,7 +60,8 @@ const LocationsPage = () => {
   
   return (
     <div>
-      <Container>
+      {isLocationError ? <ErrorPage error={error} /> : (
+        <Container>
         <h1>{locationData?.name}</h1>
         <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
           <Item>{locationData?.description}</Item>
@@ -122,6 +124,7 @@ const LocationsPage = () => {
           )}
         </Box>
       </Container>
+      )}
     </div>
   )
 }

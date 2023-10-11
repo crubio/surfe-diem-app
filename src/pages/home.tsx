@@ -5,12 +5,13 @@ import { getLocations } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
 import { BuoyLocation } from "@features/locations/types";
 import { Item } from "components";
+import BasicSelect from "components/common/basic-select";
+import { useNavigate } from "react-router-dom";
 
 
 const Home = () => {
-
+  const navigate = useNavigate();
   const {data} = useQuery(['locations'], async () => getLocations())
-  
   const locationsData = data || []
 
   function renderLocations(data: BuoyLocation[], n = 3) {
@@ -30,24 +31,32 @@ const Home = () => {
     )
   }
 
+  function goToBuoyPage(location_id: string) {
+    navigate(`/location/${location_id}`)
+    return
+  }
 
   return (
     <>
-    {/* TODO: refactor into some demo type component. used for basic layout testing for now. */}
-    <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px" }}>
-      <Box sx={{ marginTop: "20px", marginBottom: "20px"}}>
-        <Typography variant="h4" sx={{marginBottom: "10px"}}>Latest buoy conditions</Typography>
-        <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
-          <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-            {data && !isEmpty(data)? (
-                renderLocations(locationsData, 4)
-            ) : (
-              <p>No data available</p>
-            )}
-          </Stack>
-        </Item>
-      </Box>
-    </Container>
+      <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px" }}>
+        <Box sx={{maxWidth: {sm: "100%", md: "50%"}}}>
+          {locationsData && locationsData.length > 0 && (
+            <BasicSelect label={"select buoy"} items={locationsData} doOnSelect={goToBuoyPage} />
+          )}
+        </Box>
+        <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
+          <Typography variant="h4" sx={{marginBottom: "10px"}}>Latest conditions</Typography>
+          <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
+            <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
+              {data && !isEmpty(data)? (
+                  renderLocations(locationsData, 4)
+              ) : (
+                <p>No data available</p>
+              )}
+            </Stack>
+          </Item>
+        </Box>
+      </Container>
     </>
   );
 }
