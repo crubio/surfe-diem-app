@@ -29,18 +29,18 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: isMaintenanceMode ? <MaintenanceCard /> : <App />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "/",
-        element: <Home />,
-        errorElement: <ErrorPage />,
-      },
-      {
-        path: "location/:locationId",
-        element: <LocationsPage />,
-        errorElement: <ErrorPage />,
-      },
-    ]
-  }
-]);
+    errorElement: <ErrorPage error={{ message: "Page not found" }} />,
+        children: [
+          {
+            path: "/",
+            element: <Home />,
+            errorElement: <ErrorPage error={{}} />,
+          },
+          {
+            path: "location/:locationId",
+            element: <LocationsPage />,
+            errorElement: <ErrorPage error={{}} />,
+          },
+        ]
+      }    ]);
+
