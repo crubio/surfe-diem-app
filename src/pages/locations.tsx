@@ -12,7 +12,7 @@ import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
 import { MarkerF } from "@react-google-maps/api";
-import { Map } from "@features/maps"
+import { Map } from "@features/maps/googlemap"
 import ErrorPage from "./error"
 
 const LocationsPage = () => {
@@ -67,14 +67,16 @@ const LocationsPage = () => {
           <Item>{locationData?.description}</Item>
           <Item>{locationData?.location?.split("(")[0]}</Item>
         </Stack>
-        { locationData?.location && (
-          <Map
-            center={{lat: latLong[0], lng: latLong[1]}}
-            zoom={8}
-            options={{disableDefaultUI: true}}
-          >
-            <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
-          </Map>
+        { locationData?.location && latLong[0] && (
+          <>
+            <Map
+              center={{lat: latLong[0], lng: latLong[1]}}
+              zoom={8}
+              options={{disableDefaultUI: true}}
+            >
+              <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
+            </Map>
+          </>
         )}
         <Box>
           {latestReported ? (
