@@ -1,3 +1,4 @@
+import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
 import { BuoyLocation, BuoyLocationLatestObservation} from '../types';
@@ -20,6 +21,12 @@ type QueryParams = {
  */
 type LatestObservationItem = {
   [key: string]: string
+}
+
+export const getGeoJsonLocations = (): Promise<GeoJSON> => {
+  return axios.get(API_ROUTES.LOCATIONS_GEOJSON).then((response) => {
+    return response.data;
+  })
 }
 
 export const getLocations = (params?: QueryParams): Promise<BuoyLocation[]> => {

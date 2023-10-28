@@ -6,6 +6,7 @@ import SearchAppBar from "@features/header";
 import { Container } from "@mui/material";
 import { MAINTENANCE_MODE } from "config";
 import LocationsPage from "pages/locations";
+import MapPage from "pages/map";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
@@ -41,6 +42,11 @@ export const router = createBrowserRouter([
             element: <LocationsPage />,
             errorElement: <ErrorPage error={{}} />,
           },
+          {
+            path: "map",
+            element: <MapPage />,
+            errorElement: <ErrorPage error={{}} />,
+          }
         ]
       }    ]);
 
