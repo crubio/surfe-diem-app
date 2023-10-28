@@ -62,22 +62,22 @@ const LocationsPage = () => {
     <div>
       {isLocationError ? <ErrorPage error={error} /> : (
         <Container>
-        <h1>{locationData?.name}</h1>
-        <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
-          <Item>{locationData?.description}</Item>
-          <Item>{locationData?.location?.split("(")[0]}</Item>
-        </Stack>
-        { locationData?.location && latLong[0] && (
-          <>
-            <Map
-              center={{lat: latLong[0], lng: latLong[1]}}
-              zoom={8}
-              options={{disableDefaultUI: true}}
-            >
-              <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
-            </Map>
-          </>
-        )}
+          <h1>{locationData?.name}</h1>
+          <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
+            <Item>{locationData?.description}</Item>
+            <Item>{locationData?.location?.split("(")[0]}</Item>
+          </Stack>
+          { locationData?.location && latLong[0] && (
+            <>
+              <Map
+                center={{lat: latLong[0], lng: latLong[1]}}
+                zoom={8}
+                options={{disableDefaultUI: true}}
+              >
+                <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
+              </Map>
+            </>
+          )}
         <Box>
           {latestReported ? (
             <Grid container spacing={2}>
@@ -111,7 +111,6 @@ const LocationsPage = () => {
           ) : (
             <Item><p>No current data</p></Item>
           )}
-          
         </Box>
         <Box>
           <h2>Forecast</h2>
