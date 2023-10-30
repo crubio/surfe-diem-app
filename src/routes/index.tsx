@@ -38,6 +38,11 @@ export const router = createBrowserRouter([
             errorElement: <ErrorPage error={{}} />,
           },
           {
+            path: "/home",
+            element: <Home />,
+            errorElement: <ErrorPage error={{}} />,
+          },
+          {
             path: "location/:locationId",
             element: <LocationsPage />,
             errorElement: <ErrorPage error={{}} />,
