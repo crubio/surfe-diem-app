@@ -13,6 +13,9 @@ export interface ForecastDataHourly {
 export interface ForecastDataDaily {
   daily: {
     time: string[],
-    wave_height_max: number[]
+    wave_height_max?: number[]
+    swell_wave_height_max?: number[]
+    wave_direction_dominant?: number[]
+    wave_period_max?: number[]
   }
 }
