@@ -1,3 +1,13 @@
+export interface Spot {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  active: boolean;
+  subregion_name: string;
+  timezone: string;
+}
+
 export type LocationQueryParams = {
   search?: string,
   limit?: number

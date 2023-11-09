@@ -1,7 +1,7 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation} from '../types';
+import { BuoyLocation, BuoyLocationLatestObservation, Spot} from '../types';
 
 type QueryParams = {
   limit?: number;
@@ -21,6 +21,16 @@ type QueryParams = {
  */
 type LatestObservationItem = {
   [key: string]: string
+}
+
+export const getSurfSpots = async (): Promise<Spot[]> => {
+  const response = await axios.get(API_ROUTES.SURF_SPOTS);
+  return response.data;
+}
+
+export const getSurfSpotsGeoJson = async (): Promise<GeoJSON> => {
+  const response = await axios.get(API_ROUTES.SURF_SPOTS_GEOJSON);
+  return response.data;
 }
 
 export const getGeoJsonLocations = (): Promise<GeoJSON> => {

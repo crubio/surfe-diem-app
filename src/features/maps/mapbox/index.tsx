@@ -6,6 +6,7 @@ import './mapbox.css'
 import { Item, LinkRouter } from 'components';
 import { Stack } from '@mui/material';
 import { GeoJSON, GeoJSONProperties } from 'features/maps/types'
+import { DEFAULT_CENTER } from 'utils/constants';
 mapboxgl.accessToken = MAPBOX_API_KEY;
 
 interface MapProps {
@@ -16,8 +17,8 @@ interface MapProps {
 }
 
 export const MapBox = (props: MapProps) => {
-  const [lng, setLng] = useState(props.lat || -122.4376);
-  const [lat, setLat] = useState(props.lng || 37.7577);
+  const [lng, setLng] = useState(props.lat || DEFAULT_CENTER[0]);
+  const [lat, setLat] = useState(props.lng || DEFAULT_CENTER[1]);
   const [zoom, setZoom] = useState(props.zoom || 5);
   const [selectedItem, setSelectedItem] = useState<GeoJSONProperties | null>(null); // [id, name, description]
   const mapContainer = useRef<HTMLDivElement | null>(null);
