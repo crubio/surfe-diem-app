@@ -5,7 +5,7 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Container, Grid, Stack} from "@mui/material"
+import { Box, Grid, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
