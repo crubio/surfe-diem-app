@@ -1,7 +1,7 @@
 import { getGeoJsonLocations } from "@features/locations/api/locations"
 import { MapBox } from "@features/maps"
-import { Container } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
+import PageContainer from "components/common/container"
 import { isEmpty } from "lodash"
 import { useEffect, useState } from "react"
 
@@ -18,7 +18,7 @@ const MapPage = () => {
 
   return (
     <>
-      <Container>
+      <PageContainer >
         <h1>Buoys and spots</h1>
         {!isEmpty(data) && isFetched && <MapBox geoJson={data} lat={coords && coords[0] || undefined} lng={coords && coords[1]|| undefined} />}
         {isError && (
@@ -27,7 +27,7 @@ const MapPage = () => {
             <p>Try again later</p>
           </div>
         )}
-      </Container>
+      </PageContainer>
     </>
   )
 }

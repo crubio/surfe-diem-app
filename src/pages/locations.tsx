@@ -14,6 +14,7 @@ import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common
 import { MarkerF } from "@react-google-maps/api";
 import { Map } from "@features/maps/googlemap"
 import ErrorPage from "./error"
+import PageContainer from "components/common/container"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -61,7 +62,7 @@ const LocationsPage = () => {
   return (
     <div>
       {isLocationError ? <ErrorPage error={error} /> : (
-        <Container>
+        <PageContainer>
           <h1>{locationData?.name}</h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{locationData?.description}</Item>
@@ -124,7 +125,7 @@ const LocationsPage = () => {
             <NoData />
           )}
         </Box>
-      </Container>
+      </PageContainer>
       )}
     </div>
   )
