@@ -38,7 +38,6 @@ const Home = () => {
   }
 
   function renderSpots(data: Spot[], n = 3) {
-    console.log(data)
     return (
       <>
         {data.slice(0, n).map((spot: Spot) => {

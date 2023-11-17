@@ -20,7 +20,7 @@ export default function SpotSummary (props: Spot) {
     enabled: true
   })
 
-  const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour())
+  const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(props.timezone))
 
   function renderLatestObservation(hourlyData: ForecastDataHourly, idx: number) {
     if (!hourlyData) return (
