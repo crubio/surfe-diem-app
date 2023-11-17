@@ -7,3 +7,4 @@ export const MEAN_WAVE_DIRECTION = "Mean wave direction (degrees) is the directi
 export const DEFAULT_CENTER = [-122.4376, 37.7577]
 export const DEFAULT_SPOTS = ["San Francisco", "Santa Cruz", "Pacifica-San Mateo County", "Monterey", "San Luis Obispo County"] // If no location data, use default sub region spots
 export const FEATURED_SPOTS = ["South Ocean Beach", "Steamer Lane", "Pleasure Point", "Manresa", "Privates"] // If no location data, use these default popular spots in Santa Cruz & pick them out of the response object
+export const DEFAULT_TIMEZONE = "America/Los_Angeles"

@@ -5,7 +5,7 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Grid, Stack} from "@mui/material"
+import { Box, Container, Grid, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
@@ -14,7 +14,6 @@ import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common
 import { MarkerF } from "@react-google-maps/api";
 import { Map } from "@features/maps/googlemap"
 import ErrorPage from "./error"
-import PageContainer from "components/common/container"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -62,7 +61,7 @@ const LocationsPage = () => {
   return (
     <div>
       {isLocationError ? <ErrorPage error={error} /> : (
-        <PageContainer>
+        <Container sx={{marginBottom: "20px"}}>
           <h1>{locationData?.name}</h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{locationData?.description}</Item>
@@ -125,7 +124,7 @@ const LocationsPage = () => {
             <NoData />
           )}
         </Box>
-      </PageContainer>
+      </Container>
       )}
     </div>
   )

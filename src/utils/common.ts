@@ -1,6 +1,7 @@
 import { default as dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import tz from 'dayjs/plugin/timezone'
+import { DEFAULT_TIMEZONE } from './constants';
 dayjs.extend(utc)
 dayjs.extend(tz)
 
@@ -15,9 +16,9 @@ export const formatNumber = (value: number, n = 2) => {
  * Forecasting times are in this format and we need to match it to get the correct forecast time index.
  * @returns 
  */
-export const formatIsoNearestHour = () => {
+export const formatIsoNearestHour = (timezone = DEFAULT_TIMEZONE) => {
   const now = new Date()
-  return dayjs(now, "America/Los_Angeles").startOf('hour').format('YYYY-MM-DDTHH:mm');
+  return dayjs(now, timezone).startOf('hour').format('YYYY-MM-DDTHH:mm');
 }
 
 export const formatDateTime = (date: string | undefined) => {
