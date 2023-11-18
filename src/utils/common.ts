@@ -34,7 +34,7 @@ export const formatDateTime = (date: string | undefined) => {
 
 export const formatDateShortWeekday = (date: string | undefined) => {
   if (!date) return '';
-  return dayjs(date).format('MMMM D');
+  return dayjs(date).format('ddd, MMM D');
 }
 
 export const getTodaysDate = (n = 0) => {
