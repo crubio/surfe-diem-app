@@ -28,6 +28,14 @@ export const getSurfSpots = async (): Promise<Spot[]> => {
   return response.data;
 }
 
+export const getSurfSpot = async (id: string | number | undefined): Promise<Spot> => {
+  return axios.get(`${API_ROUTES.SURF_SPOTS}/${id}`)
+    .then((response) => {
+      return response.data
+    })
+  
+}
+
 export const getSurfSpotsGeoJson = async (): Promise<GeoJSON> => {
   const response = await axios.get(API_ROUTES.SURF_SPOTS_GEOJSON);
   return response.data;
