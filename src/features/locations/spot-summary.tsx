@@ -1,5 +1,5 @@
 import { LocationOn, Navigation } from "@mui/icons-material"
-import { Card, CardContent, Divider, Typography } from "@mui/material"
+import { Button, Card, CardActions, CardContent, Divider, Typography } from "@mui/material"
 import { Box } from "@mui/system"
 import { useQuery } from "@tanstack/react-query"
 import { formatIsoNearestHour, getTodaysDate } from "utils/common"
@@ -7,6 +7,7 @@ import { ForecastDataHourly, getOpenMeteoForecastHourly } from ".."
 import { Spot } from "./types"
 import { Loading } from "components"
 import { isEmpty } from "lodash"
+import { Link } from 'react-router-dom';
 
 export default function SpotSummary (props: Spot) {
   const {latitude, longitude, name, subregion_name, id} = props
@@ -76,6 +77,11 @@ export default function SpotSummary (props: Spot) {
               )}
             </Box>
           </CardContent>
+          <CardActions disableSpacing sx={{ mt: "auto" }}>
+            <Button color="secondary" component={Link} to={`/spot/${id}`}>
+              View spot
+            </Button>
+          </CardActions>
         </Card>       
       )}
       

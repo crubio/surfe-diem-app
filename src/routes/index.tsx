@@ -6,8 +6,11 @@ import { MAINTENANCE_MODE } from "config";
 import LocationsPage from "pages/locations";
 import MapPage from "pages/map";
 import { AppWrapper } from "./wrapper";
+import SpotsPage from "pages/spots";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
+
+const DEFAULT_MESSAGE = {message: "Cannot load page. Please try again."}
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +31,12 @@ export const router = createBrowserRouter([
           {
             path: "location/:locationId",
             element: <LocationsPage />,
-            errorElement: <ErrorPage error={{}} />,
+            errorElement: <ErrorPage error={DEFAULT_MESSAGE} />,
+          },
+          {
+            path: "spot/:spotId",
+            element: <SpotsPage />,
+            errorElement: <ErrorPage error={DEFAULT_MESSAGE} />,
           },
           {
             path: "map",
