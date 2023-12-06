@@ -20,6 +20,7 @@ type ForecastQueryParams = {
   longitude: number;
   hourly?: string,
   daily?: string,
+  forecast_days?: number,
   start_date?: string, // e.g., YYYY-MM-DD (2021-01-01)
   end_date?: string,  // e.g., YYYY-MM-DD (2021-01-01)
 }
