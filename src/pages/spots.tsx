@@ -1,18 +1,18 @@
 import { getSurfSpot } from "@features/locations/api/locations"
-import { Box, Grid, Stack } from "@mui/material"
+import { Box, Container, Grid, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
 import { Item, Loading } from "components"
 import { getClostestTideStation, getDailyTides } from "@features/tides"
 import { getOpenMeteoForecastHourly } from "@features/forecasts"
-import { formatIsoNearestHour, getTodaysDate } from "utils/common"
+import { formatIsoNearestHour } from "utils/common"
 import { DailyTide } from "@features/tides/components/daily_tide"
 import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
 import { Map } from "@features/maps/googlemap"
 import { isEmpty } from "lodash"
 import { MarkerF } from "@react-google-maps/api"
-import PageContainer from "components/common/container"
+import WaveChart from "@features/charts/wave-height"
 
 const SpotsPage = () => {
   const params = useParams()
@@ -34,7 +34,7 @@ const SpotsPage = () => {
   const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly'], () => getOpenMeteoForecastHourly({
     latitude: spot!.latitude,
     longitude: spot!.longitude,
-    start_date: getTodaysDate()
+    forecast_days: 1,
   }), {
     enabled: !!spot?.name
   })
@@ -45,7 +45,7 @@ const SpotsPage = () => {
     <>
       {isError && <ErrorPage error={error} />}
       {spot && (
-        <PageContainer>
+        <Container sx={{marginBottom: "20px"}}>
           <h1>{spot.name}</h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
@@ -65,7 +65,7 @@ const SpotsPage = () => {
             </>
           )}
 
-          <Box>
+          <Box sx={{marginBottom: "20px"}}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={3} lg={3}>
                 <h2>Current forecast</h2>
@@ -86,7 +86,12 @@ const SpotsPage = () => {
               </Grid>
             </Grid>
           </Box>
-        </PageContainer>
+          {forecastDataHourly?.hourly && 
+            <Box sx={{marginBottom: "20px"}}>
+              <WaveChart waveHeightData={forecastDataHourly?.hourly.wave_height} wavePeriodData={forecastDataHourly?.hourly.wave_period} timeData={forecastDataHourly?.hourly.time} />
+            </Box>
+          }
+        </Container>
       )}
     </>
   )

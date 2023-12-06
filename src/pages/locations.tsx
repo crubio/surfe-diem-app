@@ -14,6 +14,7 @@ import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common
 import { MarkerF } from "@react-google-maps/api";
 import { Map } from "@features/maps/googlemap"
 import ErrorPage from "./error"
+import WaveChart from "@features/charts/wave-height"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -37,8 +38,7 @@ const LocationsPage = () => {
   const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
     latitude: latLong[0],
     longitude: latLong[1],
-    start_date: getTodaysDate(),
-    end_date: getTodaysDate(1)
+    forecast_days: 1,
   }), {
     enabled: !!locationData?.location_id
   })
@@ -112,6 +112,11 @@ const LocationsPage = () => {
             <Item><p>No current data</p></Item>
           )}
         </Box>
+        {forecastDataHourly?.hourly &&
+          <Box sx={{marginTop: "20px"}}>
+            <WaveChart waveHeightData={forecastDataHourly?.hourly.wave_height} wavePeriodData={forecastDataHourly?.hourly.wave_period} timeData={forecastDataHourly?.hourly.time} />
+          </Box>
+        }
         <Box>
           <h2>Forecast</h2>
           { !isEmpty(forecastDataDaily) ? (

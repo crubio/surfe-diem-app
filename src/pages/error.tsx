@@ -11,8 +11,6 @@ export default function ErrorPage(props: ErrorPageProps) {
    
   const error = props.error
 
-  console.log(error)
-
   return (
     <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px', textAlign: 'center' }}>
       <div id="error-page">
