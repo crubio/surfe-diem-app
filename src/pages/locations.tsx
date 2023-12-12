@@ -11,10 +11,9 @@ import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
-import { MarkerF } from "@react-google-maps/api";
-import { Map } from "@features/maps/googlemap"
 import ErrorPage from "./error"
 import WaveChart from "@features/charts/wave-height"
+import MapBoxSingle from "@features/maps/mapbox/single-instance"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -69,13 +68,11 @@ const LocationsPage = () => {
           </Stack>
           { locationData?.location && latLong[0] && (
             <>
-              <Map
-                center={{lat: latLong[0], lng: latLong[1]}}
-                zoom={8}
-                options={{disableDefaultUI: true}}
-              >
-                <MarkerF position={{lat: latLong[0], lng: latLong[1]}} />
-              </Map>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                  <MapBoxSingle lat={latLong[0]} lng={latLong[1]} zoom={8} />
+                </Grid>
+              </Grid>
             </>
           )}
         <Box>
