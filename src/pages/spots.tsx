@@ -9,10 +9,9 @@ import { getOpenMeteoForecastHourly } from "@features/forecasts"
 import { formatIsoNearestHour } from "utils/common"
 import { DailyTide } from "@features/tides/components/daily_tide"
 import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
-import { Map } from "@features/maps/googlemap"
 import { isEmpty } from "lodash"
-import { MarkerF } from "@react-google-maps/api"
 import WaveChart from "@features/charts/wave-height"
+import MapBoxSingle from "@features/maps/mapbox/single-instance"
 
 const SpotsPage = () => {
   const params = useParams()
@@ -55,13 +54,11 @@ const SpotsPage = () => {
 
           { !isEmpty(spot) && (
             <>
-              <Map
-                center={{lat: spot.latitude, lng: spot.longitude}}
-                zoom={8}
-                options={{disableDefaultUI: true}}
-              >
-                <MarkerF position={{lat: spot.latitude, lng: spot.longitude}} />
-              </Map>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                  <MapBoxSingle lat={spot.latitude} lng={spot.longitude} zoom={8} />
+                </Grid>
+              </Grid>
             </>
           )}
 
