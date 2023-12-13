@@ -13,6 +13,11 @@ export type LocationQueryParams = {
   limit?: number
 }
 
+export type SearchQueryParams = {
+  q: string,
+  limit?: number
+}
+
 export interface BuoyLocation {
   name: string,
   url: string,

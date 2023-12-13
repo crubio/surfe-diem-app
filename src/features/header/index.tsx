@@ -6,25 +6,26 @@ import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import { IconButton, Link, Menu, MenuItem } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { getLocations } from '../locations/api/locations';
+import { getSearchResults } from '../locations/api/locations';
 import { useEffect, useState } from 'react';
 import { Search, SearchIconWrapper, StyledInputBase } from 'components/search/search';
 import { LinkRouter, SearchResultsDialog } from 'components';
 import { random } from 'lodash';
-import { LocationQueryParams } from '../locations/types';
+import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
 
 export default function SearchAppBar() {
   const notify = () => toast("No results found");
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
-  const [searchQuery, setSearchQuery] = useState<LocationQueryParams>({search: '', limit: 10})
+  const [searchQuery, setSearchQuery] = useState<SearchQueryParams>({q: '', limit: 10})
   const [queryEnabled, setQueryEnabled] = useState<boolean>(false)
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
   const pages = ['Home', 'Map'];
 
-  const {data} = useQuery(['locations', queryId ,searchQuery], () => getLocations(searchQuery), {
+
+  const {data: searchResultData} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {
     enabled: queryEnabled,
     onError: (error) => {
       console.warn(error)
@@ -36,12 +37,12 @@ export default function SearchAppBar() {
     }
   })
 
-  const locationData = data || []
+  // const locationData = data || []
 
   const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
       const query = e.currentTarget.value
-      setSearchQuery({search: query, limit: 10})
+      setSearchQuery({q: query, limit: 10})
       setQueryId(random(1, 1000))
       setQueryEnabled(true)
     }
@@ -53,12 +54,12 @@ export default function SearchAppBar() {
   };
 
   useEffect(() => {
-    if (data?.length) {
+    if (searchResultData?.length) {
       setSearchOpen(true)
     } else {
       setSearchOpen(false)
     }
-  }, [data])
+  }, [searchResultData])
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -70,7 +71,7 @@ export default function SearchAppBar() {
 
   return (
     <>
-    <SearchResultsDialog open={searchOpen} onClose={handleClose} searchTerm={searchQuery.search} results={locationData} />
+    <SearchResultsDialog open={searchOpen} onClose={handleClose} searchTerm={searchQuery.q} results={searchResultData} />
     <Box sx={{ flexGrow: 1 }} id={'search-bar-header'} data-testid={'search-bar-header'}>
       <AppBar position="static" sx={{backgroundColor: 'primary.dark'}}>
         <Toolbar disableGutters>
