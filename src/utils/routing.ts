@@ -13,4 +13,5 @@ export const API_ROUTES = {
   LOCATIONS_GEOJSON: `${API_PREFIX}/locations/geojson`,
   SURF_SPOTS: `${API_PREFIX}/spots`,
   SURF_SPOTS_GEOJSON: `${API_PREFIX}/spots/geojson`,
+  SEARCH: `${API_PREFIX}/search`,
 }

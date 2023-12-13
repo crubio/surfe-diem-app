@@ -8,6 +8,11 @@ type QueryParams = {
   search?: string;
 }
 
+type SearchParams = {
+  q: string;
+  limit?: number;
+}
+
 /**
  * Type for observations
  * Sample response:
@@ -23,9 +28,20 @@ type LatestObservationItem = {
   [key: string]: string
 }
 
-export const getSurfSpots = async (): Promise<Spot[]> => {
-  const response = await axios.get(API_ROUTES.SURF_SPOTS);
-  return response.data;
+export const getSearchResults = async <T>(params: SearchParams): Promise<Record<string, T>[]> => {
+  return axios.get(API_ROUTES.SEARCH, {
+    params: params
+  }).then((response) => {
+    return response.data;
+  })
+}
+
+export const getSurfSpots = async (params?: QueryParams): Promise<Spot[]> => {
+  return axios.get(API_ROUTES.SURF_SPOTS, {
+    params: params
+  }).then((response) => {
+    return response.data;
+  })
 }
 
 export const getSurfSpot = async (id: string | number | undefined): Promise<Spot> => {
