@@ -76,7 +76,7 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
           </CardContent>
           <CardActions disableSpacing sx={{ mt: "auto" }}>
             <Button color="secondary" component={Link} to={`/location/${props.locationSummary.location_id}`}>
-              View forecast
+              View buoy
             </Button>
           </CardActions>
         </Card>

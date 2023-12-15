@@ -4,6 +4,7 @@ import { useState } from "react";
 
 interface BasicSelectProps {
   items: any[]
+  selectValueKey: string | number // object key to get a value from
   label?: string
   doOnSelect: (thing: any) => void
 }
@@ -30,7 +31,7 @@ export default function BasicSelect(props: BasicSelectProps) {
         >
           {props.items && props.items.map((item: any) => {
             return (
-              <MenuItem key={item.id} value={item.location_id}>{item.name}</MenuItem>
+              <MenuItem key={item.id} value={item[props.selectValueKey]}>{item.name}</MenuItem>
             )
           })}
         </Select>

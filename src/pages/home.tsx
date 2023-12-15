@@ -1,5 +1,5 @@
 import LocationSummary from "@features/locations/summary";
-import {Box, Container, Stack, Typography} from "@mui/material";
+import {Box, Container, Grid, Stack, Typography} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
@@ -16,6 +16,7 @@ const Home = () => {
   const {data: buoys} = useQuery(['locations'], async () => getLocations())
   const {data: spots} = useQuery(['spots'], async () => getSurfSpots())
   const buoysData = buoys || []
+  const spotsData = spots || []
   const featuredSpots = spots?.flatMap((spot: Spot) => {
     return FEATURED_SPOTS.includes(spot.name) ? spot : []
   }) || []
@@ -54,17 +55,33 @@ const Home = () => {
     return
   }
 
+  function goToSpotPage(spot_id: string) {
+    navigate(`/spot/${spot_id}`)
+    return
+  }
+
   return (
     <>
       <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px" }}>
-      <h1>Latest conditions</h1>
-        <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
-          <Typography variant="h5" sx={{marginBottom: "10px"}}>buoys</Typography>
-          <Box sx={{maxWidth: {sm: "100%", md: "50%"}}}>
+      <h1>Latest buoy and spot conditions</h1>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={5} lg={5}>
+          <Box>
             {buoysData && buoysData.length > 0 && (
-              <BasicSelect label={"select buoy"} items={buoysData} doOnSelect={goToBuoyPage} />
+              <BasicSelect label={"select a buoy"} items={buoysData} selectValueKey={"location_id"} doOnSelect={goToBuoyPage} />
             )}
           </Box>
+        </Grid>
+        <Grid item xs={12} sm={12} md={5} lg={5}>
+          <Box>
+            {spotsData && spotsData.length > 0 && (
+              <BasicSelect label={"select a surf spot"} items={spotsData} selectValueKey={"id"} doOnSelect={goToSpotPage} />
+            )}
+          </Box>
+        </Grid>
+      </Grid>
+      {/* <Typography variant="h5" sx={{marginBottom: "10px"}}>buoys</Typography> */}
+        <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
           <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
             <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
               {buoys && !isEmpty(buoys)? (
