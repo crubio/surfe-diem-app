@@ -12,6 +12,8 @@ import { CurrentHourForecast } from "@features/forecasts/components/current_hour
 import { isEmpty } from "lodash"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
+import { CurrentWeather } from "@features/weather/components/current_weather"
+import { getCurrentWeather } from "@features/weather/api"
 
 const SpotsPage = () => {
   const params = useParams()
@@ -38,6 +40,12 @@ const SpotsPage = () => {
     enabled: !!spot?.name
   })
 
+  const {data: currentWeather} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
+    enabled: !!spot?.name
+  })
+
+  console.log(currentWeather)
+
   const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(spot?.timezone))
 
   return (
@@ -46,6 +54,7 @@ const SpotsPage = () => {
       {spot && (
         <Container sx={{marginBottom: "20px"}}>
           <h1>{spot.name}</h1>
+          <CurrentWeather currentWeather={{}} />
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
             <Item>{spot.subregion_name}</Item>
