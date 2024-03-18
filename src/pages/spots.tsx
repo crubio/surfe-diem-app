@@ -40,11 +40,9 @@ const SpotsPage = () => {
     enabled: !!spot?.name
   })
 
-  const {data: currentWeather} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
+  const {data: currentWeather, isLoading: isWeatherLoading} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
     enabled: !!spot?.name
   })
-
-  console.log(currentWeather)
 
   const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(spot?.timezone))
 
@@ -54,13 +52,14 @@ const SpotsPage = () => {
       {spot && (
         <Container sx={{marginBottom: "20px"}}>
           <h1>{spot.name}</h1>
-          <CurrentWeather currentWeather={{}} />
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
             <Item>{spot.subregion_name}</Item>
             <Item>{spot.timezone}</Item>
           </Stack>
-
+          {currentWeather && (
+            <CurrentWeather currentWeather={currentWeather} isLoading={isWeatherLoading}/>
+          )}
           { !isEmpty(spot) && (
             <>
               <Grid container spacing={2}>
@@ -74,7 +73,7 @@ const SpotsPage = () => {
           <Box sx={{marginBottom: "20px"}}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Current forecast</h2>
+                <h2>Current conditions</h2>
                 { isHourlyForecastLoading ? (
                   <Loading />
                 ) : (
