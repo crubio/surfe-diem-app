@@ -11,7 +11,7 @@ const MapPage = () => {
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
-      setCoords([position.coords.latitude, position.coords.longitude])
+      setCoords([position.coords.longitude, position.coords.latitude])
       return true
     })
   }, [])

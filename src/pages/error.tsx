@@ -2,7 +2,6 @@ import { Container } from "@mui/material";
 import ErrorIcon from '@mui/icons-material/Error';
 
 interface ErrorPageProps {
-  // Maybe this is an axios type error or maybe not. maybe go fuck yourself.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
 }

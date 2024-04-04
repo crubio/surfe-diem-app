@@ -87,21 +87,23 @@ const LocationsPage = () => {
                 )}
               </Grid>
               <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Next hour</h2>
+                <h2>Next hour forecast</h2>
                 { isHourlyForecastLoading ? (
                   <Loading />
                 ) : (
                   <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
                 )}
               </Grid>
-              <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Tide</h2>
-                {isTideDataLoading ? (
-                  <Loading />
-                ) : tideData && (
-                  <DailyTide {...tideData} />
-                )}
-              </Grid>
+              {(location as { station_id?: string })?.station_id && (
+                <Grid item xs={12} sm={12} md={3} lg={3}>
+                  <h2>Tide</h2>
+                  {isTideDataLoading ? (
+                    <Loading />
+                  ) : tideData && (
+                    <DailyTide {...tideData} />
+                  )}
+                </Grid>
+              )}
             </Grid>
           ) : isLatestObsvLoading ? (
             <Item><Loading /></Item>
