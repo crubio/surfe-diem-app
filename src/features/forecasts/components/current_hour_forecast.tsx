@@ -22,13 +22,13 @@ export const CurrentHourForecast = (props: HourlyForecastProps) => {
       </Typography>
       <Stack direction="row" spacing={2}>
         <Stack direction="column" spacing={2}>
-          <Typography variant="subtitle2" color={"text.secondary"}>max wave height</Typography>
-          <Typography variant="h3" sx={{marginBottom: "2px"}}>{forecast.hourly.wave_height[startingIndex].toFixed(1) + " ft"}</Typography>
+          <Typography variant="subtitle2" color={"text.secondary"}>max swell</Typography>
+          <Typography variant="h3" sx={{marginBottom: "2px"}}>{forecast.hourly.swell_wave_height[startingIndex].toFixed(1) + " ft"}</Typography>
         </Stack>
         <Divider orientation="vertical" flexItem />
         <Stack direction="column" spacing={2}>
-          <Box><Typography variant="subtitle2" color={"text.secondary"}>wave direction</Typography>{forecast.hourly.wave_direction[startingIndex]}{forecast.hourly_units.wave_direction}</Box>
-          <Box><Typography variant="subtitle2" color={"text.secondary"}>wave period</Typography>{forecast.hourly.wave_period[startingIndex]}</Box>
+          <Box><Typography variant="subtitle2" color={"text.secondary"}>swell direction</Typography>{forecast.hourly.swell_wave_direction[startingIndex]}{forecast.hourly_units.wave_direction}</Box>
+          <Box><Typography variant="subtitle2" color={"text.secondary"}>swell period</Typography>{forecast.hourly.swell_wave_period[startingIndex]}</Box>
         </Stack>
       </Stack>
     </Item>
