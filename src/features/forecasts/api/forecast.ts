@@ -6,10 +6,15 @@ export enum ForecastTypesHourly {
   WAVE_HEIGHT = "wave_height",
   WAVE_PERIOD = "wave_period",
   WAVE_DIRECTION = "wave_direction",
+  SWELL_WAVE_HEIGHT = "swell_wave_height",
+  SWELL_WAVE_DIRECTION = "swell_wave_direction",
+  SWELL_WAVE_PERIOD = "swell_wave_period",
 }
 
 enum ForecastTypesDaily {
   SWELL_WAVE_HEIGHT = "swell_wave_height_max",
+  SWELL_WAVE_DIRECTION = "swell_wave_direction_dominant",
+  SWELL_WAVE_PERIOD = "swell_wave_period_max",
   WAVE_HEIGHT = "wave_height_max",
   WAVE_PERIOD = "wave_period_max",
   WAVE_DIRECTION = "wave_direction_dominant",
@@ -25,9 +30,9 @@ type ForecastQueryParams = {
   end_date?: string,  // e.g., YYYY-MM-DD (2021-01-01)
 }
 
-const hourlyParams = ForecastTypesHourly.WAVE_HEIGHT + "," + ForecastTypesHourly.WAVE_DIRECTION + "," + ForecastTypesHourly.WAVE_PERIOD
+const hourlyParams = ForecastTypesHourly.SWELL_WAVE_HEIGHT + "," + ForecastTypesHourly.SWELL_WAVE_DIRECTION + "," + ForecastTypesHourly.SWELL_WAVE_PERIOD
 
-const dailyParams = ForecastTypesDaily.WAVE_HEIGHT + "," + ForecastTypesDaily.SWELL_WAVE_HEIGHT + "," + ForecastTypesDaily.WAVE_DIRECTION + "," + ForecastTypesDaily.WAVE_PERIOD
+const dailyParams = ForecastTypesDaily.SWELL_WAVE_HEIGHT + "," + ForecastTypesDaily.SWELL_WAVE_DIRECTION + "," + ForecastTypesDaily.SWELL_WAVE_PERIOD
 
 export const getOpenMeteoForecastHourly = (params: ForecastQueryParams): Promise<ForecastDataHourly> => {
   params['hourly'] = hourlyParams

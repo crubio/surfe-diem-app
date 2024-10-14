@@ -113,7 +113,7 @@ const LocationsPage = () => {
         </Box>
         {forecastDataHourly?.hourly &&
           <Box sx={{marginTop: "20px"}}>
-            <WaveChart waveHeightData={forecastDataHourly?.hourly.wave_height} wavePeriodData={forecastDataHourly?.hourly.wave_period} timeData={forecastDataHourly?.hourly.time} />
+            <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
           </Box>
         }
         <Box>

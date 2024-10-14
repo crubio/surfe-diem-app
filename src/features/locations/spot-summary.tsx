@@ -30,16 +30,16 @@ export default function SpotSummary (props: Spot) {
     return (
       <>
         <Typography variant="h3" sx={{marginBottom: "2px"}}>
-          {hourlyData.hourly.wave_height[idx].toFixed(1)} {hourlyData.hourly_units.wave_height}
+          {hourlyData.hourly.swell_wave_height[idx].toFixed(1)} {hourlyData.hourly_units.swell_wave_height}
         </Typography>
         <Typography sx={{ mb: 1.5 }} color="text">
-          {hourlyData.hourly.wave_period[idx].toFixed(0)} {hourlyData.hourly_units.wave_period}
+          {hourlyData.hourly.swell_wave_period[idx].toFixed(0)} {hourlyData.hourly_units.swell_wave_period}
         </Typography>
         <Typography sx={{ mb: 1.5 }} color="text">
           <Navigation
-            sx={{transform: `rotate(${hourlyData.hourly.wave_direction[0] - 180}deg)`
+            sx={{transform: `rotate(${hourlyData.hourly.swell_wave_direction[0] - 180}deg)`
             }}
-          /> {hourlyData.hourly.wave_direction[idx]} {hourlyData.hourly_units.wave_direction}
+          /> {hourlyData.hourly.swell_wave_direction[idx]} {hourlyData.hourly_units.swell_wave_direction}
         </Typography>
       </>
     ) 
