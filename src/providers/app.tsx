@@ -12,11 +12,6 @@ import { themeOptions } from 'config/theme';
 import 'react-toastify/dist/ReactToastify.css';
 import '/src/providers/app.css'
 
-
-type AppProviderProps = {
-  children: React.ReactNode;
-};
-
 const ErrorFallback = () => {
   return(
     <div>App could not be loaded. Refresh the page.</div>
@@ -25,7 +20,7 @@ const ErrorFallback = () => {
 
 const theme = createTheme(themeOptions);
 
-export const AppProvider = ({ children }: AppProviderProps) => {
+export const AppProvider = () => {
 
   return(
     <>
@@ -35,7 +30,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <RouterProvider router={router} />
-                {children}
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>

@@ -32,7 +32,7 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps[]) => 
       
       { swell && (
         <Stack direction="column" spacing={2} marginBottom={"20px"} className="swell-forecast-latest">
-          <Typography variant="subtitle2" color={"text.secondary"}>Swell</Typography>
+          <Typography variant="subtitle2" color={"text.secondary"}>swell</Typography>
           <Stack direction={"row"} spacing={2}>
             <Box>
               <Typography variant="h5" sx={{marginBottom: "2px"}}>{swell.swell_height ? swell.swell_height : dash}</Typography>
@@ -48,7 +48,7 @@ export const LatestReportedForecast = (props: LatestReportedForecastProps[]) => 
       )}
       { wind && (
         <Stack direction="column" spacing={2} marginBottom={"20px"} className="wind-forecast-latest">
-          <Typography variant="subtitle2" color={"text.secondary"}>Wind</Typography>
+          <Typography variant="subtitle2" color={"text.secondary"}>wind</Typography>
           <Stack direction={"row"} spacing={2}>
             <Box>
               <Typography variant="h5" sx={{marginBottom: "2px"}}>{wind.wind_wave_height ? wind.wind_wave_height : dash}</Typography>

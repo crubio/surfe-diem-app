@@ -8,18 +8,18 @@ import userEvent from '@testing-library/react';
  * This file is a wrapper for react testing library's render function.
  * Add other stuff here you need to use in all tests, like providers, etc. 
  */
-const AllTheProviders = ({children}: any) => {
-  return (
-    <AppProvider>
-      {children}
-    </AppProvider>
-  )
-}
+// const AllTheProviders = ({children}: any) => {
+//   return (
+//     <AppProvider>
+//       {children}
+//     </AppProvider>
+//   )
+// }
 
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
-) => render(ui, {wrapper: AllTheProviders, ...options})
+) => render(ui, {wrapper: <AppProvider />, ...options})
 
 export const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(

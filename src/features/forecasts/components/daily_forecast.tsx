@@ -19,7 +19,7 @@ export const DailyForecast = (props: DailyForecastProps) => {
       result.push(
           <Item key={data.daily.time[i]} sx={{textAlign: {xs: 'center'}}}>
             {formatDateShortWeekday(data.daily.time[i])}
-            <Typography variant="subtitle2" color={"text.secondary"}>max swell</Typography>
+            <Typography variant="subtitle2" color={"text.secondary"}>swell height</Typography>
             <Typography variant="h3" sx={{marginBottom: "2px"}}>{data.daily.swell_wave_height_max[i] ? data.daily.swell_wave_height_max[i].toFixed(1)+' ft' : dash}</Typography>
           </Item>
       )

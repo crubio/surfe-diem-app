@@ -22,7 +22,7 @@ export const CurrentHourForecast = (props: HourlyForecastProps) => {
       </Typography>
       <Stack direction="row" spacing={2}>
         <Stack direction="column" spacing={2}>
-          <Typography variant="subtitle2" color={"text.secondary"}>max swell</Typography>
+          <Typography variant="subtitle2" color={"text.secondary"}>swell height</Typography>
           <Typography variant="h3" sx={{marginBottom: "2px"}}>{forecast.hourly.swell_wave_height[startingIndex].toFixed(1) + " ft"}</Typography>
         </Stack>
         <Divider orientation="vertical" flexItem />
