@@ -54,7 +54,8 @@ export default function SpotSummary (props: Spot) {
           sx={{ 
             height: "100%",
             display: "flex",
-            flexDirection: "column"
+            flexDirection: "column",
+            width: "100%",
           }}
         >
           <CardContent>

@@ -52,6 +52,19 @@ export const getSurfSpot = async (id: string | number | undefined): Promise<Spot
   
 }
 
+export const getSurfSpotClosest = async (lat: number, lng: number): Promise<Spot[]> => {
+  return axios.get(`${API_ROUTES.SURF_SPOTS}/find_closest`, {
+    params: {
+      lat: lat,
+      lng: lng
+    }
+  })
+    .then((response) => {
+      return response.data
+    })
+  
+}
+
 export const getSurfSpotsGeoJson = async (): Promise<GeoJSON> => {
   const response = await axios.get(API_ROUTES.SURF_SPOTS_GEOJSON);
   return response.data;

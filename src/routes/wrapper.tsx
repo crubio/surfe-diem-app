@@ -12,7 +12,7 @@ export const AppWrapper = () => {
   return (
     <>
       <SearchAppBar />
-      <Container>
+      <Container maxWidth="xl">
         <Outlet />
       </Container>
       <Footer />
