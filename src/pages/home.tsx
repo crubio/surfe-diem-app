@@ -1,42 +1,28 @@
-import LocationSummary from "@features/locations/summary";
 import {Box, Container, Grid, Stack, Typography} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
-import { BuoyLocation, Spot } from "@features/locations/types";
+import { Spot } from "@features/locations/types";
 import { Item } from "components";
 import BasicSelect from "components/common/basic-select";
 import { useNavigate } from "react-router-dom";
 import { FEATURED_SPOTS } from "utils/constants";
-import SpotSummary from "@features/locations/spot-summary";
-
+import SpotSummary from "@features/locations/spot-summary"
+import { getGeolocation } from "utils/geolocation";
+import SpotGlance from "@features/locations/spot-glance";
+import surfingImage from "assets/manresa1.jpg";
+import surfImage2 from "assets/pismo_landscape.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
   const {data: buoys} = useQuery(['locations'], async () => getLocations())
   const {data: spots} = useQuery(['spots'], async () => getSurfSpots())
+  const {data: geolocation} = useQuery(['geolocation'], async () => getGeolocation())
   const buoysData = buoys || []
   const spotsData = spots || []
   const featuredSpots = spots?.flatMap((spot: Spot) => {
     return FEATURED_SPOTS.includes(spot.name) ? spot : []
   }) || []
-
-  function renderBuoyLocations(data: BuoyLocation[], n = 3) {
-    if (isEmpty(data)) {
-      return (
-        <p>loading...</p>
-      )
-    }
-    return (
-      <>
-        {data.slice(0, n).map((location: BuoyLocation) => {
-          return (
-            <LocationSummary key={location.location_id} locationSummary={location} />
-          )
-        })}
-      </>
-    )
-  }
 
   function renderSpots(data: Spot[], n = 3) {
     return (
@@ -62,48 +48,68 @@ const Home = () => {
 
   return (
     <>
-      <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px" }}>
-      <h1>Latest buoy and spot conditions</h1>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={5} lg={5}>
-          <Box>
-            {buoysData && buoysData.length > 0 && (
-              <BasicSelect label={"select a buoy"} items={buoysData} selectValueKey={"location_id"} doOnSelect={goToBuoyPage} />
-            )}
+      <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px", paddingTop: "4px" }}>
+        <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
+          <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage2})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px"}} >
+            <Typography variant="h3" component="div" sx={{ paddingTop: "20px", color: "white", textAlign: "center", textShadow: "#1ed6e6 1px 0 2px;" }}>
+              surfe diem
+            </Typography>
+            <Typography variant="h5" component="div" sx={{ marginBottom: "20px", color: "white", textAlign: "center" }}>
+              get the latest surf forecasts near you
+            </Typography>
           </Box>
+        </Item>
+        <Grid container spacing={2} sx={{ marginBottom: "20px" }}>
+          <Grid item xs={12} sm={12} md={5} lg={5}>
+            <Item sx={{ bgcolor: 'background.default', marginTop: "20px"}}>
+              <h2>Buoys</h2>
+              <Box>
+                {buoysData && buoysData.length > 0 && (
+                  <BasicSelect label={"select a buoy"} items={buoysData} selectValueKey={"location_id"} doOnSelect={goToBuoyPage} />
+                )}
+              </Box>
+            </Item>
+          </Grid>
+          <Grid item xs={12} sm={12} md={5} lg={5}>
+          <Item sx={{ bgcolor: 'background.default', marginTop: "20px"}}>
+              <h2>Spots</h2>
+              <Box>
+                {spotsData && spotsData.length > 0 && (
+                  <BasicSelect label={"select a surf spot"} items={spotsData} selectValueKey={"id"} doOnSelect={goToSpotPage} />
+                )}
+              </Box>
+            </Item>
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={12} md={5} lg={5}>
-          <Box>
-            {spotsData && spotsData.length > 0 && (
-              <BasicSelect label={"select a surf spot"} items={spotsData} selectValueKey={"id"} doOnSelect={goToSpotPage} />
-            )}
+        {geolocation ? (
+          <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
+            {/* TODO: link to page with the complete list and all other spots */}
+            <Typography variant="h5" sx={{marginBottom: "10px", paddingLeft: "8px"}}>Surf spots nearby</Typography>
+            <SpotGlance latitude={geolocation.latitude} longitude={geolocation.longitude} renderNumber={10} />
           </Box>
-        </Grid>
-      </Grid>
-      {/* <Typography variant="h5" sx={{marginBottom: "10px"}}>buoys</Typography> */}
-        <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
-          <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
-            <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-              {buoys && !isEmpty(buoys)? (
-                  renderBuoyLocations(buoysData, 4)
-              ) : (
-                <p>No data available</p>
-              )}
-            </Stack>
-          </Item>
+        ): null}
+        <Item sx={{ bgcolor: 'background.default', marginTop: "20px"}}>
+        <Box sx={{
+          backgroundImage:`url(${surfingImage})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover"
+        }}>
+          <Box sx={{
+            padding: "20px",
+          }}>
+            <Typography variant="h5" sx={{marginBottom: "10px"}}>Featured spots</Typography>
+            <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
+              <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
+                {spots && !isEmpty(spots)? (
+                  renderSpots(featuredSpots, 5)
+                ): (
+                  <p>No data available</p>
+                )}
+              </Stack>
+            </Item>
+          </Box>
         </Box>
-        <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
-          <Typography variant="h5" sx={{marginBottom: "10px"}}>featured spots</Typography>
-          <Item sx={{ bgcolor: 'primary.light', marginTop: "20px"}}>
-            <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-              {spots && !isEmpty(spots)? (
-                renderSpots(featuredSpots, 5)
-              ): (
-                <p>No data available</p>
-              )}
-            </Stack>
-          </Item>
-        </Box>
+        </Item>
       </Container>
     </>
   );

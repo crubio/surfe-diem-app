@@ -16,3 +16,8 @@ export const API_ROUTES = {
   SEARCH: `${API_PREFIX}/search`,
   WEATHER: `${API_PREFIX}/weather`,
 }
+
+// Helpers
+export const goToBuoyPage = (location_id: string) => {return `/location/${location_id}`}
+
+export const goToSpotPage = (spot_id: string) => { return `/spot/${spot_id}`}
