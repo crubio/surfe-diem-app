@@ -14,6 +14,7 @@ import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { CurrentWeather } from "@features/weather/components/current_weather"
 import { getCurrentWeather } from "@features/weather/api"
+import { NearbyBuoys } from "@features/locations/nearby-buoys"
 
 const SpotsPage = () => {
   const params = useParams()
@@ -49,7 +50,7 @@ const SpotsPage = () => {
   return (
     <>
       {isError && <ErrorPage error={error} />}
-      {spot && (
+      {spot ? (
         <Container sx={{marginBottom: "20px"}}>
           <h1>{spot.name}</h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
@@ -59,6 +60,9 @@ const SpotsPage = () => {
           </Stack>
           {currentWeather && (
             <CurrentWeather currentWeather={currentWeather} isLoading={isWeatherLoading}/>
+          )}
+          {spot && spot.latitude && spot.longitude && (
+            <NearbyBuoys latitude={spot.latitude} longitude={spot.longitude} />
           )}
           { !isEmpty(spot) && (
             <>
@@ -97,7 +101,7 @@ const SpotsPage = () => {
             </Box>
           }
         </Container>
-      )}
+      ): null}
     </>
   )
 }

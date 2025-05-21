@@ -5,7 +5,7 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Container, Grid, Stack} from "@mui/material"
+import { Box, Container, Grid, Link, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
@@ -65,6 +65,7 @@ const LocationsPage = () => {
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{locationData?.description}</Item>
             <Item>{locationData?.location?.split("(")[0]}</Item>
+            <Item><Link href={locationData?.url} target="_blank">more info</Link></Item>
           </Stack>
           { locationData?.location && latLong[0] && (
             <>
