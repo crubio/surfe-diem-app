@@ -33,6 +33,17 @@ export interface BuoyLocation {
   station_id?: string,
 }
 
+export type BuoyNearestType = {
+  description: string
+  distance: string
+  latitude: string
+  location: string
+  location_id: string
+  longitude: string
+  name: string
+  url: string
+}
+
 export interface BuoyLocations {
   locations: Location[]
 }

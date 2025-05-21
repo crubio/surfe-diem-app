@@ -1,7 +1,7 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation, Spot} from '../types';
+import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot} from '../types';
 
 type QueryParams = {
   limit?: number;
@@ -86,6 +86,17 @@ export const getLocations = (params?: QueryParams): Promise<BuoyLocation[]> => {
 
 export const getLocation = (id: string | undefined): Promise<BuoyLocation> => {
   return axios.get(`${API_ROUTES.LOCATIONS}/${id}`).then((response) => {
+    return response.data;
+  })
+}
+
+export const getLocationBuoyNearby = (lat: number, lng: number): Promise<BuoyNearestType[]> => {
+  return axios.get(`${API_ROUTES.LOCATIONS}/find_closest`, {
+    params: {
+      lat: lat,
+      lng: lng
+    }
+  }).then((response) =>{
     return response.data;
   })
 }
