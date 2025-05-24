@@ -11,6 +11,14 @@ type Props = {
     numToRender?: number;
 }
 
+const NoDataFound = () => {
+    return (
+        <Typography variant="body1" color={"secondary.dark"} component="div">
+            No data found.
+        </Typography>
+    );
+}
+
 const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: React.ReactNode }) => {
     return (
         <Item sx={{maxWidth: "fit-content", padding: "10px"}}>
@@ -18,9 +26,15 @@ const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: Reac
                 <LinkRouter to={goToBuoyPage(props.location_id)} style={{textDecoration:"none"}}>{props.name}</LinkRouter>
             </Typography>
             <Typography variant="body2" color="text.secondary">
-                {props.description}
+                <Typography variant="subtitle2">Current observation</Typography>
+                {props.latest_observation ? (
+                    <>
+                    <Typography variant="h5" color="text.secondary">
+                        <span>{props.latest_observation[1].swell_height}, {props.latest_observation[1].period}, {props.latest_observation[1].direction}</span>
+                    </Typography>
+                    </>
+                ): <NoDataFound />}
             </Typography>
-            {children}
         </Item>
     )
 }

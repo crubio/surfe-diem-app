@@ -42,6 +42,7 @@ export type BuoyNearestType = {
   longitude: string
   name: string
   url: string
+  latest_observation?: any
 }
 
 export interface BuoyLocations {
