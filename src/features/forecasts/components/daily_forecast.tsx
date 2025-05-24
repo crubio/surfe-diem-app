@@ -13,7 +13,7 @@ export const DailyForecast = (props: DailyForecastProps) => {
   const dash: JSX.Element = (<code>&#8212;</code>)
 
   function renderForecast(data: ForecastDataDaily) {
-    if (!data || isEmpty(data)) return
+    // if (!data || isEmpty(data)) return
     const result = []
     for(let i = 0; i < data.daily.time.length; i++) {
       result.push(
@@ -30,7 +30,9 @@ export const DailyForecast = (props: DailyForecastProps) => {
 
   return (
     <>
-      {renderForecast(forecast)}
+      {forecast || !isEmpty(forecast) ? (
+        renderForecast(forecast)
+      ) : null}
     </>
   )
 }
