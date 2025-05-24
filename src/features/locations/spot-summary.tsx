@@ -27,7 +27,7 @@ export default function SpotSummary (props: Spot) {
     if (!hourlyData) return (
       <p>No data available</p>
     )
-    return (
+    return ( !isEmpty(hourlyData) ? (
       <>
         <Typography variant="h3" sx={{marginBottom: "2px"}}>
           {hourlyData.hourly.swell_wave_height[idx].toFixed(1)} {hourlyData.hourly_units.swell_wave_height}
@@ -42,7 +42,7 @@ export default function SpotSummary (props: Spot) {
           /> {hourlyData.hourly.swell_wave_direction[idx]} {hourlyData.hourly_units.swell_wave_direction}
         </Typography>
       </>
-    ) 
+    ) : null)
   }
 
   return (
