@@ -4,19 +4,12 @@ import { Item, LinkRouter } from "components";
 import { Stack, Typography } from "@mui/material";
 import { BuoyNearestType } from "./types";
 import { goToBuoyPage } from "utils/routing";
+import NoDataFound from "components/common/not-found";
 
 type Props = {
     latitude: number;
     longitude: number;
     numToRender?: number;
-}
-
-const NoDataFound = () => {
-    return (
-        <Typography variant="body1" color={"secondary.dark"} component="div">
-            No data found.
-        </Typography>
-    );
 }
 
 const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: React.ReactNode }) => {

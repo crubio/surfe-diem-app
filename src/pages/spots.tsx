@@ -1,109 +1,64 @@
-import { getSurfSpot } from "@features/locations/api/locations"
-import { Box, Container, Grid, Stack } from "@mui/material"
-import { useQuery } from "@tanstack/react-query"
-import { useParams } from "react-router-dom"
-import ErrorPage from "./error"
-import { Item, Loading } from "components"
-import { getClostestTideStation, getDailyTides } from "@features/tides"
-import { getOpenMeteoForecastHourly } from "@features/forecasts"
-import { formatIsoNearestHour } from "utils/common"
-import { DailyTide } from "@features/tides/components/daily_tide"
-import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
-import { isEmpty } from "lodash"
-import WaveChart from "@features/charts/wave-height"
-import MapBoxSingle from "@features/maps/mapbox/single-instance"
-import { CurrentWeather } from "@features/weather/components/current_weather"
-import { getCurrentWeather } from "@features/weather/api"
-import { NearbyBuoys } from "@features/locations/nearby-buoys"
+import { getSurfSpots } from "@features/locations/api/locations";
+import { Spot } from "@features/locations/types";
+import { Box, Container, Typography } from "@mui/material";
+import { useQuery } from "@tanstack/react-query";
+import { Item, LinkRouter } from "components";
+import { sortBy } from "lodash";
+import surfImage from "assets/sharks1.jpg";
+import NoDataFound from "components/common/not-found";
 
-const SpotsPage = () => {
-  const params = useParams()
-  const { spotId } = params
+const SurfSpotsPage = () => {
 
-  const {data: spot, isError, error} = useQuery(
-    ['spots', spotId],
-    () => getSurfSpot(spotId)
-  )
+    const {data} = useQuery(['surf_spots'], async () => getSurfSpots());
 
-  const {data: tideStationData} = useQuery(['tide_station'], () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}), {
-    enabled: !!spot?.latitude
-  })
+    sortBy(data, ['subregion_name' ]);
 
-  const {data: tideData, isLoading: isTideDataLoading} = useQuery(['latest_tides', params], () => getDailyTides({ station: tideStationData?.station_id}), {
-    enabled: !!tideStationData?.station_id
-  })
+    function sortBySubregion(data: Spot[]) {
+        const sortedData: { [key: string]: Spot[] } = {}
+        data.forEach(spot => {
+            if (!sortedData[spot.subregion_name]) {
+                sortedData[spot.subregion_name] = [];
+            }
+            sortedData[spot.subregion_name].push(spot);
+        });
+        return sortedData;
+    }
 
-  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly'], () => getOpenMeteoForecastHourly({
-    latitude: spot!.latitude,
-    longitude: spot!.longitude,
-    forecast_days: 1,
-  }), {
-    enabled: !!spot?.name
-  })
+    const sortedSpots = sortBySubregion(data || []);
 
-  const {data: currentWeather, isLoading: isWeatherLoading} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
-    enabled: !!spot?.name
-  })
-
-  const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(spot?.timezone))
-
-  return (
-    <>
-      {isError && <ErrorPage error={error} />}
-      {spot ? (
+    return (
         <Container sx={{marginBottom: "20px"}}>
-          <h1>{spot.name}</h1>
-          <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
-            <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
-            <Item>{spot.subregion_name}</Item>
-            <Item>{spot.timezone}</Item>
-          </Stack>
-          {currentWeather && (
-            <CurrentWeather currentWeather={currentWeather} isLoading={isWeatherLoading}/>
-          )}
-          {spot && spot.latitude && spot.longitude && (
-            <NearbyBuoys latitude={spot.latitude} longitude={spot.longitude} />
-          )}
-          { !isEmpty(spot) && (
-            <>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={12} md={6} lg={6}>
-                  <MapBoxSingle lat={spot.latitude} lng={spot.longitude} zoom={8} />
-                </Grid>
-              </Grid>
-            </>
-          )}
-
-          <Box sx={{marginBottom: "20px"}}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Current conditions</h2>
-                { isHourlyForecastLoading ? (
-                  <Loading />
-                ) : (
-                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
-                )}
-              </Grid>
-
-              <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Tide</h2>
-                {isTideDataLoading ? (
-                  <Loading />
-                ) : tideData && (
-                  <DailyTide {...tideData} />
-                )}
-              </Grid>
-            </Grid>
-          </Box>
-          {forecastDataHourly?.hourly && 
-            <Box sx={{marginBottom: "20px"}}>
-              <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
+            <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
+                <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px", backgroundPosition: "center"}} >
+                    <Typography variant="h3" component="div" sx={{ paddingTop: "20px", color: "white", textAlign: "center", textShadow: "#1ed6e6 1px 0 2px;" }}>
+                    surfe diem
+                    </Typography>
+                    <Typography variant="h5" component="div" sx={{ marginBottom: "20px", color: "white", textAlign: "center" }}>
+                    get the latest surf forecasts near you
+                    </Typography>
+                </Box>
+            </Item>
+            <Box sx={{ marginTop: "20px", padding: "10px", borderRadius: "8px" }}>
+                <Typography variant="h5" sx={{marginBottom: "10px"}}>Surf spots by region</Typography>
+                {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
+                    Object.keys(sortedSpots).map((subregion) => (
+                        <Box key={subregion} sx={{ marginBottom: "20px", width: "100%" }}>
+                            <Typography variant="h5" component="div" sx={{ marginBottom: "10px" }}>{subregion}</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                                {sortedSpots[subregion].map((spot) => (
+                                    <Item key={spot.id} sx={{ width: '300px', padding: '10px' }}>
+                                        <LinkRouter to={`/spot/${spot.id}`}>
+                                            <Typography variant="h6">{spot.name}</Typography>
+                                        </LinkRouter>
+                                    </Item>
+                                ))}
+                            </Box>
+                        </Box>
+                    ))
+                ) : <NoDataFound />}
             </Box>
-          }
         </Container>
-      ): null}
-    </>
-  )
+    )
 }
 
-export default SpotsPage
+export default SurfSpotsPage;
