@@ -4,9 +4,8 @@ import { Box, Container, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { Item, LinkRouter } from "components";
 import { sortBy } from "lodash";
-import surfImage2 from "assets/sharks1.jpg";
+import surfImage from "assets/sharks1.jpg";
 import NoDataFound from "components/common/not-found";
-import { Link } from "react-router-dom";
 
 const SurfSpotsPage = () => {
 
@@ -30,7 +29,7 @@ const SurfSpotsPage = () => {
     return (
         <Container sx={{marginBottom: "20px"}}>
             <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
-                <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage2})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px", backgroundPosition: "center"}} >
+                <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px", backgroundPosition: "center"}} >
                     <Typography variant="h3" component="div" sx={{ paddingTop: "20px", color: "white", textAlign: "center", textShadow: "#1ed6e6 1px 0 2px;" }}>
                     surfe diem
                     </Typography>
