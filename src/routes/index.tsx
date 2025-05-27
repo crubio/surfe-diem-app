@@ -6,7 +6,8 @@ import { MAINTENANCE_MODE } from "config";
 import LocationsPage from "pages/locations";
 import MapPage from "pages/map";
 import { AppWrapper } from "./wrapper";
-import SpotsPage from "pages/spots";
+import SpotPage from "pages/spot";
+import SurfSpotsPage from "pages/spots";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
@@ -34,8 +35,12 @@ export const router = createBrowserRouter([
             element: <LocationsPage />,
           },
           {
+            path: "spots",
+            element: <SurfSpotsPage />,
+          },
+          {
             path: "spot/:spotId",
-            element: <SpotsPage />,
+            element: <SpotPage />,
           },
           {
             path: "map",

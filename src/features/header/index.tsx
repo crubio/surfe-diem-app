@@ -22,9 +22,13 @@ export default function SearchAppBar() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
-  const pages = ['Home', 'Map'];
-
-
+  const pages = ['Home', 'Map', 'Surf Spots'];
+  const pageMap = {
+    Home: '/',
+    Map: '/map',
+    'Surf Spots': '/spots'
+  }
+  
   const {data: searchResultData} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {
     enabled: queryEnabled,
     onError: (error) => {
@@ -37,7 +41,19 @@ export default function SearchAppBar() {
     }
   })
 
-  // const locationData = data || []
+  const renderNavLinks = (pageMap: {[key: string]: string}) => {
+    const pageLinks = []
+    for (const key in pageMap) {
+      pageLinks.push(
+        <LinkRouter key={key} to={pageMap[key]} underline="none" color="inherit" sx={{ my: 2, color: 'white', display: 'block' }}>
+          <Typography variant="h6" noWrap component="div" sx={{marginRight: "16px"}}>
+            {key}
+          </Typography>
+        </LinkRouter>
+      );
+    }
+    return pageLinks;
+  }
 
   const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.key === "Enter") {
@@ -134,12 +150,8 @@ export default function SearchAppBar() {
             />
           </Search>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <LinkRouter key={page} to={`/${page.toLocaleLowerCase()}`} underline="none" color="inherit" sx={{ my: 2, color: 'white', display: 'block' }}>
-                <Typography variant="h6" noWrap component="div" sx={{marginRight: "16px"}}>
-                  {page}
-                </Typography>
-              </LinkRouter>
+            {renderNavLinks(pageMap).map((page) => (
+              <>{page}</>
             ))}
           </Box>
         </Toolbar>
