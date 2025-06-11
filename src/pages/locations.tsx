@@ -89,11 +89,8 @@ const LocationsPage = () => {
               </Grid>
               <Grid item xs={12} sm={12} md={3} lg={3}>
                 <h2>Next hour forecast</h2>
-                { isHourlyForecastLoading ? (
-                  <Loading />
-                ) : (
-                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
-                )}
+                { isHourlyForecastLoading && (<Loading />)}
+                { forecastDataHourly && forecastStartingIndex ? (<CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />) : (<NoData />)}
               </Grid>
               {(location as { station_id?: string })?.station_id && (
                 <Grid item xs={12} sm={12} md={3} lg={3}>

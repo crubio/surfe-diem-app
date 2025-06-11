@@ -12,7 +12,7 @@ export const formatNumber = (value: number, n = 2) => {
 
 /**
  * Get the current time and format it to ISO 8601 to the nearest next hour.
- * e.g., 2023-08-05T15:00
+ * e.g., 2023-08-05T15:00, 2025-06-11T00:00, etc
  * Forecasting times are in this format and we need to match it to get the correct forecast time index.
  * @returns 
  */

@@ -13,7 +13,7 @@ export interface HourlyForecastProps {
 export const CurrentHourForecast = (props: HourlyForecastProps) => {
   const {forecast, idx} = props
   const startingIndex = idx || 0
-  if (!forecast || isEmpty(forecast)) return <NoData />
+  if (!forecast || isEmpty(forecast) || startingIndex == -1) return <NoData />
 
   return (
     <Item>

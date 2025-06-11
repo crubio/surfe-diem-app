@@ -6,13 +6,12 @@ import { formatIsoNearestHour, getTodaysDate } from "utils/common"
 import { ForecastDataHourly, getOpenMeteoForecastHourly } from ".."
 import { Spot } from "./types"
 import { Loading } from "components"
-import { isEmpty } from "lodash"
 import { Link } from 'react-router-dom';
 
 export default function SpotSummary (props: Spot) {
   const {latitude, longitude, name, subregion_name, id} = props
 
-  const {data, isLoading: isHourlyForecastLoading, isError } = useQuery(['forecast_hourly', id], () => getOpenMeteoForecastHourly({
+  const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getOpenMeteoForecastHourly({
     latitude: latitude,
     longitude: longitude,
     start_date: getTodaysDate(),
@@ -24,10 +23,10 @@ export default function SpotSummary (props: Spot) {
   const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(props.timezone))
 
   function renderLatestObservation(hourlyData: ForecastDataHourly, idx: number) {
-    if (!hourlyData) return (
+    if (!hourlyData || forecastStartingIndex == -1) return (
       <p>No data available</p>
     )
-    return ( !isEmpty(hourlyData) ? (
+    return (
       <>
         <Typography variant="h3" sx={{marginBottom: "2px"}}>
           {hourlyData.hourly.swell_wave_height[idx].toFixed(1)} {hourlyData.hourly_units.swell_wave_height}
@@ -42,7 +41,7 @@ export default function SpotSummary (props: Spot) {
           /> {hourlyData.hourly.swell_wave_direction[idx]} {hourlyData.hourly_units.swell_wave_direction}
         </Typography>
       </>
-    ) : null)
+    )
   }
 
   return (
@@ -71,7 +70,7 @@ export default function SpotSummary (props: Spot) {
               <Divider variant="middle" />
             </Box>
             <Box className="current-conditions">
-              {data && forecastStartingIndex && !isEmpty(data) && !isError ? (
+              {data && forecastStartingIndex ? (
                 renderLatestObservation(data, forecastStartingIndex)
               ) : (
                 <p>No data available</p>

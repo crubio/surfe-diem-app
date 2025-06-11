@@ -12,14 +12,15 @@ import { getGeolocation } from "utils/geolocation";
 import SpotGlance from "@features/locations/spot-glance";
 import surfingImage from "assets/manresa1.jpg";
 import surfImage2 from "assets/pismo_landscape.jpg";
+import { orderBy } from "lodash";
 
 const Home = () => {
   const navigate = useNavigate();
   const {data: buoys} = useQuery(['locations'], async () => getLocations())
   const {data: spots} = useQuery(['spots'], async () => getSurfSpots())
   const {data: geolocation} = useQuery(['geolocation'], async () => getGeolocation())
-  const buoysData = buoys || []
-  const spotsData = spots || []
+  const buoysData = orderBy(buoys,["name"], ["asc"] ) || []
+  const spotsData = orderBy(spots, ["subregion_name", "name"], ["asc"]) || []
   const featuredSpots = spots?.flatMap((spot: Spot) => {
     return FEATURED_SPOTS.includes(spot.name) ? spot : []
   }) || []
