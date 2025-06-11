@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { useState } from "react";
 
 interface BasicSelectProps {
@@ -18,6 +18,12 @@ export default function BasicSelect(props: BasicSelectProps) {
     props.doOnSelect(event.target.value as string)
   };
 
+  const subRegionInfo = (name: string) => {
+    if (name) {
+      return (<Typography variant="subtitle1" >&nbsp;{`- ${name}`}</Typography>)
+    }
+  }
+
   return (
     <Box sx={{ minWidth: 120 }}>
       <FormControl fullWidth>
@@ -31,7 +37,7 @@ export default function BasicSelect(props: BasicSelectProps) {
         >
           {props.items && props.items.map((item: any) => {
             return (
-              <MenuItem key={item.id} value={item[props.selectValueKey]}>{item.name}</MenuItem>
+              <MenuItem key={item.id} value={item[props.selectValueKey]}>{item.name}{subRegionInfo(item.subregion_name)}</MenuItem>
             )
           })}
         </Select>

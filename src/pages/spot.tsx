@@ -15,6 +15,7 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { CurrentWeather } from "@features/weather/components/current_weather"
 import { getCurrentWeather } from "@features/weather/api"
 import { NearbyBuoys } from "@features/locations/nearby-buoys"
+import { NoData } from "@features/cards/no_data"
 
 const SpotPage = () => {
   const params = useParams()
@@ -78,11 +79,8 @@ const SpotPage = () => {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={3} lg={3}>
                 <h2>Current conditions</h2>
-                { isHourlyForecastLoading ? (
-                  <Loading />
-                ) : (
-                  <CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />
-                )}
+                { isHourlyForecastLoading && (<Loading />)}
+                {forecastDataHourly && forecastStartingIndex ? (<CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />) : (<NoData />)}
               </Grid>
 
               <Grid item xs={12} sm={12} md={3} lg={3}>
