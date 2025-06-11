@@ -1,6 +1,5 @@
 import { NoData } from "@features/cards/no_data"
-import { DailyForecast, getOpenMeteoForecastDaily, getOpenMeteoForecastHourly } from "@features/forecasts"
-import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
+import { DailyForecast, getForecastCurrent, getForecastDaily, getForecastHourly } from "@features/forecasts"
 import { LatestReportedForecast } from "@features/forecasts/components/latest_reported_forecast"
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
@@ -10,10 +9,11 @@ import { useQuery } from "@tanstack/react-query"
 import { Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
-import { formatIsoNearestHour, formatLatLong, getTodaysDate } from "utils/common"
+import { formatLatLong, getTodaysDate } from "utils/common"
 import ErrorPage from "./error"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
+import { CurrentForecast } from "@features/forecasts/components/current_forecast"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -34,7 +34,14 @@ const LocationsPage = () => {
     enabled: !!locationData?.station_id
   })
 
-  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', locationData?.location_id], () => getOpenMeteoForecastHourly({
+  const {data: forecastCurrent, isLoading: isCurrentForecastLoading} = useQuery(['forecast_current'], () => getForecastCurrent({
+    latitude: latLong[0],
+    longitude: latLong[1],
+  }), {
+    enabled: !!locationData?.location_id
+  })
+
+  const {data: forecastDataHourly } = useQuery(['forecast_hourly', locationData?.location_id], () => getForecastHourly({
     latitude: latLong[0],
     longitude: latLong[1],
     forecast_days: 1,
@@ -42,7 +49,7 @@ const LocationsPage = () => {
     enabled: !!locationData?.location_id
   })
 
-  const {data: forecastDataDaily, isLoading: isForecastLoading } = useQuery(['forecast_daily', locationData?.location_id], () => getOpenMeteoForecastDaily({
+  const {data: forecastDataDaily, isLoading: isForecastLoading } = useQuery(['forecast_daily', locationData?.location_id], () => getForecastDaily({
     latitude: latLong[0],
     longitude: latLong[1],
     start_date: getTodaysDate(),
@@ -50,8 +57,6 @@ const LocationsPage = () => {
   }), {
     enabled: !!locationData?.location_id
   })
-
-  const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour())
 
   const obsData = latestObservationData || []
 
@@ -89,8 +94,8 @@ const LocationsPage = () => {
               </Grid>
               <Grid item xs={12} sm={12} md={3} lg={3}>
                 <h2>Next hour forecast</h2>
-                { isHourlyForecastLoading && (<Loading />)}
-                { forecastDataHourly && forecastStartingIndex ? (<CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />) : (<NoData />)}
+                { isCurrentForecastLoading && (<Loading />)}
+                {forecastCurrent ? (<CurrentForecast forecast={forecastCurrent} />) : <NoData />}
               </Grid>
               {(location as { station_id?: string })?.station_id && (
                 <Grid item xs={12} sm={12} md={3} lg={3}>

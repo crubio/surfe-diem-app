@@ -23,9 +23,9 @@ export const CurrentWeather = (props: CurrentWeatherProps) => {
         <Item key={i} sx={{textAlign: {xs: 'center'}}}>
           <Stack direction="column" spacing={1} justifyContent="center">
             <Typography>{time.startPeriodName[i]}</Typography>
-            <Typography variant="h4">{data.temperature[i] ? data.temperature[i] : 'N/A'}{data.temperature[i] && (<>&#8457;</>)}</Typography>
+            <Typography variant="h4">{data.temperature[i] ? data.temperature[i] : '--'}{data.temperature[i] && (<>&#8457;</>)}</Typography>
           </Stack>
-          <Typography sx={{marginBottom: "2px"}}>{data.text[i]? data.text[i] : 'N/A'}</Typography>
+          <Typography sx={{marginBottom: "2px"}}>{data.text[i]? data.text[i] : '--'}</Typography>
         </Item>
       )
     }

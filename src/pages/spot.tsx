@@ -5,10 +5,8 @@ import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
 import { Item, Loading } from "components"
 import { getClostestTideStation, getDailyTides } from "@features/tides"
-import { getOpenMeteoForecastHourly } from "@features/forecasts"
-import { formatIsoNearestHour } from "utils/common"
+import { getForecastCurrent, getForecastHourly } from "@features/forecasts"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { CurrentHourForecast } from "@features/forecasts/components/current_hour_forecast"
 import { isEmpty } from "lodash"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
@@ -16,6 +14,7 @@ import { CurrentWeather } from "@features/weather/components/current_weather"
 import { getCurrentWeather } from "@features/weather/api"
 import { NearbyBuoys } from "@features/locations/nearby-buoys"
 import { NoData } from "@features/cards/no_data"
+import { CurrentForecast } from "@features/forecasts/components/current_forecast"
 
 const SpotPage = () => {
   const params = useParams()
@@ -34,7 +33,7 @@ const SpotPage = () => {
     enabled: !!tideStationData?.station_id
   })
 
-  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly'], () => getOpenMeteoForecastHourly({
+  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly'], () => getForecastHourly({
     latitude: spot!.latitude,
     longitude: spot!.longitude,
     forecast_days: 1,
@@ -42,11 +41,16 @@ const SpotPage = () => {
     enabled: !!spot?.name
   })
 
-  const {data: currentWeather, isLoading: isWeatherLoading} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
+  const {data: forecastCurrent} = useQuery(['forecast_current'], () => getForecastCurrent({
+    latitude: spot!.latitude,
+    longitude: spot!.longitude,
+  }), {
     enabled: !!spot?.name
   })
 
-  const forecastStartingIndex = forecastDataHourly?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(spot?.timezone))
+  const {data: currentWeather, isLoading: isWeatherLoading} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
+    enabled: !!spot?.name
+  })
 
   return (
     <>
@@ -80,7 +84,7 @@ const SpotPage = () => {
               <Grid item xs={12} sm={12} md={3} lg={3}>
                 <h2>Current conditions</h2>
                 { isHourlyForecastLoading && (<Loading />)}
-                {forecastDataHourly && forecastStartingIndex ? (<CurrentHourForecast forecast={forecastDataHourly} idx={forecastStartingIndex} />) : (<NoData />)}
+                {forecastCurrent ? (<CurrentForecast forecast={forecastCurrent} />) : <NoData />}
               </Grid>
 
               <Grid item xs={12} sm={12} md={3} lg={3}>
