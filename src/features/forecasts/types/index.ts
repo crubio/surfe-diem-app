@@ -24,3 +24,16 @@ export interface ForecastDataDaily {
     swell_wave_period_max: number[]
   }
 }
+
+export interface ForecastDataCurrent {
+  current: {
+    time: string,
+    interval: number,
+    swell_wave_height: number,
+    swell_wave_direction: number,
+    swell_wave_period: number
+  },
+  current_units: {
+    [key: string]: string
+  }
+}

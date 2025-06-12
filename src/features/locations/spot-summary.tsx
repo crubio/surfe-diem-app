@@ -3,7 +3,7 @@ import { Button, Card, CardActions, CardContent, Divider, Typography } from "@mu
 import { Box } from "@mui/system"
 import { useQuery } from "@tanstack/react-query"
 import { formatIsoNearestHour, getTodaysDate } from "utils/common"
-import { ForecastDataHourly, getOpenMeteoForecastHourly } from ".."
+import { ForecastDataHourly, getForecastHourly } from ".."
 import { Spot } from "./types"
 import { Loading } from "components"
 import { Link } from 'react-router-dom';
@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 export default function SpotSummary (props: Spot) {
   const {latitude, longitude, name, subregion_name, id} = props
 
-  const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getOpenMeteoForecastHourly({
+  const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getForecastHourly({
     latitude: latitude,
     longitude: longitude,
     start_date: getTodaysDate(),

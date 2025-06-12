@@ -130,8 +130,8 @@ export default function SearchAppBar() {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
+              {pages.map((page, idx) => (
+                <MenuItem key={idx} onClick={handleCloseNavMenu}>
                   <LinkRouter to={`/${page.toLocaleLowerCase()}`} >
                     <Typography textAlign="center">{page}</Typography>  
                   </LinkRouter>
