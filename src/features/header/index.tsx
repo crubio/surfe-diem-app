@@ -22,7 +22,7 @@ export default function SearchAppBar() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
-  const pages = ['Home', 'Map', 'Surf Spots'];
+  const pages: (keyof typeof pageMap)[] = ['Home', 'Map', 'Surf Spots'];
   const pageMap = {
     Home: '/',
     Map: '/map',
@@ -132,7 +132,7 @@ export default function SearchAppBar() {
             >
               {pages.map((page, idx) => (
                 <MenuItem key={idx} onClick={handleCloseNavMenu}>
-                  <LinkRouter to={`/${page.toLocaleLowerCase()}`} >
+                  <LinkRouter to={pageMap[page]} >
                     <Typography textAlign="center">{page}</Typography>  
                   </LinkRouter>
                 </MenuItem>
