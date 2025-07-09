@@ -33,7 +33,8 @@ export const getSearchResults = async <T>(params: SearchParams): Promise<Record<
     params: params
   }).then((response) => {
     return response.data;
-  }).catch((error) => {
+  }).catch(() => {
+    // If the search fails, return an empty array
     return [];
   })
 }
