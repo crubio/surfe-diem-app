@@ -33,6 +33,8 @@ export const getSearchResults = async <T>(params: SearchParams): Promise<Record<
     params: params
   }).then((response) => {
     return response.data;
+  }).catch((error) => {
+    return [];
   })
 }
 

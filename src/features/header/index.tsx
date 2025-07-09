@@ -15,7 +15,7 @@ import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
 
 export default function SearchAppBar() {
-  const notify = () => toast("No results found");
+  const notify = () => toast("No results found", {});
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState<SearchQueryParams>({q: '', limit: 10})
   const [queryEnabled, setQueryEnabled] = useState<boolean>(false)
@@ -29,16 +29,9 @@ export default function SearchAppBar() {
     'Surf Spots': '/spots'
   }
   
-  const {data: searchResultData} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {
+  const {data: searchResultData, isSuccess} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {
     enabled: queryEnabled,
-    onError: (error) => {
-      console.warn(error)
-    },
-    onSuccess: (data) => {
-      if (data.length === 0) {
-        notify()
-      }
-    }
+    cacheTime: 0
   })
 
   const renderNavLinks = (pageMap: {[key: string]: string}) => {
@@ -56,7 +49,7 @@ export default function SearchAppBar() {
   }
 
   const handleSubmit = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && e.currentTarget.value.trim() !== '') {
       const query = e.currentTarget.value
       setSearchQuery({q: query, limit: 10})
       setQueryId(random(1, 1000))
@@ -72,10 +65,12 @@ export default function SearchAppBar() {
   useEffect(() => {
     if (searchResultData?.length) {
       setSearchOpen(true)
+    } else if (isSuccess && searchResultData?.length === 0) {
+      notify();
     } else {
-      setSearchOpen(false)
+      setSearchOpen(false);
     }
-  }, [searchResultData])
+  }, [searchResultData, isSuccess])
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
