@@ -21,11 +21,16 @@ const customRender = (
   options?: Omit<RenderOptions, 'wrapper'>,
 ) => render(ui, {wrapper: <AppProvider />, ...options})
 
-export const waitForLoadingToFinish = () =>
-  waitForElementToBeRemoved(
-    () => [...screen.queryAllByTestId(/loading/i), ...screen.queryAllByText(/loading/i)],
-    { timeout: 4000 }
-  );
+export const waitForLoadingToFinish = () => {
+  const loadingEls = [
+    ...screen.queryAllByTestId(/loading/i),
+    ...screen.queryAllByText(/loading/i),
+  ];
+  if (loadingEls.length > 0) {
+    return waitForElementToBeRemoved(() => loadingEls, { timeout: 4000 });
+  }
+  return Promise.resolve();
+};
 
 export const render = async (
   ui: any,

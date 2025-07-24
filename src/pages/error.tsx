@@ -13,8 +13,8 @@ export default function ErrorPage(props: ErrorPageProps) {
   return (
     <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px', textAlign: 'center' }}>
       <div id="error-page">
-        <h1>Error <ErrorIcon color="secondary"/></h1>
-        <p>The following error has occurred.</p>
+        <ErrorIcon color="secondary" sx={{ fontSize: 40 }} />
+        <h2>The following error has occurred.</h2>
         <p>
           <i>{error.statusText || error.message }</i>
         </p>
