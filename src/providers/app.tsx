@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { router } from 'routes'
 import { themeOptions } from 'config/theme';
+import { FavoritesProvider } from './favorites-provider';
 import 'react-toastify/dist/ReactToastify.css';
 import '/src/providers/app.css'
 
@@ -29,7 +30,9 @@ export const AppProvider = () => {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <RouterProvider router={router} />
+            <FavoritesProvider>
+              <RouterProvider router={router} />
+            </FavoritesProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>

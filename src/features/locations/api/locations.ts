@@ -93,14 +93,18 @@ export const getLocation = (id: string | undefined): Promise<BuoyLocation> => {
   })
 }
 
-export const getLocationBuoyNearby = (lat: number, lng: number): Promise<BuoyNearestType[]> => {
+export const getLocationBuoyNearby = (lng: number, lat: number): Promise<BuoyNearestType[]> => {
   return axios.get(`${API_ROUTES.LOCATIONS}/find_closest`, {
     params: {
-      lat: lat,
-      lng: lng
+      lng: lng,
+      lat: lat
     }
   }).then((response) =>{
     return response.data;
+  }).catch((error) => {
+    console.error('Failed to fetch nearby buoys:', error);
+    // Return empty array on error to prevent component from breaking
+    return [];
   })
 }
 

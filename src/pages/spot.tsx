@@ -3,7 +3,7 @@ import { Box, Container, Grid, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { Item, Loading } from "components"
+import { FavoriteButton, Item, Loading } from "components"
 import { getClostestTideStation, getDailyTides } from "@features/tides"
 import { getForecastCurrent, getForecastHourly } from "@features/forecasts"
 import { DailyTide } from "@features/tides/components/daily_tide"
@@ -57,7 +57,7 @@ const SpotPage = () => {
       {isError && <ErrorPage error={error} />}
       {spot ? (
         <Container sx={{marginBottom: "20px"}}>
-          <h1>{spot.name}</h1>
+          <h1>{spot.name} <FavoriteButton showTooltip={true} id={spot.id} type="spot" name={spot.name} subregion_name={spot.subregion_name} latitude={spot.latitude} longitude={spot.longitude} /></h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
             <Item>{spot.subregion_name}</Item>

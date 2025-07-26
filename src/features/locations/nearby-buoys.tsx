@@ -34,11 +34,28 @@ const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: Reac
 
 export const NearbyBuoys = (props: Props) => {
     const {latitude, longitude} = props;
-    const {data: nearbyBuoys} = useQuery([`get-nearest-buoy-${latitude}-${longitude}`], () => getLocationBuoyNearby(latitude, longitude));
+    const {data: nearbyBuoys, error, isLoading} = useQuery(
+        [`get-nearest-buoy-${latitude}-${longitude}`], 
+        () => getLocationBuoyNearby(longitude, latitude),
+        {
+            retry: 1,
+            retryDelay: 1000,
+        }
+    );
+
+    // Don't render anything if there's an error or still loading
+    if (error) {
+        console.warn('Failed to fetch nearby buoys:', error);
+        return null;
+    }
+
+    if (isLoading) {
+        return null;
+    }
 
     return (
         <>
-            {nearbyBuoys ? (
+            {nearbyBuoys && nearbyBuoys.length > 0 ? (
                 <>
                     <h2>Nearby Buoys</h2>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{marginBottom:"20px"}}>
