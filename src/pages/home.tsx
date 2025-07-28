@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
 import { Spot } from "@features/locations/types";
-import { Item } from "components";
+import { Item, SEO } from "components";
+import { Helmet } from "react-helmet-async";
 import BasicSelect from "components/common/basic-select";
 import { useNavigate } from "react-router-dom";
 import { FEATURED_SPOTS } from "utils/constants";
@@ -76,6 +77,23 @@ const Home = () => {
 
   return (
     <>
+      <SEO 
+        title="Surfe Diem - Free Surf Conditions for the Community"
+        description="Get real-time surf conditions, forecasts, and spot information. Free surf data for surfers - no ads, no signup required."
+        keywords="surf conditions, surf forecast, surf spots, wave height, surf report, free surf data, surf buoys, tide information, real-time surf data"
+        url="https://surfe-diem.com"
+      />
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "Surfe Diem",
+            "description": "Free surf conditions and forecasts for the surfing community",
+            "url": "https://surfe-diem.com"
+          })}
+        </script>
+      </Helmet>
       <Container maxWidth="xl" sx={{ marginTop: '20px', padding: "20px", paddingTop: "4px" }}>
         <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
           <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage2})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px"}} >

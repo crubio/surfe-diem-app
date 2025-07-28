@@ -28,6 +28,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.10",
+    "react-helmet-async": "^2.0.5",
     "react-resizable": "^3.0.5",
     "react-router-dom": "^6.15.0",
     "react-toastify": "^9.1.3",

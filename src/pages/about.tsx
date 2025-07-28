@@ -1,10 +1,17 @@
 import { Box, Container, Typography, Paper, Stack, Link, Divider, Button, Chip } from '@mui/material';
 import { Email, GitHub, Language, Favorite, Support, Share } from '@mui/icons-material';
 import trmpImage from '../assets/trmp_dont_sarf.jpeg';
+import { SEO } from 'components';
 
 const AboutPage = () => {
   return (
     <>
+      <SEO 
+        title="About Surfe Diem - Free Surf Conditions for the Community"
+        description="Learn about Surfe Diem's mission to provide free surf conditions and forecasts. Ocean stewardship and community-driven surf intelligence."
+        keywords="about surfe diem, surf community, ocean stewardship, free surf data, surf culture, surf forecast community"
+        url="https://surfe-diem.com/about"
+      />
       {/* Hero Section */}
       <Box
         sx={{
