@@ -23,11 +23,12 @@ export default function SearchAppBar() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
-  const pages: (keyof typeof pageMap)[] = ['Home', 'Map', 'Surf Spots'];
+  const pages: (keyof typeof pageMap)[] = ['Home', 'Map', 'Surf Spots', 'About'];
   const pageMap = {
     Home: '/',
     Map: '/map',
-    'Surf Spots': '/spots'
+    'Surf Spots': '/spots',
+    'About': '/about'
   }
   
   const {data: searchResultData, isSuccess} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {

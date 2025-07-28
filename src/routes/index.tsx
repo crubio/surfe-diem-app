@@ -8,6 +8,7 @@ import MapPage from "pages/map";
 import { AppWrapper } from "./wrapper";
 import SpotPage from "pages/spot";
 import SurfSpotsPage from "pages/spots";
+import AboutPage from "pages/about";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
           {
             path: "map",
             element: <MapPage />,
+          },
+          {
+            path: "about",
+            element: <AboutPage />,
           }
         ]
       }    ]);
