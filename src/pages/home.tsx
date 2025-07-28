@@ -1,6 +1,6 @@
 import {Box, Container, Grid, Stack, Typography} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { getLocations, getSurfSpots } from "@features/locations/api/locations";
+import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
 import { Spot } from "@features/locations/types";
 import { Item } from "components";
@@ -13,12 +13,39 @@ import SpotGlance from "@features/locations/spot-glance";
 import surfingImage from "assets/manresa1.jpg";
 import surfImage2 from "assets/pismo_landscape.jpg";
 import { orderBy } from "lodash";
+import { useFavorites } from "../providers/favorites-provider";
+import { FavoritesList } from "../components/favorites/favorites-list";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { favorites } = useFavorites();
   const {data: buoys} = useQuery(['locations'], async () => getLocations())
   const {data: spots} = useQuery(['spots'], async () => getSurfSpots())
   const {data: geolocation} = useQuery(['geolocation'], async () => getGeolocation())
+  
+  // Fetch current data for favorites
+  const {data: favoritesData, isLoading: favoritesLoading} = useQuery(
+    ['favorites-batch-data', favorites.map(f => `${f.type}-${f.id}`)],
+    () => {
+      if (favorites.length === 0) return { buoys: [], spots: [] };
+      
+      const buoyIds = favorites.filter(f => f.type === 'buoy').map(f => f.id);
+      const spotIds = favorites.filter(f => f.type === 'spot').map(f => Number(f.id));
+      
+      return getBatchForecast({
+        buoy_ids: buoyIds.length > 0 ? buoyIds : undefined,
+        spot_ids: spotIds.length > 0 ? spotIds : undefined,
+      });
+    },
+    {
+      enabled: favorites.length > 0,
+      staleTime: 0, // Always fetch fresh data
+      cacheTime: 0, // Don't cache
+    }
+  );
+
+  console.log(favoritesData)
+  
   const buoysData = orderBy(buoys,["name"], ["asc"] ) || []
   const spotsData = orderBy(spots, ["subregion_name", "name"], ["asc"]) || []
   const featuredSpots = spots?.flatMap((spot: Spot) => {
@@ -60,6 +87,19 @@ const Home = () => {
             </Typography>
           </Box>
         </Item>
+        {/* Favorites Section */}
+        <FavoritesList 
+          favorites={favorites}
+          currentData={favoritesData}
+          isLoading={favoritesLoading}
+        />
+        {geolocation ? (
+          <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
+            {/* TODO: link to page with the complete list and all other spots */}
+            <Typography variant="h5" sx={{marginBottom: "10px", paddingLeft: "8px"}}>Surf spots nearby</Typography>
+            <SpotGlance latitude={geolocation.latitude} longitude={geolocation.longitude} renderNumber={10} />
+          </Box>
+        ): null}
         <Grid container spacing={2} sx={{ marginBottom: "20px" }}>
           <Grid item xs={12} sm={12} md={5} lg={5}>
             <Item sx={{ bgcolor: 'background.default', marginTop: "20px"}}>
@@ -82,13 +122,7 @@ const Home = () => {
             </Item>
           </Grid>
         </Grid>
-        {geolocation ? (
-          <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
-            {/* TODO: link to page with the complete list and all other spots */}
-            <Typography variant="h5" sx={{marginBottom: "10px", paddingLeft: "8px"}}>Surf spots nearby</Typography>
-            <SpotGlance latitude={geolocation.latitude} longitude={geolocation.longitude} renderNumber={10} />
-          </Box>
-        ): null}
+        
         <Item sx={{ bgcolor: 'background.default', marginTop: "20px"}}>
         <Box sx={{
           backgroundImage:`url(${surfingImage})`,
