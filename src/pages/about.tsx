@@ -234,24 +234,63 @@ const AboutPage = () => {
         </Paper>
 
         {/* Data Sources */}
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, color: 'primary.main' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant="h5" 
+            component="h2" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 }, 
+              color: 'primary.main',
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              fontWeight: 600
+            }}
+          >
             Data Sources
           </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 },
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              lineHeight: 1.6
+            }}
+          >
             We aggregate data from multiple reliable sources to provide comprehensive surf information:
           </Typography>
-          <Stack spacing={1}>
-            <Typography variant="body2" color="text.secondary">
-              • NOAA National Data Buoy Center (NDBC)
+          <Stack spacing={{ xs: 1, sm: 1.5 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
+              • <Link href="https://www.ndbc.noaa.gov/" target="_blank" rel="noopener" sx={{ color: 'inherit' }}>NOAA National Data Buoy Center (NDBC)</Link>
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              • National Weather Service (NWS)
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
+              • <Link href="https://www.weather.gov/" target="_blank" rel="noopener" sx={{ color: 'inherit' }}>National Weather Service (NWS)</Link>
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              • OpenWeatherMap API
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
+              • <Link href="https://openweathermap.org/" target="_blank" rel="noopener" sx={{ color: 'inherit' }}>OpenWeatherMap API</Link>
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
+              • <Link href="https://open-meteo.com/" target="_blank" rel="noopener" sx={{ color: 'inherit' }}>Open-Meteo</Link> - Weather data and forecasts
+            </Typography>
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
               • Community-contributed spot data
             </Typography>
           </Stack>
