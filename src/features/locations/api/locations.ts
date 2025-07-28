@@ -1,7 +1,7 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot} from '../types';
+import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot, BatchForecastResponse} from '../types';
 
 type QueryParams = {
   limit?: number;
@@ -11,6 +11,11 @@ type QueryParams = {
 type SearchParams = {
   q: string;
   limit?: number;
+}
+
+type BatchForecastParams = {
+  buoy_ids?: string[];
+  spot_ids?: number[];
 }
 
 /**
@@ -116,4 +121,13 @@ export const getLatestObservation = (id: string): Promise<LatestObservationItem[
   return axios.get(`${API_ROUTES.LOCATIONS}/${id}/latest-observation`).then((response) => {
     return response.data;
   })
+}
+
+export const getBatchForecast = async (params: BatchForecastParams): Promise<BatchForecastResponse> => {
+  return axios.post(`${API_ROUTES.BATCH_FORECAST}`, params).then((response) => {
+    return response.data;
+  }).catch((error) => {
+    console.error('Failed to fetch batch forecast:', error);
+    return { buoys: [], spots: [] };
+  });
 }

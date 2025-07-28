@@ -6,7 +6,7 @@ import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
 import { Box, Container, Grid, Link, Stack} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { Item, Loading } from "components"
+import { FavoriteButton, Item, Loading } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatLatLong, getTodaysDate } from "utils/common"
@@ -66,7 +66,18 @@ const LocationsPage = () => {
     <div>
       {isLocationError ? <ErrorPage error={error} /> : (
         <Container sx={{marginBottom: "20px"}}>
-          <h1>{locationData?.name}</h1>
+          <h1>
+            {locationData?.name}
+            {locationData && (
+              <FavoriteButton 
+                showTooltip={true} 
+                id={locationData.location_id} 
+                type="buoy" 
+                name={locationData.name} 
+                location={locationData.location}
+              />
+            )}
+          </h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
             <Item>{locationData?.description}</Item>
             <Item>{locationData?.location?.split("(")[0]}</Item>

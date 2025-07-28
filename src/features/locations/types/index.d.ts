@@ -76,3 +76,47 @@ export interface BuoyLocationLatestObservation {
 export interface BuoyLocationLatestObservations {
   latest_observations: BuoyLatestObservation[]
 }
+
+// Batch forecast API response types
+export interface SwellData {
+  height: number;
+  direction: number;
+  period: number;
+}
+
+export interface BuoyObservation {
+  swell_height?: string;
+  period?: string;
+  direction?: string;
+}
+
+export interface BuoyWeather {
+  swell: any;
+  wind: any;
+  current: any;
+}
+
+export interface BuoyBatchData {
+  id: string;
+  name: string;
+  observation: BuoyObservation[] | null;
+  weather: BuoyWeather;
+}
+
+export interface SpotWeather {
+  swell: SwellData | null;
+  wind: any;
+  current: any;
+}
+
+export interface SpotBatchData {
+  id: number;
+  name: string;
+  weather: SpotWeather;
+}
+
+export interface BatchForecastResponse {
+  buoys?: BuoyBatchData[];
+  spots?: SpotBatchData[];
+  errors?: string[];
+}
