@@ -26,7 +26,6 @@ interface FavoriteItemProps {
 }
 
 const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type }) => {
-  const displayLocation = getFavoriteDisplayLocation(favorite);
   
   /**
    * Get current conditions based on type and data structure
@@ -58,7 +57,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       const weather = spotData.weather;
       if (!weather || !weather.swell) return null;
       
-              return (
+        return (
           <Box sx={{ mt: 1 }}>
             <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
               {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
@@ -102,10 +101,6 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
             {favorite.subregion_name}
           </Typography>
         )}
-        
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {displayLocation}
-        </Typography>
         
         {getConditions()}
       </Box>
