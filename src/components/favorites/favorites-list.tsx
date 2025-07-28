@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getBatchForecast } from '../../features/locations/api/locations';
 import { Favorite } from '../../types/favorites';
 import { BuoyBatchData, SpotBatchData } from '../../features/locations/types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
-import { Stack, Typography, Box, Chip, Button } from '@mui/material';
+import { Stack, Typography, Box, Chip, Button, Grid, Collapse, IconButton } from '@mui/material';
 import { FavoriteButton } from '../common/favorite-button';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
 import { getFavoriteDisplayLocation } from '../../utils/favorites';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
 
 interface FavoritesListProps {
   favorites: Favorite[];
@@ -43,13 +44,13 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       const swellData = observation[1]; // Swell observation
       
       return (
-                  <Box sx={{ mt: 1 }}>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-              {swellData && swellData.swell_height && `${swellData.swell_height}`}
-              {swellData && swellData.period && ` • ${swellData.period}s`}
-              {swellData && swellData.direction && ` • ${swellData.direction}`}
-            </Typography>
-          </Box>
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+            {swellData && swellData.swell_height && `${swellData.swell_height}`}
+            {swellData && swellData.period && ` • ${swellData.period}s`}
+            {swellData && swellData.direction && ` • ${swellData.direction}`}
+          </Typography>
+        </Box>
       );
     } else {
       // Type guard for spot data
@@ -57,15 +58,15 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       const weather = spotData.weather;
       if (!weather || !weather.swell) return null;
       
-        return (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-              {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
-              {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
-              {weather.swell.direction && ` • ${weather.swell.direction}°`}
-            </Typography>
-          </Box>
-        );
+      return (
+        <Box sx={{ mt: 1 }}>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+            {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
+            {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
+            {weather.swell.direction && ` • ${weather.swell.direction}°`}
+          </Typography>
+        </Box>
+      );
     }
   };
 
@@ -75,11 +76,11 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
 
   return (
     <Item sx={{ 
-      padding: '16px', 
-      marginBottom: '12px',
+      padding: { xs: '12px', sm: '16px' }, 
+      height: '100%',
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start'
+      flexDirection: 'column',
+      justifyContent: 'space-between'
     }}>
       <Box sx={{ flex: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -88,8 +89,16 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
             size="small" 
             color={type === 'spot' ? 'primary' : 'secondary'}
             variant="outlined"
+            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
           />
-          <Typography variant="h6" component="div">
+          <Typography 
+            variant="h6" 
+            component="div"
+            sx={{ 
+              fontSize: { xs: '1rem', sm: '1.125rem' },
+              fontWeight: 600
+            }}
+          >
             <LinkRouter to={linkTo} style={{ textDecoration: 'none', color: 'inherit' }}>
               {favorite.name}
             </LinkRouter>
@@ -97,7 +106,14 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
         </Box>
         
         {favorite.subregion_name && (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 1,
+              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+            }}
+          >
             {favorite.subregion_name}
           </Typography>
         )}
@@ -105,6 +121,86 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
         {getConditions()}
       </Box>
     </Item>
+  );
+};
+
+const FavoriteSection: React.FC<{
+  title: string;
+  favorites: Favorite[];
+  currentData?: BuoyBatchData[] | SpotBatchData[];
+  type: 'spot' | 'buoy';
+  itemsPerRow?: number;
+}> = ({ title, favorites, currentData, type, itemsPerRow = 3 }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  if (favorites.length === 0) return null;
+  
+  const hasMoreThanFirstRow = favorites.length > itemsPerRow;
+  const firstRowItems = favorites.slice(0, itemsPerRow);
+  const remainingItems = favorites.slice(itemsPerRow);
+  
+  const renderFavoriteItems = (items: Favorite[]) => (
+    <Grid container spacing={{ xs: 1, sm: 2 }}>
+      {items.map((favorite) => (
+        <Grid item xs={12} sm={6} md={2.4} key={`${type}-${favorite.id}`}>
+          <FavoriteItem
+            favorite={favorite}
+            currentData={currentData?.find(item => 
+              type === 'spot' 
+                ? (item as SpotBatchData).id.toString() === favorite.id
+                : (item as BuoyBatchData).id.toString() === favorite.id
+            )}
+            type={type}
+          />
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  return (
+    <Box sx={{ mb: 3 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        mb: 2 
+      }}>
+        <Typography 
+          variant="h6" 
+          component="h3" 
+          sx={{ 
+            fontSize: { xs: '1.125rem', sm: '1.25rem' },
+            fontWeight: 600
+          }}
+        >
+          {title} ({favorites.length})
+        </Typography>
+        {hasMoreThanFirstRow && (
+          <IconButton
+            onClick={() => setExpanded(!expanded)}
+            size="small"
+            sx={{ 
+              color: 'primary.main',
+              '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
+            }}
+          >
+            {expanded ? <ExpandLess /> : <ExpandMore />}
+          </IconButton>
+        )}
+      </Box>
+      
+      {/* First row - always visible */}
+      {renderFavoriteItems(firstRowItems)}
+      
+      {/* Remaining items - collapsible */}
+      {hasMoreThanFirstRow && (
+        <Collapse in={expanded} timeout="auto">
+          <Box sx={{ mt: 2 }}>
+            {renderFavoriteItems(remainingItems)}
+          </Box>
+        </Collapse>
+      )}
+    </Box>
   );
 };
 
@@ -123,52 +219,47 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
 
   return (
     <Box sx={{ mt: 3 }}>
-              <Typography variant="h4" component="h2" sx={{ mb: 2 }}>
-          My Lineup
-        </Typography>
+      <Typography 
+        variant="h4" 
+        component="h2" 
+        sx={{ 
+          mb: 2,
+          fontSize: { xs: '1.5rem', sm: '2rem' },
+          fontWeight: 700
+        }}
+      >
+        My Lineup
+      </Typography>
       
       {isLoading && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2,
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
+        >
           Loading current conditions...
         </Typography>
       )}
       
-      <Stack spacing={2}>
-        {spotFavorites.length > 0 && (
-          <Box>
-            <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
-              Surf Spots ({spotFavorites.length})
-            </Typography>
-            <Stack spacing={2} direction={{ xs: 'column', sm: 'column', md: 'row' }} sx={{ overflowX: "auto", padding: "10px", width: "fit-content" }}>
-              {spotFavorites.map((favorite) => (
-                <FavoriteItem
-                  key={`spot-${favorite.id}`}
-                  favorite={favorite}
-                  currentData={currentData?.spots?.find(s => s.id.toString() === favorite.id)}
-                  type="spot"
-                />
-              ))}
-            </Stack>
-          </Box>
-        )}
+      <Stack spacing={3}>
+        <FavoriteSection
+          title="Surf Spots"
+          favorites={spotFavorites}
+          currentData={currentData?.spots}
+          type="spot"
+          itemsPerRow={5}
+        />
         
-        {buoyFavorites.length > 0 && (
-          <Box>
-            <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
-              Buoys ({buoyFavorites.length})
-            </Typography>
-            <Stack spacing={2} direction={{ xs: 'column', sm: 'column', md: 'row' }} sx={{ overflowX: "auto", padding: "10px", width: "fit-content" }}>
-              {buoyFavorites.map((favorite) => (
-                <FavoriteItem
-                  key={`buoy-${favorite.id}`}
-                  favorite={favorite}
-                  currentData={currentData?.buoys?.find(b => b.id.toString() === favorite.id)}
-                  type="buoy"
-                />
-              ))}
-            </Stack>
-          </Box>
-        )}
+        <FavoriteSection
+          title="Buoys"
+          favorites={buoyFavorites}
+          currentData={currentData?.buoys}
+          type="buoy"
+          itemsPerRow={5}
+        />
       </Stack>
     </Box>
   );
