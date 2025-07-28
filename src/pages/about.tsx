@@ -175,8 +175,8 @@ const AboutPage = () => {
           <Stack spacing={2}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Email color="primary" />
-              <Link href="mailto:contact@surfediem.com" underline="hover">
-                contact@surfediem.com
+              <Link href="mailto:contact@surfe-diem.com" underline="hover">
+                contact@surfe-diem.com
               </Link>
             </Box>
           </Stack>
