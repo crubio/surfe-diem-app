@@ -20,7 +20,7 @@ const MapPage = () => {
     <>
       <PageContainer >
         <h1>Buoys and spots</h1>
-        {!isEmpty(data) && isFetched && <MapBox geoJson={data} lat={coords && coords[0] || undefined} lng={coords && coords[1]|| undefined} />}
+        {!isEmpty(data) && isFetched && <MapBox geoJson={data} lat={coords && coords[1] || undefined} lng={coords && coords[0] || undefined} />}
         {isError && (
           <div>
             <h3>Could not fetch locations</h3>

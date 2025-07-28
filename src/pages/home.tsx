@@ -13,6 +13,7 @@ import SpotGlance from "@features/locations/spot-glance";
 import surfingImage from "assets/manresa1.jpg";
 import surfImage2 from "assets/pismo_landscape.jpg";
 import { orderBy } from "lodash";
+import FavoritesList from "components/common/favorites-list";
 
 const Home = () => {
   const navigate = useNavigate();

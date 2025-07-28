@@ -17,9 +17,11 @@ interface MapProps {
 }
 
 export const MapBox = (props: MapProps) => {
-  const [lng, setLng] = useState(props.lat || DEFAULT_CENTER[0]);
-  const [lat, setLat] = useState(props.lng || DEFAULT_CENTER[1]);
+  const [lng, setLng] = useState(props.lng || DEFAULT_CENTER[0]);
+  const [lat, setLat] = useState(props.lat || DEFAULT_CENTER[1]);
   const [zoom, setZoom] = useState(props.zoom || 5);
+  
+
   const [selectedItem, setSelectedItem] = useState<GeoJSONProperties | null>(null); // [id, name, description]
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -27,10 +29,15 @@ export const MapBox = (props: MapProps) => {
   useEffect(() => {
     if (map.current) return; // initialize map only once
     if (!mapContainer.current) return; // check if container is available
+    
+    // Ensure we have valid coordinates
+    const validLng = typeof lng === 'number' && !isNaN(lng) ? lng : DEFAULT_CENTER[0];
+    const validLat = typeof lat === 'number' && !isNaN(lat) ? lat : DEFAULT_CENTER[1];
+    
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: [lng, lat],
+      center: [validLng, validLat],
       zoom: zoom,
     });
 
@@ -54,8 +61,12 @@ export const MapBox = (props: MapProps) => {
       );
 
       if (map.current) {
+        // GeoJSON coordinates are typically [lng, lat], so we should use them directly
+        const markerLng = marker.geometry.coordinates[0];
+        const markerLat = marker.geometry.coordinates[1];
+        
         new mapboxgl.Marker()
-        .setLngLat([marker.geometry.coordinates[1], marker.geometry.coordinates[0]])
+        .setLngLat([markerLng, markerLat])
         .setPopup(popup)
         .addTo(map.current)
         .getElement().addEventListener('click', () => setSelectedItem(marker.properties));
