@@ -2,7 +2,7 @@ import { getSurfSpots } from "@features/locations/api/locations";
 import { Spot } from "@features/locations/types";
 import { Box, Container, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { Item, LinkRouter } from "components";
+import { Item, LinkRouter, SEO } from "components";
 import { sortBy } from "lodash";
 import surfImage from "assets/sharks1.jpg";
 import NoDataFound from "components/common/not-found";
@@ -27,7 +27,14 @@ const SurfSpotsPage = () => {
     const sortedSpots = sortBySubregion(data || []);
 
     return (
-        <Container sx={{marginBottom: "20px"}}>
+        <>
+            <SEO 
+                title="Surf Spots - Surfe Diem"
+                description="Browse surf spots by region. Get detailed information about surf locations, conditions, and forecasts."
+                keywords="surf spots, surf locations, surf regions, surf spot directory, surf spot finder, surf spot guide"
+                url="https://surfe-diem.com/spots"
+            />
+            <Container sx={{marginBottom: "20px"}}>
             <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
                 <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px", backgroundPosition: "center"}} >
                     <Typography variant="h3" component="div" sx={{ paddingTop: "20px", color: "white", textAlign: "center", textShadow: "#1ed6e6 1px 0 2px;" }}>
@@ -58,6 +65,7 @@ const SurfSpotsPage = () => {
                 ) : <NoDataFound />}
             </Box>
         </Container>
+        </>
     )
 }
 

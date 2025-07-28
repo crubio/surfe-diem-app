@@ -10,6 +10,7 @@ import {
 import { router } from 'routes'
 import { themeOptions } from 'config/theme';
 import { FavoritesProvider } from './favorites-provider';
+import { HelmetProvider } from 'react-helmet-async';
 import 'react-toastify/dist/ReactToastify.css';
 import '/src/providers/app.css'
 
@@ -24,7 +25,7 @@ const theme = createTheme(themeOptions);
 export const AppProvider = () => {
 
   return(
-    <>
+    <HelmetProvider>
       <ToastContainer theme='dark' />
       <ErrorBoundary FallbackComponent={ErrorFallback}>
         <QueryClientProvider client={queryClient}>
@@ -36,7 +37,7 @@ export const AppProvider = () => {
           </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
-    </>
+    </HelmetProvider>
   )
 }
 

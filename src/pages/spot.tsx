@@ -3,7 +3,7 @@ import { Box, Container, Grid, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { FavoriteButton, Item, Loading } from "components"
+import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData } from "components"
 import { getClostestTideStation, getDailyTides } from "@features/tides"
 import { getForecastCurrent, getForecastHourly } from "@features/forecasts"
 import { DailyTide } from "@features/tides/components/daily_tide"
@@ -54,6 +54,25 @@ const SpotPage = () => {
 
   return (
     <>
+      {spot && (
+        <>
+          <SEO 
+            title={`${spot.name} Surf Spot - Surfe Diem`}
+            description={`Get current surf conditions, forecasts, and tide information for ${spot.name} in ${spot.subregion_name}. Real-time surf data and weather.`}
+            keywords={`${spot.name} surf spot, ${spot.subregion_name} surf, ${spot.name} surf conditions, ${spot.name} surf forecast, ${spot.subregion_name} surf spots`}
+            url={`https://surfe-diem.com/spot/${spot.id}`}
+          />
+          <SurfSpotStructuredData
+            name={spot.name}
+            description={`Surf spot in ${spot.subregion_name} with current conditions and forecasts`}
+            latitude={spot.latitude}
+            longitude={spot.longitude}
+            subregion={spot.subregion_name}
+            timezone={spot.timezone}
+            url={`https://surfe-diem.com/spot/${spot.id}`}
+          />
+        </>
+      )}
       {isError && <ErrorPage error={error} />}
       {spot ? (
         <Container sx={{marginBottom: "20px"}}>
