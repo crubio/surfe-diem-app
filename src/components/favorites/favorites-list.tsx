@@ -130,7 +130,7 @@ const FavoriteSection: React.FC<{
   currentData?: BuoyBatchData[] | SpotBatchData[];
   type: 'spot' | 'buoy';
   itemsPerRow?: number;
-}> = ({ title, favorites, currentData, type, itemsPerRow = 3 }) => {
+}> = ({ title, favorites, currentData, type, itemsPerRow = 5 }) => {
   const [expanded, setExpanded] = useState(false);
   
   if (favorites.length === 0) return null;
@@ -145,11 +145,14 @@ const FavoriteSection: React.FC<{
         <Grid item xs={12} sm={6} md={2.4} key={`${type}-${favorite.id}`}>
           <FavoriteItem
             favorite={favorite}
-            currentData={currentData?.find(item => 
-              type === 'spot' 
-                ? (item as SpotBatchData).id.toString() === favorite.id
-                : (item as BuoyBatchData).id.toString() === favorite.id
-            )}
+            currentData={(() => {
+              if (!currentData) return undefined;
+              return (currentData as any[]).find((item: any) => 
+                type === 'spot' 
+                  ? item.id.toString() === favorite.id
+                  : item.id.toString() === favorite.id
+              );
+            })()}
             type={type}
           />
         </Grid>
