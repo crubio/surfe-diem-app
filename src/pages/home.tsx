@@ -3,9 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
 import { Spot } from "@features/locations/types";
-import { Item, SEO } from "components";
+import { Item, SEO, EnhancedSelect } from "components";
 import { Helmet } from "react-helmet-async";
-import BasicSelect from "components/common/basic-select";
 import { useNavigate } from "react-router-dom";
 import { FEATURED_SPOTS } from "utils/constants";
 import SpotSummary from "@features/locations/spot-summary"
@@ -175,7 +174,14 @@ const Home = () => {
               </Typography>
               <Box>
                 {buoysData && buoysData.length > 0 && (
-                  <BasicSelect label={"select a buoy"} items={buoysData} selectValueKey={"location_id"} doOnSelect={goToBuoyPage} />
+                  <EnhancedSelect 
+                    label="Select a buoy" 
+                    items={buoysData} 
+                    selectValueKey="location_id" 
+                    doOnSelect={goToBuoyPage}
+                    type="buoy"
+                    placeholder="Search buoys..."
+                  />
                 )}
               </Box>
             </Item>
@@ -195,7 +201,14 @@ const Home = () => {
               </Typography>
               <Box>
                 {spotsData && spotsData.length > 0 && (
-                  <BasicSelect label={"select a surf spot"} items={spotsData} selectValueKey={"id"} doOnSelect={goToSpotPage} />
+                  <EnhancedSelect 
+                    label="Select a surf spot" 
+                    items={spotsData} 
+                    selectValueKey="id" 
+                    doOnSelect={goToSpotPage}
+                    type="spot"
+                    placeholder="Search surf spots..."
+                  />
                 )}
               </Box>
             </Item>
