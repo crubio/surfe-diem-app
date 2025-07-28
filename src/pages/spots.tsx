@@ -34,28 +34,111 @@ const SurfSpotsPage = () => {
                 keywords="surf spots, surf locations, surf regions, surf spot directory, surf spot finder, surf spot guide"
                 url="https://surfe-diem.com/spots"
             />
-            <Container sx={{marginBottom: "20px"}}>
-            <Item sx={{ bgcolor: 'primary.dark', marginTop: "20px"}}>
-                <Box sx={{backgroundColor: "#1ed6e6", backgroundImage: `url(${surfImage})`, backgroundRepeat: "no-repeat", backgroundSize: "cover", height: "290px", backgroundPosition: "center"}} >
-                    <Typography variant="h3" component="div" sx={{ paddingTop: "20px", color: "white", textAlign: "center", textShadow: "#1ed6e6 1px 0 2px;" }}>
-                    surfe diem
+            <Container sx={{
+                marginBottom: { xs: "10px", sm: "20px" },
+                px: { xs: 2, sm: 3 }
+            }}>
+            <Item sx={{ bgcolor: 'primary.dark', marginTop: { xs: "10px", sm: "20px" }}}>
+                <Box sx={{
+                    backgroundColor: "#1ed6e6", 
+                    backgroundImage: `url(${surfImage})`, 
+                    backgroundRepeat: "no-repeat", 
+                    backgroundSize: "cover", 
+                    height: { xs: "200px", sm: "240px", md: "290px" },
+                    backgroundPosition: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center"
+                }} >
+                    <Typography 
+                        variant="h3" 
+                        component="div" 
+                        sx={{ 
+                            paddingTop: { xs: "10px", sm: "20px" },
+                            color: "white", 
+                            textAlign: "center", 
+                            textShadow: "#1ed6e6 1px 0 2px",
+                            fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+                            fontWeight: "bold",
+                            mb: { xs: 1, sm: 2 }
+                        }}
+                    >
+                        surfe diem
                     </Typography>
-                    <Typography variant="h5" component="div" sx={{ marginBottom: "20px", color: "white", textAlign: "center" }}>
-                    get the latest surf forecasts near you
+                    <Typography 
+                        variant="h5" 
+                        component="div" 
+                        sx={{ 
+                            marginBottom: { xs: "10px", sm: "20px" },
+                            color: "white", 
+                            textAlign: "center",
+                            fontSize: { xs: "1rem", sm: "1.25rem", md: "1.5rem" }
+                        }}
+                    >
+                        get the latest surf forecasts near you
                     </Typography>
                 </Box>
             </Item>
-            <Box sx={{ marginTop: "20px", padding: "10px", borderRadius: "8px" }}>
-                <Typography variant="h5" sx={{marginBottom: "10px"}}>Surf spots by region</Typography>
+            <Box sx={{ 
+                marginTop: { xs: "10px", sm: "20px" }, 
+                padding: { xs: "8px", sm: "10px" }, 
+                borderRadius: "8px" 
+            }}>
+                <Typography 
+                    variant="h5" 
+                    sx={{
+                        marginBottom: { xs: "8px", sm: "10px" },
+                        fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                        fontWeight: 600
+                    }}
+                >
+                    Surf spots by region
+                </Typography>
                 {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
                     Object.keys(sortedSpots).map((subregion) => (
-                        <Box key={subregion} sx={{ marginBottom: "20px", width: "100%" }}>
-                            <Typography variant="h5" component="div" sx={{ marginBottom: "10px" }}>{subregion}</Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        <Box key={subregion} sx={{ 
+                            marginBottom: { xs: "15px", sm: "20px" }, 
+                            width: "100%" 
+                        }}>
+                            <Typography 
+                                variant="h5" 
+                                component="div" 
+                                sx={{ 
+                                    marginBottom: { xs: "8px", sm: "10px" },
+                                    fontSize: { xs: "1.125rem", sm: "1.25rem" },
+                                    fontWeight: 600,
+                                    color: "primary.main"
+                                }}
+                            >
+                                {subregion}
+                            </Typography>
+                            <Box sx={{ 
+                                display: 'flex', 
+                                flexWrap: 'wrap', 
+                                gap: { xs: 1, sm: 2 }
+                            }}>
                                 {sortedSpots[subregion].map((spot) => (
-                                    <Item key={spot.id} sx={{ width: '300px', padding: '10px' }}>
+                                    <Item 
+                                        key={spot.id} 
+                                        sx={{ 
+                                            width: { xs: '100%', sm: '300px' },
+                                            padding: { xs: '12px', sm: '10px' },
+                                            minHeight: { xs: '48px', sm: 'auto' }
+                                        }}
+                                    >
                                         <LinkRouter to={`/spot/${spot.id}`}>
-                                            <Typography variant="h6">{spot.name}</Typography>
+                                            <Typography 
+                                                variant="h6"
+                                                sx={{
+                                                    fontSize: { xs: '1rem', sm: '1.125rem' },
+                                                    fontWeight: 500,
+                                                    textAlign: { xs: 'center', sm: 'left' }
+                                                }}
+                                            >
+                                                {spot.name}
+                                            </Typography>
                                         </LinkRouter>
                                     </Item>
                                 ))}
