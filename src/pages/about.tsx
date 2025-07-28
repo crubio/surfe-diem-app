@@ -19,14 +19,14 @@ const AboutPage = () => {
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          minHeight: '60vh',
+          minHeight: { xs: '40vh', sm: '50vh', md: '60vh' },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          mb: 4,
+          mb: { xs: 2, sm: 3, md: 4 },
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
           <Typography 
             variant="h2" 
             component="h1" 
@@ -35,7 +35,8 @@ const AboutPage = () => {
               color: 'white',
               textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
               fontWeight: 'bold',
-              mb: 2
+              mb: { xs: 1, sm: 2 },
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
             }}
           >
             About Surfe Diem
@@ -46,7 +47,9 @@ const AboutPage = () => {
               textAlign: 'center', 
               color: 'white',
               textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
-              fontStyle: 'italic'
+              fontStyle: 'italic',
+              fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
+              px: { xs: 1, sm: 2 }
             }}
           >
             Free surf conditions for the community
@@ -54,55 +57,146 @@ const AboutPage = () => {
         </Container>
       </Box>
 
-      <Container maxWidth="md" sx={{ py: 4 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, sm: 3, md: 4 }, px: { xs: 2, sm: 3 } }}>
 
-      <Stack spacing={4}>
+      <Stack spacing={{ xs: 3, sm: 4 }}>
         {/* Mission Statement */}
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, color: 'primary.main' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant="h5" 
+            component="h2" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 }, 
+              color: 'primary.main',
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              fontWeight: 600
+            }}
+          >
             Our Mission
           </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 },
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              lineHeight: 1.6
+            }}
+          >
             Surfe Diem is dedicated to helping surfers catch waves by providing real-time 
             surf conditions, forecasts, and spot information. Always free to the community - no ads, no signup, no login.
           </Typography>
-          <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontStyle: 'italic',
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              color: 'text.secondary'
+            }}
+          >
             "Carpe Diem" - seize the day, and with Surfe Diem, seize the waves.
           </Typography>
         </Paper>
 
         {/* Why Surfe Diem */}
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, color: 'primary.main' }}>
+        <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 } }}>
+          <Typography 
+            variant="h5" 
+            component="h2" 
+            sx={{ 
+              mb: { xs: 1.5, sm: 2 }, 
+              color: 'primary.main',
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+              fontWeight: 600
+            }}
+          >
             Why Surfe Diem?
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3 }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mb: { xs: 2, sm: 3 },
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              lineHeight: 1.6
+            }}
+          >
             We focus on providing clean, reliable data without the clutter. Our interface is designed for surfers who want 
             quick access to the information that matters most - swell conditions, forecasts, and spot details.
           </Typography>
           
-          <Stack spacing={2}>
+          <Stack spacing={{ xs: 1.5, sm: 2 }}>
             <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>🌊 Real-Time Conditions</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: { xs: 0.5, sm: 1 },
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontWeight: 600
+                }}
+              >
+                🌊 Real-Time Conditions
+              </Typography>
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+              >
                 Live swell data, wind conditions, and tide information from NOAA buoys and weather stations.
               </Typography>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>📊 Detailed Forecasts</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: { xs: 0.5, sm: 1 },
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontWeight: 600
+                }}
+              >
+                📊 Detailed Forecasts
+              </Typography>
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+              >
                 Hourly and daily surf forecasts to help you plan your sessions.
               </Typography>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>🗺️ Spot Discovery</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: { xs: 0.5, sm: 1 },
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontWeight: 600
+                }}
+              >
+                🗺️ Spot Discovery
+              </Typography>
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+              >
                 Find new surf spots and explore different regions with our interactive map.
               </Typography>
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ mb: 1 }}>⭐ Personal Favorites</Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: { xs: 0.5, sm: 1 },
+                  fontSize: { xs: '1rem', sm: '1.125rem' },
+                  fontWeight: 600
+                }}
+              >
+                ⭐ Personal Favorites
+              </Typography>
+              <Typography 
+                variant="body2" 
+                color="text.secondary"
+                sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+              >
                 Save your favorite spots and buoys for quick access to current conditions.
               </Typography>
             </Box>
