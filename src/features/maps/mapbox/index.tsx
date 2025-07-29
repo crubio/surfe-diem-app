@@ -101,7 +101,7 @@ export const MapBox = (props: MapProps) => {
         map.current = null;
       }
     };
-  }, [mapContainer, lat, lng, props.geoJson.features, zoom]);
+  }, [mapContainer, props.geoJson.features]); // Removed lat, lng, zoom from dependencies
 
   return (
     <>
