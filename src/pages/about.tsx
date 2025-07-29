@@ -1,6 +1,7 @@
 import { Box, Container, Typography, Paper, Stack, Link, Divider, Button, Chip } from '@mui/material';
 import { Email, GitHub, Language, Favorite, Support, Share } from '@mui/icons-material';
-import trmpImage from '../assets/trmp_dont_sarf.jpeg';
+import heroImageJpeg from '../assets/trmp_dont_sarf_optimized.jpeg';
+import heroImageWebp from '../assets/trmp_dont_sarf.webp';
 import { SEO } from 'components';
 
 const AboutPage = () => {
@@ -15,7 +16,7 @@ const AboutPage = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${trmpImage})`,
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImageWebp})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',

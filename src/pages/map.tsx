@@ -1,10 +1,12 @@
 import { getGeoJsonLocations } from "@features/locations/api/locations"
-import { MapBox } from "@features/maps"
 import { useQuery } from "@tanstack/react-query"
 import PageContainer from "components/common/container"
 import { SEO } from "components"
 import { isEmpty } from "lodash"
-import { useEffect, useState } from "react"
+import { useEffect, useState, lazy, Suspense } from "react"
+
+// Lazy load the map component to reduce initial bundle size
+const MapBox = lazy(() => import("@features/maps").then(module => ({ default: module.MapBox })))
 
 const MapPage = () => {
   const [coords, setCoords] = useState<[number, number] | null>(null) // [lat, lng]
@@ -27,7 +29,11 @@ const MapPage = () => {
       />
       <PageContainer >
         <h1>Buoys and spots</h1>
-        {!isEmpty(data) && isFetched && <MapBox geoJson={data} lat={coords && coords[1] || undefined} lng={coords && coords[0] || undefined} />}
+        {!isEmpty(data) && isFetched && (
+          <Suspense fallback={<div>Loading map...</div>}>
+            <MapBox geoJson={data} lat={coords && coords[1] || undefined} lng={coords && coords[0] || undefined} />
+          </Suspense>
+        )}
         {isError && (
           <div>
             <h3>Could not fetch locations</h3>

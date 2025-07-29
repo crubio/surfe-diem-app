@@ -27,13 +27,25 @@ const MapBoxSingle = (props: MapProps) => {
     });
 
     const el = document.createElement('div');
-      el.className = 'marker-single';
+    el.className = 'marker-single';
 
-      if (map.current) {
-        new mapboxgl.Marker()
-        .setLngLat([lng, lat])
-        .addTo(map.current);
+    let marker: mapboxgl.Marker | null = null;
+    if (map.current) {
+      marker = new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map.current);
+    }
+
+    // Cleanup function
+    return () => {
+      if (marker) {
+        marker.remove();
       }
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
   }, [lat, lng, zoom])
 
   return (
