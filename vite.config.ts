@@ -1,13 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
 import ViteImageOptimize from 'vite-plugin-imagemin'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(), 
-    tsconfigPaths(),
     ViteImageOptimize({
       gifsicle: {
         optimizationLevel: 7,
@@ -48,6 +46,14 @@ export default defineConfig({
       features: "/src/features",
       config: "/src/config",
       lib: "/src/lib",
+      routes: "/src/routes",
+      pages: "/src/pages",
+      components: "/src/components",
+      utils: "/src/utils",
+      providers: "/src/providers",
+      assets: "/src/assets",
+      "test-utils": "/src/test/test-utils",
+      "@features": "/src/features",
     },
   },
   build: {
