@@ -69,7 +69,7 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'mui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          'maps': ['@react-google-maps/api', 'mapbox-gl'],
+          'maps': ['mapbox-gl'],
           'utils': ['lodash', 'dayjs', 'axios'],
           'router': ['react-router-dom'],
           'query': ['@tanstack/react-query'],
