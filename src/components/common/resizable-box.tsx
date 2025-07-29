@@ -4,6 +4,8 @@ import "react-resizable/css/styles.css";
 
 import React, { ReactNode } from "react";
 
+const ResizableBoxComponent = ReactResizableBox as any;
+
 export default function ResizableBox({
   children,
   width = 600,
@@ -33,7 +35,7 @@ export default function ResizableBox({
         }}
       >
         {resizable ? (
-          <ReactResizableBox width={width} height={height}>
+          <ResizableBoxComponent width={width} height={height}>
             <div
               style={{
                 width: "100%",
@@ -43,7 +45,7 @@ export default function ResizableBox({
             >
               {children}
             </div>
-          </ReactResizableBox>
+          </ResizableBoxComponent>
         ) : (
           <div
             style={{
