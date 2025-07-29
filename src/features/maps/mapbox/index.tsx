@@ -41,13 +41,18 @@ export const MapBox = (props: MapProps) => {
       zoom: zoom,
     });
 
-    map.current.on('move', () => {
-      setLng(parseFloat(map.current!.getCenter().lng.toFixed(4)));
-      setLat(parseFloat(map.current!.getCenter().lat.toFixed(4)));
-      setZoom(parseFloat(map.current!.getZoom().toFixed(4)));
-    });
+    const moveHandler = () => {
+      if (map.current) {
+        setLng(parseFloat(map.current.getCenter().lng.toFixed(4)));
+        setLat(parseFloat(map.current.getCenter().lat.toFixed(4)));
+        setZoom(parseFloat(map.current.getZoom().toFixed(4)));
+      }
+    };
+
+    map.current.on('move', moveHandler);
 
     // Create marker points
+    const markers: mapboxgl.Marker[] = [];
     props.geoJson.features.forEach((marker) => {
       const el = document.createElement('div');
       el.className = 'marker-'+marker.properties.id;
@@ -65,14 +70,37 @@ export const MapBox = (props: MapProps) => {
         const markerLng = marker.geometry.coordinates[0];
         const markerLat = marker.geometry.coordinates[1];
         
-        new mapboxgl.Marker()
+        const mapMarker = new mapboxgl.Marker()
         .setLngLat([markerLng, markerLat])
         .setPopup(popup)
-        .addTo(map.current)
-        .getElement().addEventListener('click', () => setSelectedItem(marker.properties));
+        .addTo(map.current);
+        
+        const clickHandler = () => setSelectedItem(marker.properties);
+        mapMarker.getElement().addEventListener('click', clickHandler);
+        markers.push(mapMarker);
       }
     });
     
+    // Cleanup function
+    return () => {
+      if (map.current) {
+        // Remove event listeners
+        map.current.off('move', moveHandler);
+        
+        // Remove markers and their event listeners
+        markers.forEach(marker => {
+          const element = marker.getElement();
+          if (element) {
+            element.removeEventListener('click', () => {});
+          }
+          marker.remove();
+        });
+        
+        // Remove map instance
+        map.current.remove();
+        map.current = null;
+      }
+    };
   }, [mapContainer, lat, lng, props.geoJson.features, zoom]);
 
   return (

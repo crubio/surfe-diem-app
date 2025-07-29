@@ -8,8 +8,8 @@ import { Spot } from "./types"
 import { Loading } from "components"
 import { Link } from 'react-router-dom';
 
-export default function SpotSummary (props: Spot) {
-  const {latitude, longitude, name, subregion_name, id} = props
+export default function SpotSummary(props: Spot) {
+  const {latitude, longitude, name, subregion_name, id, timezone} = props
 
   const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getForecastHourly({
     latitude: latitude,
@@ -20,7 +20,7 @@ export default function SpotSummary (props: Spot) {
     enabled: true
   })
 
-  const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(props.timezone))
+  const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(timezone))
 
   function renderLatestObservation(hourlyData: ForecastDataHourly, idx: number) {
     if (!hourlyData || forecastStartingIndex == -1) return (

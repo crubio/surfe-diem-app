@@ -45,7 +45,7 @@ export function SearchResultsDialog<T>(props: SimpleDialogProps<T>) {
         </ListItem>
       )
     }
-  }
+  };
 
   return (
     <Dialog onClose={handleClose} open={open}>

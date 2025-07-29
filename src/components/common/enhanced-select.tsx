@@ -38,8 +38,8 @@ export default function EnhancedSelect({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [inputValue, setInputValue] = useState('');
 
-  // Group items by region for spots, or keep as-is for buoys
-  const groupedOptions = (() => {
+  // Memoize expensive grouping operations
+  const { groupedOptions, flatOptions } = useMemo(() => {
     if (type === 'spot') {
       const grouped = items.reduce((acc: { [key: string]: any[] }, item) => {
         const region = item.subregion_name || 'Other';
@@ -51,23 +51,29 @@ export default function EnhancedSelect({
       }, {});
 
       // Sort regions and items within regions
-      return Object.keys(grouped)
+      const groupedOptions = Object.keys(grouped)
         .sort()
         .map(region => ({
           group: region,
           options: grouped[region].sort((a, b) => a.name.localeCompare(b.name))
         }));
+
+      return {
+        groupedOptions,
+        flatOptions: groupedOptions.flatMap(group => group.options)
+      };
     } else {
       // For buoys, just sort alphabetically
-      return [{
-        group: 'Buoys',
-        options: items.sort((a, b) => a.name.localeCompare(b.name))
-      }];
+      const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+      return {
+        groupedOptions: [{
+          group: 'Buoys',
+          options: sortedItems
+        }],
+        flatOptions: sortedItems
+      };
     }
-  })();
-
-  // Flatten options for autocomplete
-  const flatOptions = groupedOptions.flatMap(group => group.options);
+  }, [items, type]);
 
   const handleChange = (event: any, newValue: any) => {
     if (newValue) {

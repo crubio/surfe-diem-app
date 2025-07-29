@@ -25,7 +25,7 @@ const Home = () => {
   
   // Fetch current data for favorites
   const {data: favoritesData, isLoading: favoritesLoading} = useQuery(
-    ['favorites-batch-data', favorites.map(f => `${f.type}-${f.id}`)],
+    ['favorites-batch-data', favorites.length > 0 ? favorites.map(f => `${f.type}-${f.id}`).join(',') : 'empty'],
     () => {
       if (favorites.length === 0) return { buoys: [], spots: [] };
       
@@ -39,14 +39,14 @@ const Home = () => {
     },
     {
       enabled: favorites.length > 0,
-      staleTime: 0, // Always fetch fresh data
-      cacheTime: 0, // Don't cache
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
     }
   );
 
   console.log(favoritesData)
   
-  const buoysData = orderBy(buoys,["name"], ["asc"] ) || []
+  const buoysData = orderBy(buoys, ["name"], ["asc"]) || []
   const spotsData = orderBy(spots, ["subregion_name", "name"], ["asc"]) || []
   const featuredSpots = spots?.flatMap((spot: Spot) => {
     return FEATURED_SPOTS.includes(spot.name) ? spot : []
@@ -66,12 +66,10 @@ const Home = () => {
 
   function goToBuoyPage(location_id: string) {
     navigate(`/location/${location_id}`)
-    return
   }
 
   function goToSpotPage(spot_id: string) {
     navigate(`/spot/${spot_id}`)
-    return
   }
 
   return (
