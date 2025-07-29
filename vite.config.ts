@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { visualizer } from 'rollup-plugin-visualizer'
 import ViteImageOptimize from 'vite-plugin-imagemin'
 
@@ -8,7 +7,6 @@ import ViteImageOptimize from 'vite-plugin-imagemin'
 export default defineConfig({
   plugins: [
     react(), 
-    tsconfigPaths(),
     ViteImageOptimize({
       gifsicle: {
         optimizationLevel: 7,
@@ -55,6 +53,14 @@ export default defineConfig({
       features: "/src/features",
       config: "/src/config",
       lib: "/src/lib",
+      routes: "/src/routes",
+      pages: "/src/pages",
+      components: "/src/components",
+      utils: "/src/utils",
+      providers: "/src/providers",
+      assets: "/src/assets",
+      "test-utils": "/src/test/test-utils",
+      "@features": "/src/features",
     },
   },
   build: {
@@ -63,7 +69,7 @@ export default defineConfig({
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'mui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
-          'maps': ['@react-google-maps/api', 'mapbox-gl'],
+          'maps': ['mapbox-gl'],
           'utils': ['lodash', 'dayjs', 'axios'],
           'router': ['react-router-dom'],
           'query': ['@tanstack/react-query'],

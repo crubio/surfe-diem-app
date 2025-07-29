@@ -11,7 +11,15 @@ export default function ErrorPage(props: ErrorPageProps) {
   const error = props.error
 
   return (
-    <Container maxWidth="xl" sx={{ height: '100vh', marginTop: '20px', textAlign: 'center' }}>
+    <Container maxWidth="xl" sx={{ 
+      minHeight: { xs: 'calc(100vh - 120px)', sm: 'calc(100vh - 80px)' }, 
+      marginTop: { xs: '10px', sm: '20px' }, 
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
       <div id="error-page">
         <ErrorIcon color="secondary" sx={{ fontSize: 40 }} />
         <h2>The following error has occurred.</h2>

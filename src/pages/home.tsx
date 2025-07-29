@@ -43,8 +43,6 @@ const Home = () => {
       cacheTime: 10 * 60 * 1000, // 10 minutes
     }
   );
-
-  console.log(favoritesData)
   
   const buoysData = orderBy(buoys, ["name"], ["asc"]) || []
   const spotsData = orderBy(spots, ["subregion_name", "name"], ["asc"]) || []
