@@ -67,7 +67,14 @@ const Home = () => {
   }
 
   function goToSpotPage(spot_id: string) {
-    navigate(`/spot/${spot_id}`)
+    // This function is used by the EnhancedSelect component
+    // We need to find the spot by ID and use its slug
+    const spot = spots?.find(s => s.id.toString() === spot_id);
+    if (spot?.slug) {
+      navigate(`/spot/${spot.slug}`);
+    } else {
+      navigate(`/spot/${spot_id}`); // fallback to ID if no slug
+    }
   }
 
   return (

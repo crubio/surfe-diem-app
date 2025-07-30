@@ -9,7 +9,7 @@ import { Loading } from "components"
 import { Link } from 'react-router-dom';
 
 export default function SpotSummary(props: Spot) {
-  const {latitude, longitude, name, subregion_name, id, timezone} = props
+  const {latitude, longitude, name, subregion_name, id, slug, timezone} = props
 
   const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getForecastHourly({
     latitude: latitude,
@@ -78,7 +78,7 @@ export default function SpotSummary(props: Spot) {
             </Box>
           </CardContent>
           <CardActions disableSpacing sx={{ mt: "auto" }}>
-            <Button color="secondary" component={Link} to={`/spot/${id}`}>
+            <Button color="secondary" component={Link} to={`/spot/${slug || id}`}>
               View spot
             </Button>
           </CardActions>

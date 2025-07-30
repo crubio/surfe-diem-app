@@ -22,6 +22,6 @@ export const API_ROUTES = {
 // Helpers
 export const goToBuoyPage = (location_id: string) => {return `/location/${location_id}`}
 
-export const goToSpotPage = (spot_id: string | number, slug: string) => { 
-  return `/spot/${slug}`
+export const goToSpotPage = (spot_id: string | number, slug?: string) => { 
+  return `/spot/${slug || spot_id}`
 }

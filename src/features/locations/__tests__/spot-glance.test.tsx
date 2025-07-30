@@ -13,6 +13,7 @@ describe('<SpotGlance />', () => {
       {
         id: 1,
         name: 'Test Spot',
+        slug: 'test-spot',
         latitude: 0,
         longitude: 0,
         active: true,
@@ -22,6 +23,7 @@ describe('<SpotGlance />', () => {
       {
         id: 2,
         name: 'Second Spot',
+        slug: 'second-spot',
         latitude: 1,
         longitude: 1,
         active: true,

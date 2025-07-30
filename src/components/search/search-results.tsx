@@ -39,7 +39,7 @@ export function SearchResultsDialog<T>(props: SimpleDialogProps<T>) {
     } else {
       return (
         <ListItem disableGutters key={item.id}>
-          <ListItemButton onClick={() => handleListItemClick(`/spot/${item.id}`)}>
+          <ListItemButton onClick={() => handleListItemClick(`/spot/${item.slug || item.id}`)}>
             <LocationOn sx={{marginRight: '10px'}} /><ListItemText primary={item.name} />
           </ListItemButton>
         </ListItem>

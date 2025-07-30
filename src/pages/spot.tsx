@@ -1,4 +1,4 @@
-import { getSurfSpotBySlug } from "@features/locations/api/locations"
+import { getSurfSpot, getSurfSpotBySlug } from "@features/locations/api/locations"
 import { Box, Container, Grid, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
@@ -20,9 +20,12 @@ const SpotPage = () => {
   const params = useParams()
   const { spotId } = params
 
+  // Determine if spotId is a slug (non-numeric) or ID (numeric)
+  const isSlug = spotId && isNaN(Number(spotId))
+  
   const {data: spot, isError, error} = useQuery(
-    ['spots', spotId],
-    () => getSurfSpotBySlug(spotId)
+    ['spots', spotId, isSlug],
+    () => isSlug ? getSurfSpotBySlug(spotId) : getSurfSpot(spotId)
   )
 
   const {data: tideStationData} = useQuery(['tide_station'], () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}), {
