@@ -12,7 +12,13 @@ type SpotGlanceProps = {
 }
 
 const SpotGlance = (props: SpotGlanceProps) => {
-    const {data: closestSpots} = useQuery(['closestSpots'], async () => getSurfSpotClosest(props.latitude, props.longitude))
+    const {data: closestSpots, isLoading, error} = useQuery(
+        ['closestSpots', props.latitude, props.longitude], 
+        async () => getSurfSpotClosest(props.latitude, props.longitude),
+        {
+            enabled: !!props.latitude && !!props.longitude
+        }
+    )
 
     function renderSpots(spots: Spot[], numToRender = 3) {
         return (
@@ -21,7 +27,7 @@ const SpotGlance = (props: SpotGlanceProps) => {
                     {spots.slice(0, numToRender).map((spot: Spot) => {
                         return (
                             <Item key={spot.id}>
-                                <Button color="secondary" component={Link} to={`/spot/${spot.id}`}>
+                                <Button color="secondary" component={Link} to={`/spot/${spot.slug || spot.id}`}>
                                     <Typography variant="h5" component="div">
                                         {spot.name}
                                     </Typography>

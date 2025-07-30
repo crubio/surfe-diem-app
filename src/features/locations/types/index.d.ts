@@ -113,6 +113,7 @@ export interface SpotWeather {
 export interface SpotBatchData {
   id: number;
   name: string;
+  slug: string;
   weather: SpotWeather;
 }
 

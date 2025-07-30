@@ -71,7 +71,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
   };
 
   const linkTo = type === 'spot' 
-    ? goToSpotPage(favorite.id)
+    ? goToSpotPage(favorite.id, (currentData as any)?.slug)
     : goToBuoyPage(favorite.id);
 
   return (

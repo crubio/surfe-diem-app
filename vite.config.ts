@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { visualizer } from 'rollup-plugin-visualizer'
 import ViteImageOptimize from 'vite-plugin-imagemin'
 
 // https://vitejs.dev/config/
@@ -39,12 +38,6 @@ export default defineConfig({
           }
         ]
       }
-    }),
-    visualizer({
-      filename: 'dist/stats.html',
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
     })
   ],
   resolve: {

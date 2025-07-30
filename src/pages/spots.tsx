@@ -128,7 +128,7 @@ const SurfSpotsPage = () => {
                                             minHeight: { xs: '48px', sm: 'auto' }
                                         }}
                                     >
-                                        <LinkRouter to={`/spot/${spot.id}`}>
+                                        <LinkRouter to={`/spot/${spot.slug || spot.id}`}>
                                             <Typography 
                                                 variant="h6"
                                                 sx={{
