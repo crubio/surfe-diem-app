@@ -39,6 +39,17 @@ const SEO = ({
       
       {/* Canonical URL */}
       <link rel="canonical" href={url} />
+      
+      {/* Google Analytics */}
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZW1SGSLN1M"></script>
+      <script>
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-ZW1SGSLN1M');
+        `}
+      </script>
     </Helmet>
   );
 };
