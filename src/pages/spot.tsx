@@ -1,4 +1,4 @@
-import { getSurfSpot } from "@features/locations/api/locations"
+import { getSurfSpotBySlug } from "@features/locations/api/locations"
 import { Box, Container, Grid, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
@@ -22,7 +22,7 @@ const SpotPage = () => {
 
   const {data: spot, isError, error} = useQuery(
     ['spots', spotId],
-    () => getSurfSpot(spotId)
+    () => getSurfSpotBySlug(spotId)
   )
 
   const {data: tideStationData} = useQuery(['tide_station'], () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}), {
@@ -60,7 +60,7 @@ const SpotPage = () => {
             title={`${spot.name} Surf Spot - Surfe Diem`}
             description={`Get current surf conditions, forecasts, and tide information for ${spot.name} in ${spot.subregion_name}. Real-time surf data and weather.`}
             keywords={`${spot.name} surf spot, ${spot.subregion_name} surf, ${spot.name} surf conditions, ${spot.name} surf forecast, ${spot.subregion_name} surf spots`}
-            url={`https://surfe-diem.com/spot/${spot.id}`}
+            url={`https://surfe-diem.com/spot/${spot.slug}`}
           />
           <SurfSpotStructuredData
             name={spot.name}
@@ -69,7 +69,7 @@ const SpotPage = () => {
             longitude={spot.longitude}
             subregion={spot.subregion_name}
             timezone={spot.timezone}
-            url={`https://surfe-diem.com/spot/${spot.id}`}
+            url={`https://surfe-diem.com/spot/${spot.slug}`}
           />
         </>
       )}

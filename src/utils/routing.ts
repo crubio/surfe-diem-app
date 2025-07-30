@@ -12,6 +12,7 @@ export const API_ROUTES = {
   TIDES_CLOSEST_STATION_URL: `${API_PREFIX}/tides/find_closest`,
   LOCATIONS_GEOJSON: `${API_PREFIX}/locations/geojson`,
   SURF_SPOTS: `${API_PREFIX}/spots`,
+  SURF_SPOTS_SLUG: `${API_PREFIX}/spots/slug`,
   SURF_SPOTS_GEOJSON: `${API_PREFIX}/spots/geojson`,
   SEARCH: `${API_PREFIX}/search`,
   WEATHER: `${API_PREFIX}/weather`,
@@ -21,4 +22,6 @@ export const API_ROUTES = {
 // Helpers
 export const goToBuoyPage = (location_id: string) => {return `/location/${location_id}`}
 
-export const goToSpotPage = (spot_id: string) => { return `/spot/${spot_id}`}
+export const goToSpotPage = (spot_id: string | number, slug: string) => { 
+  return `/spot/${slug}`
+}

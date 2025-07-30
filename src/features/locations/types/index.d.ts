@@ -1,6 +1,7 @@
 export interface Spot {
   id: number;
   name: string;
+  slug: string;
   latitude: number;
   longitude: number;
   active: boolean;
