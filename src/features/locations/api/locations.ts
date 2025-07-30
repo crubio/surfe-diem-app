@@ -60,6 +60,17 @@ export const getSurfSpot = async (id: string | number | undefined): Promise<Spot
   
 }
 
+export const getSurfSpotBySlug = async (slug: string | undefined): Promise<Spot> => {
+  return axios.get(`${API_ROUTES.SURF_SPOTS_SLUG}/${slug}`)
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      console.error('Failed to fetch spot by slug:', error);
+      throw error;
+    })
+}
+
 export const getSurfSpotClosest = async (lat: number, lng: number): Promise<Spot[]> => {
   return axios.get(`${API_ROUTES.SURF_SPOTS}/find_closest`, {
     params: {
