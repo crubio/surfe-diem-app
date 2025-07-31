@@ -8,14 +8,25 @@ import { BuoyLocation, BuoyLocationLatestObservation } from './types';
 import { Box, Button, Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { getLatestObservation } from './api/locations';
+import { getLatestObservation, getLocation } from './api/locations';
 import { formatLatLong } from 'utils/common';
 import { Loading } from 'components';
 import { Link } from 'react-router-dom';
 
-export default function LocationSummary(props: {locationSummary: BuoyLocation}) {
-  const {location_id} = props.locationSummary
-  const {data, isLoading, isError} = useQuery([location_id], () => getLatestObservation(location_id))
+interface SummaryProps {
+  location_id: string;
+}
+
+const Summary = ({ location_id }: SummaryProps) => {
+  const {data: locationData} = useQuery({
+    queryKey: ['location', location_id],
+    queryFn: () => getLocation(location_id)
+  });
+
+  const {data, isPending, isError} = useQuery({
+    queryKey: [location_id],
+    queryFn: () => getLatestObservation(location_id)
+  });
   
   function renderLatestObservation(latestObservation: BuoyLocationLatestObservation) {
     if (!latestObservation) return (
@@ -42,7 +53,7 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
 
   return (
     <>
-      { isLoading ? (
+      { isPending ? (
         <Loading />
       ) : (
         <Card data-testid="location-summary-card"
@@ -53,12 +64,12 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
           }}
         >
           <CardContent>
-            <h2>{props.locationSummary.name}</h2>
+            <h2>{locationData?.name}</h2>
             <Typography sx={{ mb: 1 }} color="text.secondary">
-              <LocationOn /> {props.locationSummary.location && formatLatLong(props.locationSummary.location).join(', ')}
+              <LocationOn /> {locationData?.location && formatLatLong(locationData.location).join(', ')}
             </Typography>
             <Typography sx={{ mb: 1 }} color="text.secondary">
-              {props.locationSummary.description}
+              {locationData?.description}
             </Typography>
             <Box sx={{ mb: 1 }}>
               <Divider variant="middle" />
@@ -75,7 +86,7 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
             </Box>
           </CardContent>
           <CardActions disableSpacing sx={{ mt: "auto" }}>
-            <Button color="secondary" component={Link} to={`/location/${props.locationSummary.location_id}`}>
+            <Button color="secondary" component={Link} to={`/location/${locationData?.location_id}`}>
               View buoy
             </Button>
           </CardActions>
@@ -85,3 +96,5 @@ export default function LocationSummary(props: {locationSummary: BuoyLocation}) 
     </>
   );
 }
+
+export default Summary;

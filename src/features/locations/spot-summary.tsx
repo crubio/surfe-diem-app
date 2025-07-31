@@ -11,14 +11,15 @@ import { Link } from 'react-router-dom';
 export default function SpotSummary(props: Spot) {
   const {latitude, longitude, name, subregion_name, id, slug, timezone} = props
 
-  const {data, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly', id], () => getForecastHourly({
-    latitude: latitude,
-    longitude: longitude,
-    start_date: getTodaysDate(),
-    end_date: getTodaysDate()
-  }), {
-    enabled: true
-  })
+  const {data, isPending: isHourlyForecastLoading } = useQuery({
+    queryKey: ['forecast_hourly', id],
+    queryFn: () => getForecastHourly({
+      latitude,
+      longitude,
+      forecast_days: 1,
+    }),
+    enabled: !!latitude && !!longitude,
+  });
 
   const forecastStartingIndex = data?.hourly.time.findIndex((item: string) => item === formatIsoNearestHour(timezone))
 

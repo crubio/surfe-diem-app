@@ -34,10 +34,12 @@ export default function SearchAppBar() {
     'About': '/about'
   }
   
-  const {data: searchResultData, isSuccess} = useQuery(['search', queryId ,searchQuery], () => getSearchResults(searchQuery), {
-    enabled: queryEnabled,
-    cacheTime: 0
-  })
+  const {data: searchResultData, isSuccess} = useQuery({
+    queryKey: ['search', queryId ,searchQuery],
+    queryFn: () => getSearchResults(searchQuery),
+    enabled: !!searchQuery && searchQuery.length > 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const renderNavLinks = (pageMap: {[key: string]: string}) => {
     const pageLinks = []

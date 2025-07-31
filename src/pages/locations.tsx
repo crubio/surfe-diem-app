@@ -19,44 +19,54 @@ const LocationsPage = () => {
   const params = useParams()
   const { locationId } = params
 
-  const { data: locationData, isError: isLocationError, error } = useQuery(
-    ['location', locationId],
-    () => getLocation(locationId)
-  )
+  const { data: locationData, isError: isLocationError, error } = useQuery({
+    queryKey: ['location', locationId],
+    queryFn: () => getLocation(locationId)
+  });
 
-  const {data: latestObservationData, isLoading: isLatestObsvLoading} = useQuery(['latest_observation', params], () => getLatestObservation(locationId!), {
+  const {data: latestObservationData, isPending: isLatestObsvLoading} = useQuery({
+    queryKey: ['latest_observation', params],
+    queryFn: () => getLatestObservation(locationId!),
     enabled: !!locationData?.location_id
-  })
+  });
 
   const latLong = formatLatLong(locationData?.location || "")
 
-  const {data: tideData, isLoading: isTideDataLoading} = useQuery(['latest_tides', params], () => getDailyTides({ station: locationData?.station_id}), {
+  const {data: tideData, isPending: isTideDataLoading} = useQuery({
+    queryKey: ['latest_tides', params],
+    queryFn: () => getDailyTides({ station: locationData?.station_id}),
     enabled: !!locationData?.station_id
-  })
+  });
 
-  const {data: forecastCurrent, isLoading: isCurrentForecastLoading} = useQuery(['forecast_current'], () => getForecastCurrent({
-    latitude: latLong[0],
-    longitude: latLong[1],
-  }), {
+  const {data: forecastCurrent, isPending: isCurrentForecastLoading} = useQuery({
+    queryKey: ['forecast_current'],
+    queryFn: () => getForecastCurrent({
+      latitude: latLong[0],
+      longitude: latLong[1],
+    }),
     enabled: !!locationData?.location_id
-  })
+  });
 
-  const {data: forecastDataHourly } = useQuery(['forecast_hourly', locationData?.location_id], () => getForecastHourly({
-    latitude: latLong[0],
-    longitude: latLong[1],
-    forecast_days: 1,
-  }), {
+  const {data: forecastDataHourly } = useQuery({
+    queryKey: ['forecast_hourly', locationData?.location_id],
+    queryFn: () => getForecastHourly({
+      latitude: latLong[0],
+      longitude: latLong[1],
+      forecast_days: 1,
+    }),
     enabled: !!locationData?.location_id
-  })
+  });
 
-  const {data: forecastDataDaily, isLoading: isForecastLoading } = useQuery(['forecast_daily', locationData?.location_id], () => getForecastDaily({
-    latitude: latLong[0],
-    longitude: latLong[1],
-    start_date: getTodaysDate(),
-    end_date: getTodaysDate(5)
-  }), {
+  const {data: forecastDataDaily, isPending: isForecastLoading } = useQuery({
+    queryKey: ['forecast_daily', locationData?.location_id],
+    queryFn: () => getForecastDaily({
+      latitude: latLong[0],
+      longitude: latLong[1],
+      start_date: getTodaysDate(),
+      end_date: getTodaysDate(5)
+    }),
     enabled: !!locationData?.location_id
-  })
+  });
 
   const obsData = latestObservationData || []
 

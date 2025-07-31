@@ -12,13 +12,13 @@ type SpotGlanceProps = {
 }
 
 const SpotGlance = (props: SpotGlanceProps) => {
-    const {data: closestSpots, isLoading, error} = useQuery(
-        ['closestSpots', props.latitude, props.longitude], 
-        async () => getSurfSpotClosest(props.latitude, props.longitude),
-        {
-            enabled: !!props.latitude && !!props.longitude
-        }
-    )
+    const { latitude, longitude } = props;
+    const {data: closestSpots, isPending, error} = useQuery({
+        queryKey: ['closest_spots', latitude, longitude],
+        queryFn: () => getSurfSpotClosest(latitude, longitude),
+        enabled: !!latitude && !!longitude,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 
     function renderSpots(spots: Spot[], numToRender = 3) {
         return (

@@ -17,7 +17,7 @@
     "@mui/icons-material": "^5.14.3",
     "@mui/material": "^5.14.2",
     "@mui/x-charts": "^6.18.2",
-    "@tanstack/react-query": "^4.32.6",
+    "@tanstack/react-query": "^5.83.1",
     "@types/mapbox-gl": "^2.7.15",
     "@types/react-resizable": "^3.0.7",
     "axios": "^1.4.0",

@@ -10,7 +10,10 @@ const MapBox = lazy(() => import("@features/maps").then(module => ({ default: mo
 
 const MapPage = () => {
   const [coords, setCoords] = useState<[number, number] | null>(null) // [lat, lng]
-  const {data, isFetched, isError} = useQuery(['locations/geojson'], () => getGeoJsonLocations())
+  const {data, isFetched, isError} = useQuery({
+    queryKey: ['locations/geojson'],
+    queryFn: () => getGeoJsonLocations()
+  });
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((position) => {
