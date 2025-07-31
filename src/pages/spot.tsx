@@ -23,37 +23,47 @@ const SpotPage = () => {
   // Determine if spotId is a slug (non-numeric) or ID (numeric)
   const isSlug = spotId && isNaN(Number(spotId))
   
-  const {data: spot, isError, error} = useQuery(
-    ['spots', spotId, isSlug],
-    () => isSlug ? getSurfSpotBySlug(spotId) : getSurfSpot(spotId)
-  )
+  const {data: spot, isError, error} = useQuery({
+    queryKey: ['spots', spotId, isSlug],
+    queryFn: () => isSlug ? getSurfSpotBySlug(spotId) : getSurfSpot(spotId)
+  });
 
-  const {data: tideStationData} = useQuery(['tide_station'], () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}), {
+  const {data: tideStationData} = useQuery({
+    queryKey: ['tide_station'],
+    queryFn: () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}),
     enabled: !!spot?.latitude
-  })
+  });
 
-  const {data: tideData, isLoading: isTideDataLoading} = useQuery(['latest_tides', params], () => getDailyTides({ station: tideStationData?.station_id}), {
+  const {data: tideData, isPending: isTideDataLoading} = useQuery({
+    queryKey: ['latest_tides', params],
+    queryFn: () => getDailyTides({ station: tideStationData?.station_id}),
     enabled: !!tideStationData?.station_id
-  })
+  });
 
-  const {data: forecastDataHourly, isLoading: isHourlyForecastLoading } = useQuery(['forecast_hourly'], () => getForecastHourly({
-    latitude: spot!.latitude,
-    longitude: spot!.longitude,
-    forecast_days: 1,
-  }), {
+  const {data: forecastDataHourly, isPending: isHourlyForecastLoading } = useQuery({
+    queryKey: ['forecast_hourly'],
+    queryFn: () => getForecastHourly({
+      latitude: spot!.latitude,
+      longitude: spot!.longitude,
+      forecast_days: 1,
+    }),
     enabled: !!spot?.name
-  })
+  });
 
-  const {data: forecastCurrent} = useQuery(['forecast_current'], () => getForecastCurrent({
-    latitude: spot!.latitude,
-    longitude: spot!.longitude,
-  }), {
+  const {data: forecastCurrent} = useQuery({
+    queryKey: ['forecast_current'],
+    queryFn: () => getForecastCurrent({
+      latitude: spot!.latitude,
+      longitude: spot!.longitude,
+    }),
     enabled: !!spot?.name
-  })
+  });
 
-  const {data: currentWeather, isLoading: isWeatherLoading} = useQuery(['current_weather'], () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}), {
+  const {data: currentWeather, isPending: isWeatherLoading} = useQuery({
+    queryKey: ['current_weather'],
+    queryFn: () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}),
     enabled: !!spot?.name
-  })
+  });
 
   return (
     <>

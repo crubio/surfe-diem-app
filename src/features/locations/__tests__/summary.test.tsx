@@ -2,12 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
-import LocationSummary from '../summary';
+import Summary from '../summary';
 import * as api from '../api/locations';
 
 vi.mock('../api/locations');
 
-describe('<LocationSummary />', () => {
+describe('<Summary />', () => {
   it('renders location summary and latest observation', async () => {
     const mockObservation = [
       {
@@ -16,9 +16,8 @@ describe('<LocationSummary />', () => {
         water_temp: '68.9 °F',
       },
     ];
-    vi.mocked(api.getLatestObservation).mockResolvedValueOnce(mockObservation);
-    const queryClient = new QueryClient();
-    const buoy = {
+    
+    const mockLocation = {
       name: 'Test Buoy',
       url: '',
       active: true,
@@ -29,13 +28,20 @@ describe('<LocationSummary />', () => {
       date_created: '',
       date_updated: '',
     };
+    
+    vi.mocked(api.getLatestObservation).mockResolvedValueOnce(mockObservation);
+    vi.mocked(api.getLocation).mockResolvedValueOnce(mockLocation);
+    
+    const queryClient = new QueryClient();
+    
     render(
       <MemoryRouter>
         <QueryClientProvider client={queryClient}>
-          <LocationSummary locationSummary={buoy} />
+          <Summary location_id="loc1" />
         </QueryClientProvider>
       </MemoryRouter>
     );
+    
     expect((await screen.findAllByText(/Test Buoy/i)).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/A test buoy/i)).toBeInTheDocument();
     expect(screen.getByText(/3.6 ft/i)).toBeInTheDocument();

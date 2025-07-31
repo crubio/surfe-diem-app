@@ -19,14 +19,27 @@ import { FavoritesList } from "../components/favorites/favorites-list";
 const Home = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
-  const {data: buoys} = useQuery(['locations'], async () => getLocations())
-  const {data: spots} = useQuery(['spots'], async () => getSurfSpots())
-  const {data: geolocation} = useQuery(['geolocation'], async () => getGeolocation())
   
-  // Fetch current data for favorites
-  const {data: favoritesData, isLoading: favoritesLoading} = useQuery(
-    ['favorites-batch-data', favorites.length > 0 ? favorites.map(f => `${f.type}-${f.id}`).join(',') : 'empty'],
-    () => {
+  // Data queries - Updated to React Query v5 object syntax
+  const {data: buoys} = useQuery({
+    queryKey: ['locations'],
+    queryFn: async () => getLocations()
+  });
+  
+  const {data: spots} = useQuery({
+    queryKey: ['spots'],
+    queryFn: async () => getSurfSpots()
+  });
+  
+  const {data: geolocation} = useQuery({
+    queryKey: ['geolocation'],
+    queryFn: async () => getGeolocation()
+  });
+  
+  // Fetch current data for favorites - Updated to React Query v5 object syntax
+  const {data: favoritesData, isPending: favoritesLoading} = useQuery({
+    queryKey: ['favorites-batch-data', favorites.length > 0 ? favorites.map(f => `${f.type}-${f.id}`).join(',') : 'empty'],
+    queryFn: () => {
       if (favorites.length === 0) return { buoys: [], spots: [] };
       
       const buoyIds = favorites.filter(f => f.type === 'buoy').map(f => f.id);
@@ -37,12 +50,10 @@ const Home = () => {
         spot_ids: spotIds.length > 0 ? spotIds : undefined,
       });
     },
-    {
-      enabled: favorites.length > 0,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-    }
-  );
+    enabled: favorites.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (renamed from cacheTime in v5)
+  });
   
   const buoysData = orderBy(buoys, ["name"], ["asc"]) || []
   const spotsData = orderBy(spots, ["subregion_name", "name"], ["asc"]) || []

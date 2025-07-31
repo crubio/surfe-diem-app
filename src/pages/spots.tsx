@@ -7,9 +7,11 @@ import { sortBy } from "lodash";
 import surfImage from "assets/sharks1.jpg";
 import NoDataFound from "components/common/not-found";
 
-const SurfSpotsPage = () => {
-
-    const {data} = useQuery(['surf_spots'], async () => getSurfSpots());
+const SpotsPage = () => {
+  const {data} = useQuery({
+    queryKey: ['surf_spots'],
+    queryFn: async () => getSurfSpots()
+  });
 
     sortBy(data, ['subregion_name' ]);
 
@@ -152,4 +154,4 @@ const SurfSpotsPage = () => {
     )
 }
 
-export default SurfSpotsPage;
+export default SpotsPage;

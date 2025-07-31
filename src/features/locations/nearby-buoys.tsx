@@ -34,14 +34,12 @@ const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: Reac
 
 export const NearbyBuoys = (props: Props) => {
     const {latitude, longitude} = props;
-    const {data: nearbyBuoys, error, isLoading} = useQuery(
-        [`get-nearest-buoy-${latitude}-${longitude}`], 
-        () => getLocationBuoyNearby(longitude, latitude),
-        {
-            retry: 1,
-            retryDelay: 1000,
-        }
-    );
+    const {data: nearbyBuoys, error, isPending} = useQuery({
+        queryKey: ['nearby_buoys', latitude, longitude],
+        queryFn: () => getLocationBuoyNearby(longitude, latitude),
+        enabled: !!latitude && !!longitude,
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 
     // Don't render anything if there's an error or still loading
     if (error) {
@@ -49,7 +47,7 @@ export const NearbyBuoys = (props: Props) => {
         return null;
     }
 
-    if (isLoading) {
+    if (isPending) {
         return null;
     }
 
