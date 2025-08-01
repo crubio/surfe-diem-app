@@ -48,6 +48,39 @@ const DashboardHome = () => {
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
+
+  // Fetch SF Bay Area featured spots when no geolocation
+  const {data: featuredSpots} = useQuery({
+    queryKey: ['featured_spots'],
+    queryFn: async () => {
+      // TODO: Implement API call to get featured SF Bay Area spots
+      // For now, return mock data
+      return [
+        {
+          id: 1,
+          name: "Steamer Lane",
+          slug: "steamer-lane",
+          subregion_name: "Santa Cruz",
+          waveHeight: 4,
+          windSpeed: 10,
+          conditions: "Clean",
+          direction: "SW"
+        },
+        {
+          id: 2,
+          name: "Pleasure Point",
+          slug: "pleasure-point", 
+          subregion_name: "Santa Cruz",
+          waveHeight: 3,
+          windSpeed: 8,
+          conditions: "Glassy",
+          direction: "SW"
+        }
+      ];
+    },
+    enabled: !geolocation?.latitude || !geolocation?.longitude,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -118,17 +151,53 @@ const DashboardHome = () => {
 
   // Helper function to get closest spot
   const getClosestSpot = () => {
-    // TODO: Implement logic to find closest spot to user
-    const conditions = { waveHeight: 3, windSpeed: 12 };
-    const score = getConditionScore(conditions);
-    return {
-      spot: "Pleasure Point",
-      distance: "2.3 miles",
-      waveHeight: "3-4ft",
-      score,
-      waveHeightValue: 3,
-      windSpeedValue: 12
-    };
+    // If we have geolocation, show closest spot
+    if (geolocation?.latitude && geolocation?.longitude && closestSpots && closestSpots.length > 0) {
+      // Use actual closest spot data
+      const closestSpot = closestSpots[0]; // Assuming API returns sorted by distance
+      // For now, use default values since the API response structure may vary
+      const conditions = { waveHeight: 3, windSpeed: 12 };
+      const score = getConditionScore(conditions);
+      return {
+        spot: closestSpot.name || "Pleasure Point",
+        distance: "2.3 miles", // TODO: Calculate actual distance
+        waveHeight: "3-4ft",
+        score,
+        waveHeightValue: 3,
+        windSpeedValue: 12,
+        isLocationBased: true,
+        spotId: closestSpot.id
+      };
+    } else if (featuredSpots && featuredSpots.length > 0) {
+      // Fallback to featured SF Bay Area spot
+      const featuredSpot = featuredSpots[0];
+      const conditions = { waveHeight: featuredSpot.waveHeight, windSpeed: featuredSpot.windSpeed };
+      const score = getConditionScore(conditions);
+      return {
+        spot: featuredSpot.name,
+        distance: "SF Bay Area",
+        waveHeight: `${featuredSpot.waveHeight}-${featuredSpot.waveHeight + 1}ft`,
+        score,
+        waveHeightValue: featuredSpot.waveHeight,
+        windSpeedValue: featuredSpot.windSpeed,
+        isLocationBased: false,
+        spotId: featuredSpot.id,
+        slug: featuredSpot.slug
+      };
+    } else {
+      // Fallback to hardcoded data if queries haven't loaded yet
+      const conditions = { waveHeight: 4, windSpeed: 10 };
+      const score = getConditionScore(conditions);
+      return {
+        spot: "Steamer Lane",
+        distance: "SF Bay Area",
+        waveHeight: "4-6ft",
+        score,
+        waveHeightValue: 4,
+        windSpeedValue: 10,
+        isLocationBased: false
+      };
+    }
   };
 
   // Helper function to get wave height percentage for progress bar
@@ -348,7 +417,7 @@ const DashboardHome = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                       <Typography variant="h6" color="primary" gutterBottom>
-                        Closest to You
+                        {getClosestSpot().isLocationBased ? "Closest to You" : "Featured"}
                       </Typography>
                       <Chip 
                         label={getClosestSpot().score.label}
@@ -364,7 +433,10 @@ const DashboardHome = () => {
                       {getClosestSpot().waveHeight} • {getClosestSpot().distance}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {geolocation ? "Based on your location" : "Enable location for personalized results"}
+                      {getClosestSpot().isLocationBased 
+                        ? "Based on your location" 
+                        : "SF Bay Area • Iconic surf spot"
+                      }
                     </Typography>
                     
                     {/* Progress bars for conditions */}
