@@ -14,6 +14,8 @@ import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getConditionScore, getWaveHeightColor, getWindColor, getConditionDescription } from "utils/conditions";
+import { FEATURED_SPOTS } from "utils/constants";
+import { getForecastCurrent } from "@features/forecasts";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -49,38 +51,19 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  // Fetch SF Bay Area featured spots when no geolocation
-  const {data: featuredSpots} = useQuery({
-    queryKey: ['featured_spots'],
-    queryFn: async () => {
-      // TODO: Implement API call to get featured SF Bay Area spots
-      // For now, return mock data
-      return [
-        {
-          id: 1,
-          name: "Steamer Lane",
-          slug: "steamer-lane",
-          subregion_name: "Santa Cruz",
-          waveHeight: 4,
-          windSpeed: 10,
-          conditions: "Clean",
-          direction: "SW"
-        },
-        {
-          id: 2,
-          name: "Pleasure Point",
-          slug: "pleasure-point", 
-          subregion_name: "Santa Cruz",
-          waveHeight: 3,
-          windSpeed: 8,
-          conditions: "Glassy",
-          direction: "SW"
-        }
-      ];
-    },
-    enabled: !geolocation?.latitude || !geolocation?.longitude,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  const {data: closestSpotsForecast} = useQuery({
+    queryKey: ['closest_spot_forecast', closestSpots?.[0]?.latitude, closestSpots?.[0]?.longitude],
+    queryFn: () => getForecastCurrent({
+      latitude: Number(closestSpots![0].latitude),
+      longitude: Number(closestSpots![0].longitude),
+    }),
+    enabled: !!closestSpots && closestSpots.length > 0
   })
+
+  // Get featured spots from existing spots data
+  const featuredSpots = spots ? spots.filter(spot => 
+    FEATURED_SPOTS.includes(spot.slug)
+  ) : [];
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -154,49 +137,33 @@ const DashboardHome = () => {
     // If we have geolocation, show closest spot
     if (geolocation?.latitude && geolocation?.longitude && closestSpots && closestSpots.length > 0) {
       // Use actual closest spot data
-      const closestSpot = closestSpots[0]; // Assuming API returns sorted by distance
-      // For now, use default values since the API response structure may vary
-      const conditions = { waveHeight: 3, windSpeed: 12 };
-      const score = getConditionScore(conditions);
-      return {
-        spot: closestSpot.name || "Pleasure Point",
-        distance: "2.3 miles", // TODO: Calculate actual distance
-        waveHeight: "3-4ft",
-        score,
-        waveHeightValue: 3,
-        windSpeedValue: 12,
-        isLocationBased: true,
-        spotId: closestSpot.id
-      };
+      const closestSpot = closestSpots[0]; // API returns sorted by distance, first is the closest
+
+      if (closestSpotsForecast?.current) {
+        // Return the tranformed spot data for use with the dashboard "closest" card
+        return {
+          spot: closestSpot.name,
+          spotId: closestSpot.id,
+          slug: closestSpot.slug,
+          distance: closestSpot.distance,
+          waveHeight: `${closestSpotsForecast.current.swell_wave_height.toFixed(1)}-${(closestSpotsForecast.current.swell_wave_height + 1).toFixed(1)}ft`,
+          windSpeedValue: closestSpotsForecast.current.wind_wave_height,
+          score: getConditionScore({waveHeight: closestSpotsForecast.current.swell_wave_height, windSpeed: closestSpotsForecast.current.wind_wave_height}),
+          waveHeightValue: closestSpotsForecast.current.swell_wave_height,
+          isLocationBased: true
+        }
+      }
     } else if (featuredSpots && featuredSpots.length > 0) {
       // Fallback to featured SF Bay Area spot
       const featuredSpot = featuredSpots[0];
-      const conditions = { waveHeight: featuredSpot.waveHeight, windSpeed: featuredSpot.windSpeed };
-      const score = getConditionScore(conditions);
+      // Use default values since Spot type doesn't include wave/wind data, TODO: implemnt after current data is available
       return {
         spot: featuredSpot.name,
-        distance: "SF Bay Area",
-        waveHeight: `${featuredSpot.waveHeight}-${featuredSpot.waveHeight + 1}ft`,
-        score,
-        waveHeightValue: featuredSpot.waveHeight,
-        windSpeedValue: featuredSpot.windSpeed,
-        isLocationBased: false,
         spotId: featuredSpot.id,
         slug: featuredSpot.slug
       };
     } else {
-      // Fallback to hardcoded data if queries haven't loaded yet
-      const conditions = { waveHeight: 4, windSpeed: 10 };
-      const score = getConditionScore(conditions);
-      return {
-        spot: "Steamer Lane",
-        distance: "SF Bay Area",
-        waveHeight: "4-6ft",
-        score,
-        waveHeightValue: 4,
-        windSpeedValue: 10,
-        isLocationBased: false
-      };
+      return null;
     }
   };
 
@@ -289,7 +256,7 @@ const DashboardHome = () => {
         </Box>
 
                 {/* Current Conditions Grid */}
-        <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
+          <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
           <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 600 }}>
             Current Conditions Dashboard
           </Typography>
@@ -304,13 +271,12 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'best' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'best' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'best' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('best')}
@@ -401,96 +367,126 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'closest' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'closest' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'closest' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('closest')}
                   onMouseLeave={() => setHoveredCard(null)}
-                  onClick={() => goToSpotPage('2')} // TODO: Use actual spot ID
+                  onClick={() => {
+                    const closestSpotData = getClosestSpot();
+                    if (closestSpotData?.slug) {
+                      navigate(`/spot/${closestSpotData.slug}`);
+                    } else if (closestSpotData?.spotId) {
+                      navigate(`/spot/${closestSpotData.spotId}`);
+                    }
+                  }}
                 >
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" color="primary" gutterBottom>
-                        {getClosestSpot().isLocationBased ? "Closest to You" : "Featured"}
-                      </Typography>
-                      <Chip 
-                        label={getClosestSpot().score.label}
-                        color={getClosestSpot().score.color}
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                      />
-                    </Box>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                      {getClosestSpot().spot}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                      {getClosestSpot().waveHeight} • {getClosestSpot().distance}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {getClosestSpot().isLocationBased 
-                        ? "Based on your location" 
-                        : "SF Bay Area • Iconic surf spot"
+                    {(() => {
+                      const closestSpotData = getClosestSpot();
+                      
+                      if (!closestSpotData) {
+                        return (
+                          <Box sx={{ textAlign: 'center', py: 2 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Loading spot data...
+                            </Typography>
+                          </Box>
+                        );
                       }
-                    </Typography>
+                      
+                      return (
+                        <>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                            <Typography variant="h6" color="primary" gutterBottom>
+                              {closestSpotData.isLocationBased ? "Closest to You" : "Featured"}
+                            </Typography>
+                            {closestSpotData.score && (
+                              <Chip 
+                                label={closestSpotData.score.label}
+                                color={closestSpotData.score.color}
+                                size="small"
+                                sx={{ fontWeight: 'bold' }}
+                              />
+                            )}
+                          </Box>
+                          <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
+                            {closestSpotData.spot}
+                          </Typography>
+                          <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                            {closestSpotData.waveHeight ? `${closestSpotData.waveHeight}` : 'Featured SF Bay Area spot'}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            {closestSpotData.isLocationBased 
+                              ? `${closestSpotData.distance?.toFixed(1) || ''}mi • Based on your location`
+                              : "SF Bay Area • Iconic surf spot"
+                            }
+                          </Typography>
                     
-                    {/* Progress bars for conditions */}
-                    <Box sx={{ mt: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wave Height
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {getClosestSpot().waveHeightValue}ft
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWaveHeightPercentage(getClosestSpot().waveHeightValue)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: getWaveHeightColor(getClosestSpot().waveHeightValue) === 'success' ? '#4caf50' : 
-                                           getWaveHeightColor(getClosestSpot().waveHeightValue) === 'warning' ? '#ff9800' : '#f44336'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Box sx={{ mt: 1.5 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wind Speed
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {getClosestSpot().windSpeedValue}mph
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWindSpeedPercentage(getClosestSpot().windSpeedValue)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: getWindColor(getClosestSpot().windSpeedValue) === 'success' ? '#4caf50' : 
-                                           getWindColor(getClosestSpot().windSpeedValue) === 'warning' ? '#ff9800' : '#f44336'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                      {getClosestSpot().score.description}
-                    </Typography>
+                          {/* Progress bars for conditions - only show if we have forecast data */}
+                          {closestSpotData.waveHeightValue !== undefined && (
+                            <>
+                              <Box sx={{ mt: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Wave Height
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {closestSpotData.waveHeightValue.toFixed(1)}ft
+                                  </Typography>
+                                </Box>
+                                <LinearProgress 
+                                  variant="determinate" 
+                                  value={getWaveHeightPercentage(closestSpotData.waveHeightValue)}
+                                  sx={{ 
+                                    height: 6, 
+                                    borderRadius: 3,
+                                    backgroundColor: 'rgba(0,0,0,0.1)',
+                                    '& .MuiLinearProgress-bar': {
+                                      backgroundColor: getWaveHeightColor(closestSpotData.waveHeightValue) === 'success' ? '#4caf50' : 
+                                                     getWaveHeightColor(closestSpotData.waveHeightValue) === 'warning' ? '#ff9800' : '#f44336'
+                                    }
+                                  }}
+                                />
+                              </Box>
+                              
+                              <Box sx={{ mt: 1.5 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Wind Speed
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {closestSpotData.windSpeedValue}mph
+                                  </Typography>
+                                </Box>
+                                <LinearProgress 
+                                  variant="determinate" 
+                                  value={getWindSpeedPercentage(closestSpotData.windSpeedValue)}
+                                  sx={{ 
+                                    height: 6, 
+                                    borderRadius: 3,
+                                    backgroundColor: 'rgba(0,0,0,0.1)',
+                                    '& .MuiLinearProgress-bar': {
+                                      backgroundColor: getWindColor(closestSpotData.windSpeedValue) === 'success' ? '#4caf50' : 
+                                                     getWindColor(closestSpotData.windSpeedValue) === 'warning' ? '#ff9800' : '#f44336'
+                                    }
+                                  }}
+                                />
+                              </Box>
+                            
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                {closestSpotData.score?.description}
+                              </Typography>
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </Tooltip>
@@ -501,13 +497,12 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'cleanest' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'cleanest' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'cleanest' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('cleanest')}
@@ -610,13 +605,12 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'wind' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'wind' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'wind' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('wind')}
@@ -678,13 +672,12 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'tide' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'tide' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'tide' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('tide')}
@@ -746,13 +739,12 @@ const DashboardHome = () => {
                 <Card 
                   sx={{ 
                     height: "100%", 
-                    bgcolor: 'background.default',
+                    bgcolor: hoveredCard === 'waves' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
                     cursor: 'pointer',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: hoveredCard === 'waves' ? 'translateY(-4px)' : 'translateY(0)',
-                    boxShadow: hoveredCard === 'waves' ? '0 8px 25px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease-in-out',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     '&:hover': {
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      bgcolor: 'rgba(30, 214, 230, 0.05)',
                     }
                   }}
                   onMouseEnter={() => setHoveredCard('waves')}
@@ -823,10 +815,9 @@ const DashboardHome = () => {
               onClick={() => handleQuickAction('map')}
               sx={{ 
                 flex: 1,
-                transition: 'all 0.3s ease-in-out',
+                transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.2)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 }
               }}
             >
@@ -838,10 +829,9 @@ const DashboardHome = () => {
               onClick={() => handleQuickAction('spots')}
               sx={{ 
                 flex: 1,
-                transition: 'all 0.3s ease-in-out',
+                transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 }
               }}
             >
@@ -852,14 +842,13 @@ const DashboardHome = () => {
                 variant="outlined" 
                 size="large"
                 onClick={() => handleQuickAction('near_me')}
-                sx={{ 
-                  flex: 1,
-                  transition: 'all 0.3s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
-                  }
-                }}
+                              sx={{ 
+                flex: 1,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }
+              }}
               >
                 Spots Near Me
               </Button>

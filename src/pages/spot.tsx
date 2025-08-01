@@ -91,7 +91,7 @@ const SpotPage = () => {
         <Container sx={{marginBottom: "20px"}}>
           <h1>{spot.name} <FavoriteButton showTooltip={true} id={spot.id} type="spot" name={spot.name} subregion_name={spot.subregion_name} latitude={spot.latitude} longitude={spot.longitude} /></h1>
           <Stack direction={{ xs: 'column', sm: 'row' }} marginBottom={'20px'} spacing={2}>
-            <Item>{spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}</Item>
+            <Item>{spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}</Item>
             <Item>{spot.subregion_name}</Item>
             <Item>{spot.timezone}</Item>
           </Stack>

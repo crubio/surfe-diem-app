@@ -185,7 +185,7 @@ const DiscoveryHome = () => {
                       {spot.subregion_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {spot.latitude.toFixed(2)}, {spot.longitude.toFixed(2)}
+                      {spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}
                     </Typography>
                   </CardContent>
                 </Card>

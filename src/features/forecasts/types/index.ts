@@ -31,7 +31,11 @@ export interface ForecastDataCurrent {
     interval: number,
     swell_wave_height: number,
     swell_wave_direction: number,
-    swell_wave_period: number
+    swell_wave_period: number,
+    wind_wave_height: number,
+    wind_wave_direction: number,
+    wind_wave_period: number,
+    sea_surface_temperature: number
   },
   current_units: {
     [key: string]: string
