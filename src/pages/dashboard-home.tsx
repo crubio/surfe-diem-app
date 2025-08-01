@@ -13,7 +13,7 @@ import { orderBy } from "lodash";
 import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription } from "utils/conditions";
+import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI } from "utils/conditions";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -61,6 +61,18 @@ const DashboardHome = () => {
       longitude: Number(closestSpots![0].longitude),
     }),
     enabled: !!closestSpots && closestSpots.length > 0
+  })
+
+  // Get best conditions from nearby spots
+  const {data: bestConditions, isPending: bestConditionsLoading} = useQuery({
+    queryKey: ['best_conditions', closestSpots?.map(s => s.id).join(',')],
+    queryFn: () => getBestConditionsFromAPI(closestSpots!.map(spot => ({
+      ...spot,
+      distance: spot.distance ? `${spot.distance} miles` : undefined
+    }))),
+    enabled: !!closestSpots && closestSpots.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
   // Get featured spots from existing spots data
@@ -284,82 +296,102 @@ const DashboardHome = () => {
                   }}
                   onMouseEnter={() => setHoveredCard('best')}
                   onMouseLeave={() => setHoveredCard(null)}
-                  onClick={() => goToSpotPage('1')} // TODO: Use actual spot ID
+                  onClick={() => {
+                    if (bestConditions?.slug) {
+                      navigate(`/spot/${bestConditions.slug}`);
+                    }
+                  }}
                 >
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" color="primary" gutterBottom>
-                        Best Right Now
-                      </Typography>
-                      <Chip 
-                        label={getBestConditions().score.label}
-                        color={getBestConditions().score.color}
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                      />
-                    </Box>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                      {getBestConditions().spot}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                      {getBestConditions().waveHeight} • {getBestConditions().conditions}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {getBestConditions().direction} swell
-                    </Typography>
-                    
-                    {/* Progress bars for conditions */}
-                    <Box sx={{ mt: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wave Height
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {getBestConditions().waveHeightValue}ft
+                    {bestConditionsLoading ? (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Finding best conditions...
                         </Typography>
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWaveHeightPercentage(getBestConditions().waveHeightValue)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: getWaveHeightColor(getBestConditions().waveHeightValue) === 'success' ? '#4caf50' : 
-                                           getWaveHeightColor(getBestConditions().waveHeightValue) === 'warning' ? '#ff9800' : '#f44336'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Box sx={{ mt: 1.5 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wind Speed
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {getBestConditions().windSpeedValue}mph
+                    ) : !bestConditions ? (
+                      <Box sx={{ textAlign: 'center', py: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No conditions data available
                         </Typography>
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWindSpeedPercentage(getBestConditions().windSpeedValue)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: getWindColor(getBestConditions().windSpeedValue) === 'success' ? '#4caf50' : 
-                                           getWindColor(getBestConditions().windSpeedValue) === 'warning' ? '#ff9800' : '#f44336'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                      {getBestConditions().score.description}
-                    </Typography>
+                    ) : (
+                      <>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                          <Typography variant="h6" color="primary" gutterBottom>
+                            Best Right Now
+                          </Typography>
+                          <Chip 
+                            label={bestConditions.score.label}
+                            color={bestConditions.score.color}
+                            size="small"
+                            sx={{ fontWeight: 'bold' }}
+                          />
+                        </Box>
+                        <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
+                          {bestConditions.spot}
+                        </Typography>
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                          {bestConditions.waveHeight} • {bestConditions.conditions}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          {bestConditions.direction} swell
+                        </Typography>
+                  
+                        {/* Progress bars for conditions */}
+                        <Box sx={{ mt: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Wave Height
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {bestConditions.waveHeightValue?.toFixed(1)}ft
+                            </Typography>
+                          </Box>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={getWaveHeightPercentage(bestConditions.waveHeightValue || 0)}
+                            sx={{ 
+                              height: 6, 
+                              borderRadius: 3,
+                              backgroundColor: 'rgba(0,0,0,0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: getWaveHeightColor(bestConditions.waveHeightValue || 0) === 'success' ? '#4caf50' : 
+                                               getWaveHeightColor(bestConditions.waveHeightValue || 0) === 'warning' ? '#ff9800' : '#f44336'
+                              }
+                            }}
+                          />
+                        </Box>
+                        
+                        <Box sx={{ mt: 1.5 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              Wind Speed
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {bestConditions.windSpeedValue?.toFixed(1)}mph
+                            </Typography>
+                          </Box>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={getWindSpeedPercentage(bestConditions.windSpeedValue || 0)}
+                            sx={{ 
+                              height: 6, 
+                              borderRadius: 3,
+                              backgroundColor: 'rgba(0,0,0,0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                backgroundColor: getWindColor(bestConditions.windSpeedValue || 0) === 'success' ? '#4caf50' : 
+                                               getWindColor(bestConditions.windSpeedValue || 0) === 'warning' ? '#ff9800' : '#f44336'
+                              }
+                            }}
+                          />
+                        </Box>
+                      
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                          {bestConditions.score.description}
+                        </Typography>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </Tooltip>
