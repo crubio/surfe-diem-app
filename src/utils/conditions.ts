@@ -68,48 +68,151 @@ export interface SpotBatchData {
 }
 
 /**
- * Calculate surf condition score based on wave height and wind
+ * Calculate swell period score (0-100)
+ * Longer periods = better formed, more powerful waves
+ * For all socring functions please refer to the docs for more info on our scoring system docs/surf-condition-criteria.md
  */
-export function getConditionScore(conditions: SurfConditions): ConditionScore {
-  const { waveHeight, windSpeed = 0 } = conditions;
+export function getSwellPeriodScore(period: number): number {
+  if (!period || period < 0) return 50; // Neutral score for missing/invalid data
   
-  // Excellent: Good waves (3-6ft) with light wind (<10mph)
-  if (waveHeight >= 3 && waveHeight <= 6 && windSpeed < 10) {
+  // Under 10 seconds: Wind swell (weak, choppy) - Poor
+  if (period < 10) {
+    return Math.max(0, (period / 10) * 30); // 0-30 range
+  }
+  
+  // 10-15 seconds: Mixed swell - Fair to Good
+  if (period < 15) {
+    return 30 + ((period - 10) / 5) * 30; // 30-60 range
+  }
+  
+  // 15-20 seconds: Ground swell (powerful, organized) - Excellent
+  if (period < 20) {
+    return 60 + ((period - 15) / 5) * 30; // 60-90 range
+  }
+  
+  // 20+ seconds: Long period ground swell - Outstanding
+  return Math.min(100, 90 + ((period - 20) / 5) * 10); // 90-100 range
+}
+
+/**
+ * Calculate wind quality score (0-100)
+ * Offshore/light winds = cleaner waves
+ */
+export function getWindQualityScore(windSpeed: number): number {
+  if (!windSpeed || windSpeed < 0) return 50; // Neutral score for missing data
+  
+  // Light winds (<15mph) - Good conditions
+  if (windSpeed < 15) {
+    return 100 - (windSpeed / 15) * 30; // 70-100 range
+  }
+  
+  // Moderate winds (15-20mph) - Fair conditions
+  if (windSpeed < 20) {
+    return 70 - ((windSpeed - 15) / 5) * 30; // 40-70 range
+  }
+  
+  // Strong winds (>20mph) - Poor conditions
+  return Math.max(0, 40 - ((windSpeed - 20) / 10) * 40); // 0-40 range
+}
+
+/**
+ * Calculate wave height score (0-100)
+ * Sweet spot range for most surfers
+ */
+export function getWaveHeightScore(height: number): number {
+  if (!height || height < 0) return 50; // Neutral score for missing data
+  
+  // 1-2ft: Beginner friendly
+  if (height < 2) {
+    return 50 + (height - 1) * 25; // 50-75 range
+  }
+  
+  // 2-4ft: Good for most conditions
+  if (height < 4) {
+    return 75 + (height - 2) * 12.5; // 75-100 range
+  }
+  
+  // 4-6ft: Ideal range
+  if (height < 6) {
+    return 100; // Perfect score
+  }
+  
+  // 6ft+: Advanced, but can be "best" with excellent period/wind
+  return Math.max(60, 100 - ((height - 6) / 2) * 10); // 100-60 range
+}
+
+/**
+ * Calculate weighted overall score from individual factor scores
+ */
+export function calculateOverallScore(scores: {
+  swellPeriod: number;
+  windQuality: number;
+  waveHeight: number;
+}): number {
+  const { swellPeriod, windQuality, waveHeight } = scores;
+  
+  // Weighted average based on importance
+  const weightedScore = (
+    (swellPeriod * 0.40) +    // 40% weight - most critical for wave quality
+    (windQuality * 0.35) +    // 35% weight - surface conditions
+    (waveHeight * 0.25)       // 25% weight - surfability
+  );
+  
+  return Math.round(weightedScore);
+}
+
+/**
+ * Enhanced condition score using the new scoring system
+ */
+export function getEnhancedConditionScore(conditions: {
+  swellPeriod?: number;
+  windSpeed?: number;
+  waveHeight?: number;
+}): ConditionScore {
+  const { swellPeriod, windSpeed = 0, waveHeight = 0 } = conditions;
+  
+  // Calculate individual scores
+  const swellPeriodScore = getSwellPeriodScore(swellPeriod || 0);
+  const windQualityScore = getWindQualityScore(windSpeed || 0);
+  const waveHeightScore = getWaveHeightScore(waveHeight || 0);
+  
+  // Calculate overall score
+  const overallScore = calculateOverallScore({
+    swellPeriod: swellPeriodScore,
+    windQuality: windQualityScore,
+    waveHeight: waveHeightScore
+  });
+  
+  // Convert score to condition level
+  if (overallScore >= 80) {
     return {
       level: 'excellent',
       color: 'success',
       label: 'Excellent',
-      description: 'Prime conditions'
+      description: `Prime conditions (${overallScore}/100)`
     };
-  }
-  
-  // Good: Decent waves (2-4ft) with moderate wind (<15mph)
-  if (waveHeight >= 2 && waveHeight <= 4 && windSpeed < 15) {
+  } else if (overallScore >= 60) {
     return {
       level: 'good',
       color: 'success',
       label: 'Good',
-      description: 'Solid conditions'
+      description: `Solid conditions (${overallScore}/100)`
     };
-  }
-  
-  // Fair: Some waves (1-3ft) or windy conditions
-  if (waveHeight >= 1 && waveHeight <= 3 && windSpeed < 20) {
+  } else if (overallScore >= 40) {
     return {
       level: 'fair',
       color: 'warning',
       label: 'Fair',
-      description: 'Rideable but challenging'
+      description: `Decent conditions (${overallScore}/100)`
+    };
+  } else {
+    return {
+      level: 'poor',
+      color: 'error',
+      label: 'Poor',
+      description: `Challenging conditions (${overallScore}/100)`
     };
   }
-  
-  // Poor: Small waves or very windy
-  return {
-    level: 'poor',
-    color: 'error',
-    label: 'Poor',
-    description: 'Not ideal'
-  };
 }
 
 /**
@@ -161,8 +264,8 @@ export function getConditionDescription(conditions: SurfConditions): string {
 export function getBestConditions(spots: SpotBatchData[]): ConditionResult {
   // TODO: Implement logic to find best current conditions
   // This could be based on wave height, wind, tide, etc.
-  const conditions = { waveHeight: 4, windSpeed: 8 };
-  const score = getConditionScore(conditions);
+  const conditions = { waveHeight: 4, windSpeed: 8, swellPeriod: 12 };
+  const score = getEnhancedConditionScore(conditions);
   return {
     spot: "Steamer Lane",
     spotId: 1,
@@ -189,8 +292,8 @@ export function getClosestSpot(spots: Spot[]): ConditionResult | null {
   const closestSpot = spots[0];
   
   // For now, return a placeholder until we have forecast data
-  const conditions = { waveHeight: 3, windSpeed: 12 };
-  const score = getConditionScore(conditions);
+  const conditions = { waveHeight: 3, windSpeed: 12, swellPeriod: 10 };
+  const score = getEnhancedConditionScore(conditions);
   return {
     spot: closestSpot.name,
     spotId: closestSpot.id,
@@ -212,8 +315,8 @@ export function getClosestSpot(spots: Spot[]): ConditionResult | null {
  */
 export function getCleanestConditions(spots: SpotBatchData[]): ConditionResult {
   // TODO: Implement logic to find cleanest conditions
-  const conditions = { waveHeight: 3, windSpeed: 5 };
-  const score = getConditionScore(conditions);
+  const conditions = { waveHeight: 3, windSpeed: 5, swellPeriod: 14 };
+  const score = getEnhancedConditionScore(conditions);
   return {
     spot: "Pleasure Point",
     spotId: 2,
@@ -234,8 +337,8 @@ export function getCleanestConditions(spots: SpotBatchData[]): ConditionResult {
  */
 export function getHighestWaves(spots: SpotBatchData[]): ConditionResult {
   // TODO: Implement logic to find highest waves
-  const conditions = { waveHeight: 8, windSpeed: 15 };
-  const score = getConditionScore(conditions);
+  const conditions = { waveHeight: 8, windSpeed: 15, swellPeriod: 16 };
+  const score = getEnhancedConditionScore(conditions);
   return {
     spot: "Mavericks",
     spotId: 3,
