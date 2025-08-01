@@ -11,6 +11,7 @@ import { router } from 'routes'
 import { themeOptions } from 'config/theme';
 import { FavoritesProvider } from './favorites-provider';
 import { HelmetProvider } from 'react-helmet-async';
+import { ABTestingDebug } from '../utils/ab-testing-debug';
 import 'react-toastify/dist/ReactToastify.css';
 import '/src/providers/app.css'
 
@@ -33,6 +34,7 @@ export const AppProvider = () => {
             <CssBaseline />
             <FavoritesProvider>
               <RouterProvider router={router} />
+              <ABTestingDebug />
             </FavoritesProvider>
           </ThemeProvider>
         </QueryClientProvider>

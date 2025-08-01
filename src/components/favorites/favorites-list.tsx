@@ -212,9 +212,6 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   currentData, 
   isLoading 
 }) => {
-  if (favorites.length === 0) {
-    return null;
-  }
 
   // Separate favorites by type
   const spotFavorites = favorites.filter(f => f.type === 'spot');
@@ -244,6 +241,19 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           }}
         >
           Loading current conditions...
+        </Typography>
+      )}
+
+      {favorites.length === 0 && (
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2,
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
+        >
+          No favorites in your quiver yet. Add some to get quick surf conditions for your favorite spots and buoys.
         </Typography>
       )}
       
