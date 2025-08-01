@@ -13,7 +13,7 @@ import { orderBy } from "lodash";
 import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getConditionScore, getWaveHeightColor, getWindColor, getConditionDescription } from "utils/conditions";
+import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription } from "utils/conditions";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -28,22 +28,25 @@ const DashboardHome = () => {
     trackPageView(variation, 'dashboard-home');
   }, [variation]);
   
-  // Data queries - Updated to React Query v5 object syntax
+  // List of all location metadata
   const {data: buoys} = useQuery({
     queryKey: ['locations'],
     queryFn: async () => getLocations()
   });
   
+  // List of all surf spots metadata
   const {data: spots} = useQuery({
     queryKey: ['spots'],
     queryFn: async () => getSurfSpots()
   });
   
+  // Users geolocation if available
   const {data: geolocation} = useQuery({
     queryKey: ['geolocation'],
     queryFn: async () => getGeolocation()
   });
 
+  // List of closest spots to user's geolocation if available
   const {data: closestSpots} = useQuery({
     queryKey: ['closest_spots', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
@@ -120,7 +123,7 @@ const DashboardHome = () => {
     // TODO: Implement logic to find best current conditions
     // This could be based on wave height, wind, tide, etc.
     const conditions = { waveHeight: 4, windSpeed: 8 };
-    const score = getConditionScore(conditions);
+    const score = getEnhancedConditionScore(conditions);
     return {
       spot: "Steamer Lane",
       waveHeight: "4-6ft",
@@ -148,7 +151,7 @@ const DashboardHome = () => {
           distance: closestSpot.distance,
           waveHeight: `${closestSpotsForecast.current.swell_wave_height.toFixed(1)}-${(closestSpotsForecast.current.swell_wave_height + 1).toFixed(1)}ft`,
           windSpeedValue: closestSpotsForecast.current.wind_wave_height,
-          score: getConditionScore({waveHeight: closestSpotsForecast.current.swell_wave_height, windSpeed: closestSpotsForecast.current.wind_wave_height}),
+          score: getEnhancedConditionScore({waveHeight: closestSpotsForecast.current.swell_wave_height, windSpeed: closestSpotsForecast.current.wind_wave_height}),
           waveHeightValue: closestSpotsForecast.current.swell_wave_height,
           isLocationBased: true
         }

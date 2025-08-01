@@ -437,3 +437,72 @@ export function transformForecastToConditionResult(
     swellDirection
   };
 } 
+
+/**
+ * Get the spot with the best current conditions from nearby spots
+ * @param closestSpots Array of closest spots - eg; getClosestSpots() returns data thats used here
+ * eg; { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]
+ * @returns Promise<ConditionResult | null> for the best spot
+ */
+export async function getBestConditionsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]): Promise<ConditionResult | null> {
+  if (!closestSpots || closestSpots.length === 0) {
+    return null;
+  }
+
+  try {
+    const spotsToCheck = closestSpots.slice(0, 5);
+    
+    const { getForecastCurrent } = await import('@features/forecasts');
+    
+    const forecastPromises = spotsToCheck.map(async (spot) => {
+      try {
+        const forecast = await getForecastCurrent({
+          latitude: spot.latitude,
+          longitude: spot.longitude,
+        });
+        
+        return {
+          spot,
+          forecast,
+          conditionResult: transformForecastToConditionResult(forecast, {
+            id: spot.id,
+            name: spot.name,
+            slug: spot.slug,
+            distance: spot.distance
+          })
+        };
+      } catch (error) {
+        console.warn(`Failed to get forecast for ${spot.name}:`, error);
+        return null;
+      }
+    });
+    
+    const results = await Promise.all(forecastPromises);
+    const validResults = results.filter(result => result !== null);
+    
+    if (validResults.length === 0) {
+      return null;
+    }
+    
+    let bestResult = validResults[0];
+    let bestScore = 0;
+    
+    validResults.forEach(result => {
+      if (result) {
+        const scoreMatch = result.conditionResult.score.description.match(/\((\d+)\/100\)/);
+        const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestResult = result;
+        }
+      }
+    });
+    
+    return bestResult ? bestResult.conditionResult : null;
+    
+  } catch (error) {
+    console.error('Error getting best conditions from API:', error);
+    return null;
+  }
+} 
