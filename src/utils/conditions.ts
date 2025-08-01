@@ -47,6 +47,12 @@ export interface ConditionResult {
   distance?: string;
   score: ConditionScore;
   isLocationBased?: boolean;
+  // Additional data from API for potential future use
+  swellPeriod?: number;
+  swellHeight?: number;
+  windWaveHeight?: number;
+  windWaveDirection?: number;
+  swellDirection?: number;
 }
 
 /**
@@ -349,5 +355,85 @@ export function getHighestWaves(spots: SpotBatchData[]): ConditionResult {
     conditions: "Big",
     direction: "NW",
     score
+  };
+} 
+
+/**
+ * Transform API forecast response to ConditionResult format for scoring
+ * @param forecast API forecast response (ForecastDataCurrent)
+ * @param spot Spot data with location and metadata
+ * @returns ConditionResult ready for scoring and display
+ */
+export function transformForecastToConditionResult(
+  forecast: any, 
+  spot: { id: number; name: string; slug: string; distance?: string }
+): ConditionResult {
+  const { current } = forecast;
+  
+  // Extract key data from API response
+  const swellPeriod = current?.swell_wave_period;
+  const swellHeight = current?.swell_wave_height;
+  const windWaveHeight = current?.wind_wave_height;
+  const windWaveDirection = current?.wind_wave_direction;
+  const swellDirection = current?.swell_wave_direction;
+  
+  // Use swell wave height as the primary wave height (significant wave height should come from API)
+  const waveHeight = swellHeight || 0;
+  
+  // Use wind wave height as proxy for wind speed (API doesn't provide direct wind speed)
+  // This is a reasonable approximation since wind waves are directly related to wind speed
+  const windSpeed = windWaveHeight || 0;
+  
+  // Get condition score for display
+  const conditionScore = getEnhancedConditionScore({
+    swellPeriod,
+    windSpeed,
+    waveHeight
+  });
+  
+  // Format wave height for display
+  const waveHeightDisplay = waveHeight > 0 
+    ? `${waveHeight.toFixed(1)}-${(waveHeight + 1).toFixed(1)}ft`
+    : '0-1ft';
+  
+  // Determine conditions description
+  let conditionsDescription = 'Current conditions';
+  if (windSpeed < 0.5) {
+    conditionsDescription = 'Glassy';
+  } else if (windSpeed < 1.0) {
+    conditionsDescription = 'Clean';
+  } else if (windSpeed < 2.0) {
+    conditionsDescription = 'Slight chop';
+  } else {
+    conditionsDescription = 'Choppy';
+  }
+  
+  // Format direction (convert degrees to cardinal directions)
+  const formatDirection = (degrees: number): string => {
+    if (!degrees) return 'N/A';
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    const index = Math.round(degrees / 22.5) % 16;
+    return directions[index];
+  };
+  
+  const swellDirectionDisplay = formatDirection(swellDirection);
+  
+  return {
+    spot: spot.name,
+    spotId: spot.id,
+    slug: spot.slug,
+    waveHeight: waveHeightDisplay,
+    waveHeightValue: waveHeight,
+    windSpeedValue: windSpeed,
+    conditions: conditionsDescription,
+    direction: swellDirectionDisplay,
+    distance: spot.distance,
+    score: conditionScore,
+    // Additional data for potential future use
+    swellPeriod,
+    swellHeight,
+    windWaveHeight,
+    windWaveDirection,
+    swellDirection
   };
 } 

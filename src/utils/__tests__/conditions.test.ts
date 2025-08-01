@@ -3,7 +3,8 @@ import {
   getWindQualityScore, 
   getWaveHeightScore, 
   calculateOverallScore,
-  getEnhancedConditionScore 
+  getEnhancedConditionScore,
+  transformForecastToConditionResult
 } from '../conditions';
 
 describe('Surf Condition Scoring', () => {
@@ -196,6 +197,168 @@ describe('Surf Condition Scoring', () => {
         Wind Quality (15mph): ${windScore}/100  
         Wave Height (3ft): ${heightScore}/100
         Overall Score: ${overallScore}/100`);
+    });
+  });
+
+  describe('Data Transformation', () => {
+    it('should transform API forecast data to ConditionResult', () => {
+      // Mock API response
+      const mockForecast = {
+        current: {
+          time: "2025-01-15T10:00",
+          interval: 3600,
+          swell_wave_height: 2.5,
+          swell_wave_direction: 315,
+          swell_wave_period: 14,
+          wind_wave_height: 0.8,
+          wind_wave_direction: 270,
+          wind_wave_period: 4,
+          sea_surface_temperature: 18.5
+        }
+      };
+      
+      const mockSpot = {
+        id: 1,
+        name: "Steamer Lane",
+        slug: "steamer-lane",
+        distance: "2.3 miles"
+      };
+      
+      const result = transformForecastToConditionResult(mockForecast, mockSpot);
+      
+      // Verify basic spot info
+      expect(result.spot).toBe("Steamer Lane");
+      expect(result.spotId).toBe(1);
+      expect(result.slug).toBe("steamer-lane");
+      expect(result.distance).toBe("2.3 miles");
+      
+      // Verify calculated values
+      expect(result.waveHeightValue).toBe(2.5); // swell wave height only
+      expect(result.windSpeedValue).toBe(0.8);
+      expect(result.swellPeriod).toBe(14);
+      expect(result.swellHeight).toBe(2.5);
+      expect(result.windWaveHeight).toBe(0.8);
+      
+      // Verify formatted display values
+      expect(result.waveHeight).toBe("2.5-3.5ft");
+      expect(result.conditions).toBe("Clean"); // windSpeed 0.8 < 1.0
+      expect(result.direction).toBe("NW"); // 315 degrees
+      
+      // Verify scoring was applied
+      expect(result.score).toBeDefined();
+      expect(result.score.level).toBeDefined();
+      expect(result.score.color).toBeDefined();
+    });
+
+    it('should handle missing API data gracefully', () => {
+      const mockForecast = {
+        current: {
+          time: "2025-01-15T10:00",
+          interval: 3600,
+          swell_wave_height: 0,
+          swell_wave_direction: 0,
+          swell_wave_period: 0,
+          wind_wave_height: 0,
+          wind_wave_direction: 0,
+          wind_wave_period: 0,
+          sea_surface_temperature: 0
+        }
+      };
+      
+      const mockSpot = {
+        id: 2,
+        name: "Test Spot",
+        slug: "test-spot"
+      };
+      
+      const result = transformForecastToConditionResult(mockForecast, mockSpot);
+      
+      // Should handle zero values gracefully
+      expect(result.waveHeightValue).toBe(0);
+      expect(result.windSpeedValue).toBe(0);
+      expect(result.waveHeight).toBe("0-1ft");
+      expect(result.conditions).toBe("Glassy"); // windSpeed 0 < 0.5
+      expect(result.direction).toBe("N/A"); // 0 degrees
+      
+      // Should still have a score (neutral scores for missing data)
+      expect(result.score).toBeDefined();
+    });
+
+    it('should format directions correctly', () => {
+      const testCases = [
+        { degrees: 0, expected: "N/A" },
+        { degrees: 90, expected: "E" },
+        { degrees: 180, expected: "S" },
+        { degrees: 270, expected: "W" },
+        { degrees: 315, expected: "NW" },
+        { degrees: 45, expected: "NE" },
+        { degrees: 135, expected: "SE" },
+        { degrees: 225, expected: "SW" }
+      ];
+      
+      testCases.forEach(({ degrees, expected }) => {
+        const mockForecast = {
+          current: {
+            swell_wave_direction: degrees,
+            swell_wave_height: 1,
+            swell_wave_period: 10,
+            wind_wave_height: 0.5,
+            wind_wave_direction: 0,
+            wind_wave_period: 0,
+            sea_surface_temperature: 0
+          }
+        };
+        
+        const mockSpot = { id: 1, name: "Test", slug: "test" };
+        const result = transformForecastToConditionResult(mockForecast, mockSpot);
+        
+        expect(result.direction).toBe(expected);
+      });
+    });
+
+    it('should demonstrate real API transformation', () => {
+      // Realistic API response from forecast API
+      const realForecast = {
+        current: {
+          time: "2025-01-15T14:00",
+          interval: 3600,
+          swell_wave_height: 3.2,
+          swell_wave_direction: 320,
+          swell_wave_period: 16,
+          wind_wave_height: 0.3,
+          wind_wave_direction: 280,
+          wind_wave_period: 3,
+          sea_surface_temperature: 19.2
+        }
+      };
+      
+      const realSpot = {
+        id: 51,
+        name: "Steamer Lane",
+        slug: "steamer-lane",
+        distance: "1.2 miles"
+      };
+      
+      const result = transformForecastToConditionResult(realForecast, realSpot);
+      
+      console.log(`Real API Transformation Example:
+        Spot: ${result.spot}
+        Wave Height: ${result.waveHeight} (${result.waveHeightValue}ft swell)
+        Conditions: ${result.conditions}
+        Direction: ${result.direction}
+        Wind Speed: ${result.windSpeedValue} (proxy from wind waves)
+        Swell Period: ${result.swellPeriod}s
+        Score: ${result.score.label} (${result.score.description})
+        Distance: ${result.distance}`);
+      
+      // Verify the transformation worked correctly
+      expect(result.spot).toBe("Steamer Lane");
+      expect(result.waveHeightValue).toBe(3.2); // swell wave height only
+      expect(result.windSpeedValue).toBe(0.3);
+      expect(result.swellPeriod).toBe(16);
+      expect(result.conditions).toBe("Glassy"); // windSpeed 0.3 < 0.5
+      expect(result.direction).toBe("NW"); // 320 degrees
+      expect(result.score).toBeDefined();
     });
   });
 }); 
