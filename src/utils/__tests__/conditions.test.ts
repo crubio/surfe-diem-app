@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { 
   getSwellPeriodScore, 
   getWindQualityScore, 
@@ -6,7 +7,8 @@ import {
   getEnhancedConditionScore,
   transformForecastToConditionResult,
   getBestConditionsFromAPI,
-  getCleanestConditionsFromAPI
+  getCleanestConditionsFromAPI,
+  getHighestWavesFromAPI
 } from '../conditions';
 
 describe('Surf Condition Scoring', () => {
@@ -405,6 +407,80 @@ describe('Surf Condition Scoring', () => {
     it('should have correct function signature for cleanest conditions', () => {
       expect(typeof getCleanestConditionsFromAPI).toBe('function');
       expect(getCleanestConditionsFromAPI.length).toBe(1); // Takes one parameter
+    });
+  });
+
+  describe('getHighestWavesFromAPI', () => {
+    it('should return null for empty spots array', async () => {
+      const result = await getHighestWavesFromAPI([]);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for null/undefined spots', async () => {
+      const result1 = await getHighestWavesFromAPI(null as any);
+      const result2 = await getHighestWavesFromAPI(undefined as any);
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
+    });
+
+    it('should return null when no spots have significant waves', async () => {
+      // Mock spots with low wave heights
+      const mockSpots = [
+        { id: 1, name: 'Spot 1', slug: 'spot-1', latitude: 37.7749, longitude: -122.4194, distance: '5mi' }
+      ];
+
+      // Mock the forecast API to return low wave heights
+      const mockGetForecastCurrent = vi.fn().mockResolvedValue({
+        current: {
+          swell_wave_height: 0.5, // Below 1ft threshold
+          swell_wave_period: 8,
+          swell_wave_direction: 180
+        }
+      });
+
+      // Mock the import
+      vi.doMock('@features/forecasts', () => ({
+        getForecastCurrent: mockGetForecastCurrent
+      }));
+
+      const result = await getHighestWavesFromAPI(mockSpots);
+      expect(result).toBeNull();
+    });
+
+    it('should find spot with highest waves above threshold', async () => {
+      // Mock spots
+      const mockSpots = [
+        { id: 1, name: 'Small Spot', slug: 'small-spot', latitude: 37.7749, longitude: -122.4194, distance: '5mi' },
+        { id: 2, name: 'Big Spot', slug: 'big-spot', latitude: 37.7849, longitude: -122.4294, distance: '10mi' }
+      ];
+
+      // Mock the forecast API to return different wave heights
+      const mockGetForecastCurrent = vi.fn()
+        .mockResolvedValueOnce({
+          current: {
+            swell_wave_height: 2.0, // Smaller waves
+            swell_wave_period: 10,
+            swell_wave_direction: 180
+          }
+        })
+        .mockResolvedValueOnce({
+          current: {
+            swell_wave_height: 6.0, // Bigger waves
+            swell_wave_period: 15,
+            swell_wave_direction: 225
+          }
+        });
+
+      // Mock the import
+      vi.doMock('@features/forecasts', () => ({
+        getForecastCurrent: mockGetForecastCurrent
+      }));
+
+      const result = await getHighestWavesFromAPI(mockSpots);
+      
+      expect(result).not.toBeNull();
+      expect(result?.spot).toBe('Big Spot');
+      expect(result?.waveHeightValue).toBe(6.0);
     });
   });
 }); 

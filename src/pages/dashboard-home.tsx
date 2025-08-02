@@ -13,7 +13,7 @@ import { orderBy } from "lodash";
 import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI, getCleanestConditionsFromAPI } from "utils/conditions";
+import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI, getCleanestConditionsFromAPI, getHighestWavesFromAPI } from "utils/conditions";
 import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
 import { calculateCurrentTideState } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
@@ -82,6 +82,18 @@ const DashboardHome = () => {
   const {data: cleanestConditions, isPending: cleanestConditionsLoading} = useQuery({
     queryKey: ['cleanest_conditions', closestSpots?.map(s => s.id).join(',')],
     queryFn: () => getCleanestConditionsFromAPI(closestSpots!.map(spot => ({
+      ...spot,
+      distance: spot.distance ? `${spot.distance} miles` : undefined
+    }))),
+    enabled: !!closestSpots && closestSpots.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  })
+
+  // Get highest waves from nearby spots
+  const {data: highestWaves, isPending: highestWavesLoading} = useQuery({
+    queryKey: ['highest_waves', closestSpots?.map(s => s.id).join(',')],
+    queryFn: () => getHighestWavesFromAPI(closestSpots!.map(spot => ({
       ...spot,
       distance: spot.distance ? `${spot.distance} miles` : undefined
     }))),
@@ -866,70 +878,85 @@ const DashboardHome = () => {
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Tooltip title="View big wave spots" arrow>
-                <Card 
-                  sx={{ 
-                    height: "100%", 
-                    bgcolor: hoveredCard === 'waves' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    '&:hover': {
-                      bgcolor: 'rgba(30, 214, 230, 0.05)',
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredCard('waves')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" color="primary" gutterBottom>
-                        Highest Waves
+              <Card 
+                sx={{ 
+                  height: "100%", 
+                  bgcolor: hoveredCard === 'waves' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  '&:hover': {
+                    bgcolor: 'rgba(30, 214, 230, 0.05)',
+                  }
+                }}
+                onMouseEnter={() => setHoveredCard('waves')}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent>
+                  {highestWavesLoading ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Finding highest waves...
                       </Typography>
-                      <Chip 
-                        label="Big"
-                        color={getWaveHeightColor(9)}
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                      />
                     </Box>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                      8-10ft
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                      Mavericks • Big wave alert
-                    </Typography>
-                    
-                    {/* Progress bar for wave height */}
-                    <Box sx={{ mt: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wave Height
+                  ) : !highestWaves ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        No significant waves nearby
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="h6" color="primary" gutterBottom>
+                          Highest Waves
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          9ft
-                        </Typography>
+                        <Chip 
+                          label={highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Big' : 'Medium'}
+                          color={getWaveHeightColor(highestWaves.waveHeightValue || 0)}
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWaveHeightPercentage(9)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#f44336'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary">
-                      Experienced surfers only
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Tooltip>
+                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
+                        {highestWaves.waveHeight}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                        {highestWaves.spot} • {highestWaves.conditions}
+                      </Typography>
+                      
+                      {/* Progress bar for wave height */}
+                      <Box sx={{ mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            Wave Height
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {highestWaves.waveHeightValue?.toFixed(1)}ft
+                          </Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={getWaveHeightPercentage(highestWaves.waveHeightValue || 0)}
+                          sx={{ 
+                            height: 6, 
+                            borderRadius: 3,
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'success' ? '#4caf50' : 
+                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'warning' ? '#ff9800' : 
+                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'error' ? '#f44336' : '#2196f3'
+                            }
+                          }}
+                        />
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary">
+                        {highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available'}
+                      </Typography>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
           </Grid>
         </Item>

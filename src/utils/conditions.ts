@@ -585,3 +585,75 @@ export async function getCleanestConditionsFromAPI(closestSpots: { id: number; n
     return null;
   }
 } 
+
+/**
+ * Get the spot with the highest waves from nearby spots
+ * @param closestSpots Array of closest spots - eg; getClosestSpots() returns data thats used here
+ * eg; { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]
+ * @returns Promise<ConditionResult | null> for the spot with highest waves
+ */
+export async function getHighestWavesFromAPI(closestSpots: { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]): Promise<ConditionResult | null> {
+  if (!closestSpots || closestSpots.length === 0) {
+    return null;
+  }
+
+  try {
+    const spotsToCheck = closestSpots.slice(0, 5);
+    
+    const { getForecastCurrent } = await import('@features/forecasts');
+    
+    const forecastPromises = spotsToCheck.map(async (spot) => {
+      try {
+        const forecast = await getForecastCurrent({
+          latitude: spot.latitude,
+          longitude: spot.longitude,
+        });
+        
+        return {
+          spot,
+          forecast,
+          conditionResult: transformForecastToConditionResult(forecast, {
+            id: spot.id,
+            name: spot.name,
+            slug: spot.slug,
+            distance: spot.distance
+          })
+        };
+      } catch (error) {
+        console.warn(`Failed to get forecast for ${spot.name}:`, error);
+        return null;
+      }
+    });
+    
+    const results = await Promise.all(forecastPromises);
+    const validResults = results.filter(result => result !== null);
+    
+    if (validResults.length === 0) {
+      return null;
+    }
+    
+    // Find the spot with the highest wave height
+    let highestResult = validResults[0];
+    let highestWaveHeight = 0;
+    
+    validResults.forEach(result => {
+      if (result && result.conditionResult.waveHeightValue) {
+        if (result.conditionResult.waveHeightValue > highestWaveHeight) {
+          highestWaveHeight = result.conditionResult.waveHeightValue;
+          highestResult = result;
+        }
+      }
+    });
+    
+    // Only return if we have waves above a minimum threshold (1ft)
+    if (highestWaveHeight < 1) {
+      return null; // Will trigger "No significant waves" display
+    }
+    
+    return highestResult ? highestResult.conditionResult : null;
+    
+  } catch (error) {
+    console.error('Error getting highest waves from API:', error);
+    return null;
+  }
+} 
