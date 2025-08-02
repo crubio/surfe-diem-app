@@ -16,6 +16,7 @@ import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI, getCleanestConditionsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
 import { calculateCurrentTideState } from "utils/tides";
+import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -117,6 +118,9 @@ const DashboardHome = () => {
 
   // Calculate current tide state from daily predictions
   const currentTideState = dailyTides ? calculateCurrentTideState(dailyTides) : null;
+  
+  // Extract swell data from closest spot forecast
+  const currentSwellData = closestSpotsForecast ? extractSwellDataFromForecast(closestSpotsForecast) : null;
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -593,11 +597,6 @@ const DashboardHome = () => {
                     }}
                     onMouseEnter={() => setHoveredCard('cleanest')}
                     onMouseLeave={() => setHoveredCard(null)}
-                    onClick={() => {
-                      if (cleanestConditions?.slug) {
-                        navigate(`/spot/${cleanestConditions.slug}`);
-                      }
-                    }}
                   >
                     <CardContent>
                       {cleanestConditionsLoading ? (
@@ -710,70 +709,80 @@ const DashboardHome = () => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={4}>
-              <Tooltip title="View detailed wind forecast" arrow>
-                <Card 
-                  sx={{ 
-                    height: "100%", 
-                    bgcolor: hoveredCard === 'wind' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    '&:hover': {
-                      bgcolor: 'rgba(30, 214, 230, 0.05)',
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredCard('wind')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" color="primary" gutterBottom>
-                        Wind Conditions
+              <Card 
+                sx={{ 
+                  height: "100%", 
+                  bgcolor: hoveredCard === 'swell' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  '&:hover': {
+                    bgcolor: 'rgba(30, 214, 230, 0.05)',
+                  }
+                }}
+                onMouseEnter={() => setHoveredCard('swell')}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent>
+                  {!currentSwellData ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Loading swell data...
                       </Typography>
-                      <Chip 
-                        label="Light"
-                        color={getWindColor(8)}
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                      />
                     </Box>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                      Light
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                      5-8 mph • Offshore
-                    </Typography>
-                    
-                    {/* Progress bar for wind speed */}
-                    <Box sx={{ mt: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Wind Speed
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="h6" color="primary" gutterBottom>
+                          Current Swell
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          6.5mph avg
-                        </Typography>
+                        <Chip 
+                          label={getSwellQualityDescription(currentSwellData.period)}
+                          color={getSwellHeightColor(currentSwellData.height)}
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={getWindSpeedPercentage(6.5)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#4caf50'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary">
-                      Ideal for clean waves
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Tooltip>
+                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
+                        {formatSwellHeight(currentSwellData.height)}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                        {formatSwellPeriod(currentSwellData.period)} • {getSwellDirectionText(currentSwellData.direction)}
+                      </Typography>
+                      
+                      {/* Progress bar for swell height */}
+                      <Box sx={{ mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            Swell Height
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatSwellHeight(currentSwellData.height)}
+                          </Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={getSwellHeightPercentage(currentSwellData.height)}
+                          sx={{ 
+                            height: 6, 
+                            borderRadius: 3,
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: getSwellHeightColor(currentSwellData.height) === 'success' ? '#4caf50' : 
+                                              getSwellHeightColor(currentSwellData.height) === 'warning' ? '#ff9800' : 
+                                              getSwellHeightColor(currentSwellData.height) === 'error' ? '#f44336' : '#2196f3'
+                            }
+                          }}
+                        />
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary">
+                        {getSwellQualityDescription(currentSwellData.period)} from {getSwellDirectionText(currentSwellData.direction)}
+                      </Typography>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>

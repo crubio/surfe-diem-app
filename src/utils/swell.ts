@@ -9,6 +9,35 @@ export interface SwellData {
 }
 
 /**
+ * Extract swell data from forecast API response
+ * @param forecast API forecast response (ForecastDataCurrent)
+ * @returns Processed swell data or null if unavailable
+ */
+export function extractSwellDataFromForecast(forecast: any): SwellData | null {
+  if (!forecast?.current) {
+    return null;
+  }
+
+  const { current } = forecast;
+  
+  // Extract swell data from API response
+  const swellHeight = current.swell_wave_height;
+  const swellPeriod = current.swell_wave_period;
+  const swellDirection = current.swell_wave_direction;
+  
+  // Validate that we have the essential data
+  if (swellHeight === undefined || swellPeriod === undefined || swellDirection === undefined) {
+    return null;
+  }
+  
+  return {
+    height: swellHeight,
+    period: swellPeriod,
+    direction: swellDirection
+  };
+}
+
+/**
  * Get swell quality description based on period
  * @param period Swell period in seconds
  * @returns Quality description
