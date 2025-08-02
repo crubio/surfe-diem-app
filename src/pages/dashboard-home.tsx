@@ -15,6 +15,8 @@ import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRe
 import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
 import { calculateCurrentTideState } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
+import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor, formatWaterTemp, getWaterTempPercentage, getWaterTempComfortLevel } from "utils/water-temp";
+import { TemperatureGauge, TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -112,6 +114,9 @@ const DashboardHome = () => {
   
   // Extract swell data from closest spot forecast
   const currentSwellData = closestSpotsForecast ? extractSwellDataFromForecast(closestSpotsForecast) : null;
+  
+  // Extract water temperature data from closest spot forecast
+  const currentWaterTempData = closestSpotsForecast ? extractWaterTempFromForecast(closestSpotsForecast) : null;
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -302,7 +307,7 @@ const DashboardHome = () => {
           />
         </Box>
 
-                {/* Current Conditions Grid */}
+          {/* Current Conditions Grid */}
           <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
           <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 600 }}>
             Current Conditions Dashboard
@@ -698,12 +703,11 @@ const DashboardHome = () => {
             Current Conditions
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card 
                 sx={{ 
                   height: "100%", 
                   bgcolor: hoveredCard === 'swell' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                  cursor: 'pointer',
                   transition: 'all 0.2s ease-in-out',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   '&:hover': {
@@ -775,7 +779,7 @@ const DashboardHome = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <Card 
                 sx={{ 
                   height: "100%", 
@@ -855,7 +859,65 @@ const DashboardHome = () => {
               </Card>
             </Grid>
             
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card 
+                sx={{ 
+                  height: "100%", 
+                  bgcolor: hoveredCard === 'water-temp' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  '&:hover': {
+                    bgcolor: 'rgba(30, 214, 230, 0.05)',
+                  }
+                }}
+                onMouseEnter={() => setHoveredCard('water-temp')}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent>
+                  {!closestSpotsForecast ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Loading water temp...
+                      </Typography>
+                    </Box>
+                  ) : !currentWaterTempData ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        No water temp data available
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="h6" color="primary" gutterBottom>
+                          Water Temperature
+                        </Typography>
+                        <Chip 
+                          label={getWaterTempQualityDescription(currentWaterTempData.temperature)}
+                          color={getWaterTempColor(currentWaterTempData.temperature)}
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
+                      </Box>
+                      {/* Temperature Card */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
+                        <TemperatureCard 
+                          temperature={currentWaterTempData.temperature}
+                          showFahrenheit={true}
+                          showComfortLevel={true}
+                        />
+                      </Box>
+                      
+                      <Typography variant="body2" color="text.secondary">
+                        {getWaterTempQualityDescription(currentWaterTempData.temperature)} water • {getWaterTempComfortLevel(currentWaterTempData.temperature)}
+                      </Typography>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
               <Card 
                 sx={{ 
                   height: "100%", 
