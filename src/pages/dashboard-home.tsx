@@ -14,6 +14,8 @@ import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI, getCleanestConditionsFromAPI } from "utils/conditions";
+import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
+import { calculateCurrentTideState } from "utils/tides";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -87,10 +89,34 @@ const DashboardHome = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
+  // Get closest tide station to user's location
+  const {data: closestTideStation} = useQuery({
+    queryKey: ['closest_tide_station', geolocation?.latitude, geolocation?.longitude],
+    queryFn: () => getClostestTideStation({
+      lat: geolocation!.latitude,
+      lng: geolocation!.longitude
+    }),
+    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+  })
+
+  // Get daily tide predictions for the closest station
+  const {data: dailyTides, isPending: tidesLoading} = useQuery({
+    queryKey: ['daily_tides', closestTideStation?.station_id],
+    queryFn: () => getDailyTides({
+      station: closestTideStation!.station_id
+    }),
+    enabled: !!closestTideStation?.station_id,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    gcTime: 60 * 60 * 1000, // 1 hour
+  })
+
   // Get featured spots from existing spots data
   const featuredSpots = spots ? spots.filter(spot => 
     FEATURED_SPOTS.includes(spot.slug)
   ) : [];
+
+  // Calculate current tide state from daily predictions
+  const currentTideState = dailyTides ? calculateCurrentTideState(dailyTides) : null;
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -751,70 +777,83 @@ const DashboardHome = () => {
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Tooltip title="View tide schedule" arrow>
-                <Card 
-                  sx={{ 
-                    height: "100%", 
-                    bgcolor: hoveredCard === 'tide' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    '&:hover': {
-                      bgcolor: 'rgba(30, 214, 230, 0.05)',
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredCard('tide')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Typography variant="h6" color="primary" gutterBottom>
-                        Tide Status
+              <Card 
+                sx={{ 
+                  height: "100%", 
+                  bgcolor: hoveredCard === 'tide' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
+                  transition: 'all 0.2s ease-in-out',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  '&:hover': {
+                    bgcolor: 'rgba(30, 214, 230, 0.05)',
+                  }
+                }}
+                onMouseEnter={() => setHoveredCard('tide')}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <CardContent>
+                  {tidesLoading ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Loading tide data...
                       </Typography>
-                      <Chip 
-                        label="Rising"
-                        color="info"
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
-                      />
                     </Box>
-                    <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                      Rising
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                      3.2ft • +0.5ft/hr
-                    </Typography>
-                    
-                    {/* Progress bar for tide level */}
-                    <Box sx={{ mt: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          Current Level
+                  ) : !currentTideState ? (
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        No tide data available
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Typography variant="h6" color="primary" gutterBottom>
+                          Tide Status
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          3.2ft
-                        </Typography>
+                        <Chip 
+                          label={currentTideState.direction === 'rising' ? 'Rising' : 'Falling'}
+                          color="info"
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={65} // 3.2ft out of ~5ft max
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          backgroundColor: 'rgba(0,0,0,0.1)',
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: '#2196f3'
-                          }
-                        }}
-                      />
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary">
-                      High tide in 2.5 hours
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Tooltip>
+                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
+                        {typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight.toFixed(1) : '0.0'}ft
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+                        {currentTideState.direction === 'rising' ? 'Rising' : 'Falling'} • +{typeof currentTideState.rateOfChange === 'number' ? currentTideState.rateOfChange.toFixed(1) : '0.0'}ft/hr
+                      </Typography>
+                      
+                      {/* Progress bar for tide level */}
+                      <Box sx={{ mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            Current Level
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight.toFixed(1) : '0.0'}ft
+                          </Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={Math.min(((typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight : 0) / 6) * 100, 100)} // Scale 0-6ft to 0-100%
+                          sx={{ 
+                            height: 6, 
+                            borderRadius: 3,
+                            backgroundColor: 'rgba(0,0,0,0.1)',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: '#2196f3'
+                            }
+                          }}
+                        />
+                      </Box>
+                      
+                                              <Typography variant="body2" color="text.secondary">
+                          {currentTideState.nextType === 'H' ? 'High' : 'Low'} tide in {Math.floor((typeof currentTideState.timeToNext === 'number' ? currentTideState.timeToNext : 0) / 60)}h {(typeof currentTideState.timeToNext === 'number' ? currentTideState.timeToNext : 0) % 60}m
+                        </Typography>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>

@@ -11,7 +11,7 @@ interface TidesQueryParams {
 export interface TidesDataDaily {
   predictions: {
     t: string;
-    v: number;
+    v: string;
     type: string;
   }[];
 }
