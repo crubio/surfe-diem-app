@@ -260,16 +260,30 @@ const DashboardHome = () => {
         {/* Hero Section */}
         <Item sx={{ bgcolor: 'primary.dark', marginBottom: "20px" }}>
           <Box sx={{
-            backgroundColor: "#1ed6e6", 
-            background: "linear-gradient(135deg, #1ed6e6 0%, #0ea5e9 100%)",
-            height: { xs: "120px", sm: "140px" },
+            backgroundImage: "url('/src/assets/manresa1.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            height: { xs: "200px", sm: "250px", md: "300px" },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             textAlign: "center",
-            px: { xs: 2, sm: 3, md: 4 }
+            px: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(135deg, rgba(30, 214, 230, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%)",
+              zIndex: 1
+            }
           }}>
+            <Box sx={{ position: "relative", zIndex: 2 }}>
             <Typography 
               variant="h3" 
               component="div" 
@@ -295,6 +309,7 @@ const DashboardHome = () => {
             >
               Real-time conditions and current forecasts
             </Typography>
+            </Box>
           </Box>
         </Item>
 
@@ -1040,13 +1055,13 @@ const DashboardHome = () => {
                 variant="outlined" 
                 size="large"
                 onClick={() => handleQuickAction('near_me')}
-                              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }
-              }}
+                sx={{ 
+                  flex: 1,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
+                }}
               >
                 Spots Near Me
               </Button>
