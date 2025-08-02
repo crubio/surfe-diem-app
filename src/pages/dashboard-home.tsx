@@ -1,4 +1,5 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
+import manresaImage from "assets/manresa1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { Item, SEO, EnhancedSelect, LocationPrompt } from "components";
@@ -260,7 +261,7 @@ const DashboardHome = () => {
         {/* Hero Section */}
         <Item sx={{ bgcolor: 'primary.dark', marginBottom: "20px" }}>
           <Box sx={{
-            backgroundImage: "url('/src/assets/manresa1.jpg')",
+            backgroundImage: `url(${manresaImage})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
