@@ -268,8 +268,7 @@ export function getConditionDescription(conditions: SurfConditions): string {
  * @returns ConditionResult for the best spot
  */
 export function getBestConditions(spots: SpotBatchData[]): ConditionResult {
-  // TODO: Implement logic to find best current conditions
-  // This could be based on wave height, wind, tide, etc.
+  // Placeholder implementation - will be replaced by API-based logic
   const conditions = { waveHeight: 4, windSpeed: 8, swellPeriod: 12 };
   const score = getEnhancedConditionScore(conditions);
   return {
@@ -291,7 +290,7 @@ export function getBestConditions(spots: SpotBatchData[]): ConditionResult {
  * @returns ConditionResult for the closest spot
  */
 export function getClosestSpot(spots: Spot[]): ConditionResult | null {
-  // TODO: Implement logic to find closest spot to user
+  // Placeholder implementation - will be replaced by API-based logic
   if (spots.length === 0) {
     return null;
   }
@@ -320,7 +319,7 @@ export function getClosestSpot(spots: Spot[]): ConditionResult | null {
  * @returns ConditionResult for the cleanest spot
  */
 export function getCleanestConditions(spots: SpotBatchData[]): ConditionResult {
-  // TODO: Implement logic to find cleanest conditions
+  // Placeholder implementation - will be replaced by API-based logic
   const conditions = { waveHeight: 3, windSpeed: 5, swellPeriod: 14 };
   const score = getEnhancedConditionScore(conditions);
   return {
@@ -342,7 +341,7 @@ export function getCleanestConditions(spots: SpotBatchData[]): ConditionResult {
  * @returns ConditionResult for the spot with highest waves
  */
 export function getHighestWaves(spots: SpotBatchData[]): ConditionResult {
-  // TODO: Implement logic to find highest waves
+  // Placeholder implementation - will be replaced by API-based logic
   const conditions = { waveHeight: 8, windSpeed: 15, swellPeriod: 16 };
   const score = getEnhancedConditionScore(conditions);
   return {
@@ -655,5 +654,127 @@ export async function getHighestWavesFromAPI(closestSpots: { id: number; name: s
   } catch (error) {
     console.error('Error getting highest waves from API:', error);
     return null;
+  }
+} 
+
+/**
+ * Get batch forecast data for multiple spots and process for recommendations
+ * @param closestSpots Array of closest spots
+ * @returns Promise with processed data for all recommendation cards
+ */
+export async function getBatchRecommendationsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]): Promise<{
+  bestConditions: ConditionResult | null;
+  cleanestConditions: ConditionResult | null;
+  highestWaves: ConditionResult | null;
+}> {
+  if (!closestSpots || closestSpots.length === 0) {
+    return {
+      bestConditions: null,
+      cleanestConditions: null,
+      highestWaves: null
+    };
+  }
+
+  try {
+    const spotsToCheck = closestSpots.slice(0, 5);
+    
+    const { getForecastCurrent } = await import('@features/forecasts');
+    
+    // Single batch of forecast calls for all spots
+    const forecastPromises = spotsToCheck.map(async (spot) => {
+      try {
+        const forecast = await getForecastCurrent({
+          latitude: spot.latitude,
+          longitude: spot.longitude,
+        });
+        
+        return {
+          spot,
+          forecast,
+          conditionResult: transformForecastToConditionResult(forecast, {
+            id: spot.id,
+            name: spot.name,
+            slug: spot.slug,
+            distance: spot.distance
+          })
+        };
+      } catch (error) {
+        console.warn(`Failed to get forecast for ${spot.name}:`, error);
+        return null;
+      }
+    });
+    
+    const results = await Promise.all(forecastPromises);
+    const validResults = results.filter(result => result !== null);
+    
+    if (validResults.length === 0) {
+      return {
+        bestConditions: null,
+        cleanestConditions: null,
+        highestWaves: null
+      };
+    }
+    
+    // Process best conditions (highest overall score)
+    let bestResult = validResults[0];
+    let bestScore = 0;
+    
+    validResults.forEach(result => {
+      if (result) {
+        const scoreMatch = result.conditionResult.score.description.match(/\((\d+)\/100\)/);
+        const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestResult = result;
+        }
+      }
+    });
+    
+    // Process cleanest conditions (70% wind quality + 30% swell period)
+    let cleanestResult = validResults[0];
+    let bestCleanlinessScore = 0;
+    
+    validResults.forEach(result => {
+      if (result) {
+        const windScore = getWindQualityScore(result.conditionResult.windSpeedValue || 0);
+        const swellScore = getSwellPeriodScore(result.conditionResult.swellPeriod || 0);
+        
+        // 70% wind quality + 30% swell period
+        const cleanlinessScore = (windScore * 0.70) + (swellScore * 0.30);
+        
+        if (cleanlinessScore > bestCleanlinessScore) {
+          bestCleanlinessScore = cleanlinessScore;
+          cleanestResult = result;
+        }
+      }
+    });
+    
+    // Process highest waves (highest wave height)
+    let highestResult = validResults[0];
+    let highestWaveHeight = 0;
+    
+    validResults.forEach(result => {
+      if (result && result.conditionResult.waveHeightValue) {
+        if (result.conditionResult.waveHeightValue > highestWaveHeight) {
+          highestWaveHeight = result.conditionResult.waveHeightValue;
+          highestResult = result;
+        }
+      }
+    });
+    
+    return {
+      bestConditions: bestResult ? bestResult.conditionResult : null,
+      cleanestConditions: bestCleanlinessScore >= 40 ? cleanestResult.conditionResult : null,
+      highestWaves: highestWaveHeight >= 1 ? highestResult.conditionResult : null
+    };
+    
+  } catch (error) {
+    console.error('Error getting batch recommendations from API:', error);
+    return {
+      bestConditions: null,
+      cleanestConditions: null,
+      highestWaves: null
+    };
   }
 } 

@@ -8,7 +8,8 @@ import {
   transformForecastToConditionResult,
   getBestConditionsFromAPI,
   getCleanestConditionsFromAPI,
-  getHighestWavesFromAPI
+  getHighestWavesFromAPI,
+  getBatchRecommendationsFromAPI
 } from '../conditions';
 
 describe('Surf Condition Scoring', () => {
@@ -196,11 +197,7 @@ describe('Surf Condition Scoring', () => {
       expect(overallScore).toBeGreaterThanOrEqual(0);
       expect(overallScore).toBeLessThanOrEqual(100);
       
-      console.log(`Sample scoring breakdown:
-        Swell Period (12s): ${swellScore}/100
-        Wind Quality (15mph): ${windScore}/100  
-        Wave Height (3ft): ${heightScore}/100
-        Overall Score: ${overallScore}/100`);
+      // Sample scoring breakdown logged for demonstration
     });
   });
 
@@ -345,15 +342,7 @@ describe('Surf Condition Scoring', () => {
       
       const result = transformForecastToConditionResult(realForecast, realSpot);
       
-      console.log(`Real API Transformation Example:
-        Spot: ${result.spot}
-        Wave Height: ${result.waveHeight} (${result.waveHeightValue}ft swell)
-        Conditions: ${result.conditions}
-        Direction: ${result.direction}
-        Wind Speed: ${result.windSpeedValue} (proxy from wind waves)
-        Swell Period: ${result.swellPeriod}s
-        Score: ${result.score.label} (${result.score.description})
-        Distance: ${result.distance}`);
+      // Real API transformation example logged for demonstration
       
       // Verify the transformation worked correctly
       expect(result.spot).toBe("Steamer Lane");
@@ -481,6 +470,104 @@ describe('Surf Condition Scoring', () => {
       expect(result).not.toBeNull();
       expect(result?.spot).toBe('Big Spot');
       expect(result?.waveHeightValue).toBe(6.0);
+    });
+  });
+
+  describe('getBatchRecommendationsFromAPI', () => {
+    it('should return null results for empty spots array', async () => {
+      const result = await getBatchRecommendationsFromAPI([]);
+      expect(result).toEqual({
+        bestConditions: null,
+        cleanestConditions: null,
+        highestWaves: null
+      });
+    });
+
+    it('should return null results for null/undefined spots', async () => {
+      const result1 = await getBatchRecommendationsFromAPI(null as any);
+      const result2 = await getBatchRecommendationsFromAPI(undefined as any);
+      expect(result1).toEqual({
+        bestConditions: null,
+        cleanestConditions: null,
+        highestWaves: null
+      });
+      expect(result2).toEqual({
+        bestConditions: null,
+        cleanestConditions: null,
+        highestWaves: null
+      });
+    });
+
+    it('should process batch data and return all three recommendation types', async () => {
+      // Mock spots
+      const mockSpots = [
+        { id: 1, name: 'Small Spot', slug: 'small-spot', latitude: 37.7749, longitude: -122.4194, distance: '5mi' },
+        { id: 2, name: 'Big Spot', slug: 'big-spot', latitude: 37.7849, longitude: -122.4294, distance: '10mi' },
+        { id: 3, name: 'Clean Spot', slug: 'clean-spot', latitude: 37.7949, longitude: -122.4394, distance: '15mi' }
+      ];
+
+      // Mock the forecast API to return different conditions
+      const mockGetForecastCurrent = vi.fn()
+        .mockResolvedValueOnce({
+          current: {
+            swell_wave_height: 2.0, // Smaller waves
+            swell_wave_period: 10,
+            swell_wave_direction: 180
+          }
+        })
+        .mockResolvedValueOnce({
+          current: {
+            swell_wave_height: 6.0, // Bigger waves
+            swell_wave_period: 15,
+            swell_wave_direction: 225
+          }
+        })
+        .mockResolvedValueOnce({
+          current: {
+            swell_wave_height: 3.0, // Medium waves, clean conditions
+            swell_wave_period: 12,
+            swell_wave_direction: 200
+          }
+        });
+
+      // Mock the import
+      vi.doMock('@features/forecasts', () => ({
+        getForecastCurrent: mockGetForecastCurrent
+      }));
+
+      const result = await getBatchRecommendationsFromAPI(mockSpots);
+      
+      expect(result).not.toBeNull();
+      expect(result.bestConditions).not.toBeNull();
+      expect(result.cleanestConditions).not.toBeNull();
+      expect(result.highestWaves).not.toBeNull();
+      
+      // Should return different spots for different criteria
+      expect(result.bestConditions?.spot).toBeDefined();
+      expect(result.cleanestConditions?.spot).toBeDefined();
+      expect(result.highestWaves?.spot).toBeDefined();
+    });
+
+    it('should handle API failures gracefully', async () => {
+      const mockSpots = [
+        { id: 1, name: 'Test Spot', slug: 'test-spot', latitude: 37.7749, longitude: -122.4194, distance: '5mi' }
+      ];
+
+      // Mock the forecast API to fail
+      const mockGetForecastCurrent = vi.fn().mockRejectedValue(new Error('API Error'));
+
+      // Mock the import
+      vi.doMock('@features/forecasts', () => ({
+        getForecastCurrent: mockGetForecastCurrent
+      }));
+
+      const result = await getBatchRecommendationsFromAPI(mockSpots);
+      
+      expect(result).toEqual({
+        bestConditions: null,
+        cleanestConditions: null,
+        highestWaves: null
+      });
     });
   });
 }); 

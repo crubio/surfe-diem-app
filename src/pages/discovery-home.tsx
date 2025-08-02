@@ -90,14 +90,14 @@ const DiscoveryHome = () => {
 
   // Get trending spots (spots with good conditions)
   const getTrendingSpots = () => {
-    // TODO: Implement logic to find trending spots
+    // Placeholder for future implementation
     // This could be based on wave height, wind, tide, etc.
     return spots?.slice(0, 6) || [];
   };
 
   // Get spots near user's location
   const getNearbySpots = () => {
-    // TODO: Implement logic to find nearby spots
+    // Placeholder for future implementation
     return spots?.slice(0, 4) || [];
   };
 

@@ -67,13 +67,13 @@ const MinimalistHome = () => {
 
   // Get current highlights (best conditions)
   const getCurrentHighlights = () => {
-    // TODO: Implement logic to find best current conditions
+    // Placeholder for future implementation
     return spots?.slice(0, 4) || [];
   };
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // TODO: Implement search functionality
+      // Placeholder for future implementation
   
     }
   };

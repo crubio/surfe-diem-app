@@ -11,7 +11,7 @@ import { orderBy } from "lodash";
 import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBestConditionsFromAPI, getCleanestConditionsFromAPI, getHighestWavesFromAPI } from "utils/conditions";
+import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
 import { calculateCurrentTideState } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
@@ -64,10 +64,10 @@ const DashboardHome = () => {
     enabled: !!closestSpots && closestSpots.length > 0
   })
 
-  // Get best conditions from nearby spots
-  const {data: bestConditions, isPending: bestConditionsLoading} = useQuery({
-    queryKey: ['best_conditions', closestSpots?.map(s => s.id).join(',')],
-    queryFn: () => getBestConditionsFromAPI(closestSpots!.map(spot => ({
+  // Get batch recommendations from nearby spots (optimized - single API call for all 3 cards)
+  const {data: batchRecommendations, isPending: recommendationsLoading} = useQuery({
+    queryKey: ['batch_recommendations', closestSpots?.map(s => s.id).join(',')],
+    queryFn: () => getBatchRecommendationsFromAPI(closestSpots!.map(spot => ({
       ...spot,
       distance: spot.distance ? `${spot.distance} miles` : undefined
     }))),
@@ -76,29 +76,10 @@ const DashboardHome = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
-  // Get cleanest conditions from nearby spots
-  const {data: cleanestConditions, isPending: cleanestConditionsLoading} = useQuery({
-    queryKey: ['cleanest_conditions', closestSpots?.map(s => s.id).join(',')],
-    queryFn: () => getCleanestConditionsFromAPI(closestSpots!.map(spot => ({
-      ...spot,
-      distance: spot.distance ? `${spot.distance} miles` : undefined
-    }))),
-    enabled: !!closestSpots && closestSpots.length > 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  })
-
-  // Get highest waves from nearby spots
-  const {data: highestWaves, isPending: highestWavesLoading} = useQuery({
-    queryKey: ['highest_waves', closestSpots?.map(s => s.id).join(',')],
-    queryFn: () => getHighestWavesFromAPI(closestSpots!.map(spot => ({
-      ...spot,
-      distance: spot.distance ? `${spot.distance} miles` : undefined
-    }))),
-    enabled: !!closestSpots && closestSpots.length > 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  })
+  // Extract individual results from batch
+  const bestConditions = batchRecommendations?.bestConditions || null;
+  const cleanestConditions = batchRecommendations?.cleanestConditions || null;
+  const highestWaves = batchRecommendations?.highestWaves || null;
 
   // Get closest tide station to user's location
   const {data: closestTideStation} = useQuery({
@@ -360,7 +341,7 @@ const DashboardHome = () => {
                     }}
                   >
                     <CardContent>
-                      {bestConditionsLoading ? (
+                      {recommendationsLoading ? (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary">
                             Finding best conditions...
@@ -608,7 +589,7 @@ const DashboardHome = () => {
                     onMouseLeave={() => setHoveredCard(null)}
                   >
                     <CardContent>
-                      {cleanestConditionsLoading ? (
+                      {recommendationsLoading ? (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary">
                             Finding cleanest conditions...
@@ -889,7 +870,7 @@ const DashboardHome = () => {
                 onMouseLeave={() => setHoveredCard(null)}
               >
                 <CardContent>
-                  {highestWavesLoading ? (
+                  {recommendationsLoading ? (
                     <Box sx={{ textAlign: 'center', py: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         Finding highest waves...

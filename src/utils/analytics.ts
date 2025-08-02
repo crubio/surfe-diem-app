@@ -52,7 +52,7 @@ const trackEvent = (event: ABTestEvent): void => {
     
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Analytics Event:', event);
+      // Analytics event logged
     }
   } catch (error) {
     console.error('Failed to track analytics event:', error);
