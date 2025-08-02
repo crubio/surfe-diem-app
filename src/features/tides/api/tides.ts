@@ -1,7 +1,7 @@
 import { axios } from "lib/axios";
 import { API_ROUTES } from "utils/routing";
 
-// TODO: TBD params for more specific queries
+// Additional query parameters will be added as needed
 interface TidesQueryParams {
   station?: string;
   lat?: number;
@@ -11,7 +11,7 @@ interface TidesQueryParams {
 export interface TidesDataDaily {
   predictions: {
     t: string;
-    v: number;
+    v: string;
     type: string;
   }[];
 }

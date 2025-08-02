@@ -37,7 +37,7 @@ export default function SearchAppBar() {
   const {data: searchResultData, isSuccess} = useQuery({
     queryKey: ['search', queryId ,searchQuery],
     queryFn: () => getSearchResults(searchQuery),
-    enabled: !!searchQuery && searchQuery.length > 2,
+    enabled: !!searchQuery && searchQuery.q.length > 2,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

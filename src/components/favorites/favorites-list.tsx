@@ -45,7 +45,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
             {swellData && swellData.direction && ` • ${swellData.direction}`}
@@ -60,7 +60,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
             {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
             {weather.swell.direction && ` • ${weather.swell.direction}°`}
@@ -74,23 +74,26 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
     ? goToSpotPage(favorite.id, (currentData as any)?.slug)
     : goToBuoyPage(favorite.id);
 
+  // Color coding for spots vs buoys
+  const getTypeColor = () => {
+    return type === 'spot' ? '#1ed6e6' : '#f06292'; // Primary blue for spots, secondary pink for buoys
+  };
+
   return (
     <Item sx={{ 
       padding: { xs: '12px', sm: '16px' }, 
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'space-between'
+      justifyContent: 'space-between',
+      borderLeft: `4px solid ${getTypeColor()}`,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      }
     }}>
       <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Chip 
-            label={type === 'spot' ? 'Spot' : 'Buoy'} 
-            size="small" 
-            color={type === 'spot' ? 'primary' : 'secondary'}
-            variant="outlined"
-            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-          />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography 
             variant="h6" 
             component="div"
@@ -110,7 +113,6 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
             variant="body2" 
             color="text.secondary" 
             sx={{ 
-              mb: 1,
               fontSize: { xs: '0.8rem', sm: '0.875rem' }
             }}
           >
@@ -212,9 +214,6 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   currentData, 
   isLoading 
 }) => {
-  if (favorites.length === 0) {
-    return null;
-  }
 
   // Separate favorites by type
   const spotFavorites = favorites.filter(f => f.type === 'spot');
@@ -244,6 +243,19 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           }}
         >
           Loading current conditions...
+        </Typography>
+      )}
+
+      {favorites.length === 0 && (
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 2,
+            fontSize: { xs: '0.875rem', sm: '1rem' }
+          }}
+        >
+          No favorites in your quiver yet. Add some to get quick surf conditions for your favorite spots and buoys.
         </Typography>
       )}
       

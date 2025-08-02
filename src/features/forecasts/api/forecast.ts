@@ -6,6 +6,10 @@ export enum ForecastTypesCurrent {
   SWELL_WAVE_HEIGHT = "swell_wave_height",
   SWELL_WAVE_DIRECTION = "swell_wave_direction",
   SWELL_WAVE_PERIOD = "swell_wave_period",
+  WIND_WAVE_HEIGHT = "wind_wave_height",
+  WIND_WAVE_DIRECTION = "wind_wave_direction",
+  WIND_WAVE_PERIOD = "wind_wave_period",
+  SEA_SURFACE_TEMPERATURE = "sea_surface_temperature",
 }
 
 export enum ForecastTypesHourly {
@@ -37,11 +41,11 @@ type ForecastQueryParams = {
   end_date?: string,  // e.g., YYYY-MM-DD (2021-01-01)
 }
 
-const hourlyParams = ForecastTypesHourly.SWELL_WAVE_HEIGHT + "," + ForecastTypesHourly.SWELL_WAVE_DIRECTION + "," + ForecastTypesHourly.SWELL_WAVE_PERIOD
+const hourlyParams = Object.values(ForecastTypesHourly).join(",")
 
-const dailyParams = ForecastTypesDaily.SWELL_WAVE_HEIGHT + "," + ForecastTypesDaily.SWELL_WAVE_DIRECTION + "," + ForecastTypesDaily.SWELL_WAVE_PERIOD
+const dailyParams = Object.values(ForecastTypesDaily).join(",")
 
-const currentParams = hourlyParams
+const currentParams = Object.values(ForecastTypesCurrent).join(",")
 
 export const getForecastHourly = (params: ForecastQueryParams): Promise<ForecastDataHourly> => {
   params['hourly'] = hourlyParams

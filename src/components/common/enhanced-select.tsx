@@ -88,9 +88,10 @@ export default function EnhancedSelect({
 
   const renderOption = (props: any, option: any) => {
     const region = option.subregion_name;
+    const { key, ...otherProps } = props;
     
     return (
-      <Box component="li" {...props} sx={{ py: 1 }}>
+      <Box component="li" key={option[selectValueKey]} {...otherProps} sx={{ py: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {type === 'spot' ? (
             <LocationOn sx={{ fontSize: '1rem', color: 'primary.main' }} />

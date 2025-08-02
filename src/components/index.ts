@@ -11,3 +11,6 @@ export * from './common/favorite-button'
 export * from './favorites/favorites-list'
 export { default as SEO } from './common/seo'
 export * from './common/structured-data'
+export { default as LocationPrompt } from './common/location-prompt';
+export { default as TemperatureGauge } from './common/temperature-gauge';
+export { default as TemperatureCard } from './common/temperature-card';

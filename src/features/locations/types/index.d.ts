@@ -7,6 +7,7 @@ export interface Spot {
   active: boolean;
   subregion_name: string;
   timezone: string;
+  distance?: number;
 }
 
 export type LocationQueryParams = {
