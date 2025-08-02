@@ -74,7 +74,7 @@ const MinimalistHome = () => {
   const handleSearch = () => {
     if (searchQuery.trim()) {
       // TODO: Implement search functionality
-      console.log('Searching for:', searchQuery);
+  
     }
   };
 

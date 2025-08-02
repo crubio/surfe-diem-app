@@ -54,7 +54,6 @@ describe('Tide Utilities', () => {
         expect(result.nextHeight).toBe(3.019);
       } else {
         // If result is null, it might be due to timezone issues, so we'll skip this test
-        console.log('Skipping rising tide test due to timezone issues');
       }
     });
 
@@ -68,7 +67,6 @@ describe('Tide Utilities', () => {
         expect(result.direction).toBe('falling'); // After high tide
       } else {
         // If result is null, it might be due to timezone issues, so we'll skip this test
-        console.log('Skipping exact prediction test due to timezone issues');
       }
     });
 
@@ -84,7 +82,6 @@ describe('Tide Utilities', () => {
         expect(['H', 'L']).toContain(result.nextType);
       } else {
         // If result is null, it might be due to timezone issues, so we'll skip this test
-        console.log('Skipping wrap-around test due to timezone issues');
       }
     });
 
@@ -174,7 +171,7 @@ describe('Tide Utilities', () => {
         expect(morningResult.currentHeight).toBeGreaterThan(0);
         expect(morningResult.currentHeight).toBeLessThan(10); // Reasonable range
       } else {
-        console.log('Skipping morning test due to timezone issues');
+        // Skipping due to timezone issues
       }
 
       // Test falling tide (afternoon)
@@ -187,7 +184,7 @@ describe('Tide Utilities', () => {
         expect(afternoonResult.currentHeight).toBeGreaterThan(0);
         expect(afternoonResult.currentHeight).toBeLessThan(10); // Reasonable range
       } else {
-        console.log('Skipping afternoon test due to timezone issues');
+        // Skipping due to timezone issues
       }
     });
   });

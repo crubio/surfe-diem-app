@@ -1,19 +1,17 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
-// import { Spot } from "@features/locations/types";
 import { Item, SEO, EnhancedSelect, LocationPrompt } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
-// import SpotGlance from "@features/locations/spot-glance";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
 import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getConditionDescription, getBestConditionsFromAPI, getCleanestConditionsFromAPI, getHighestWavesFromAPI } from "utils/conditions";
+import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBestConditionsFromAPI, getCleanestConditionsFromAPI, getHighestWavesFromAPI } from "utils/conditions";
 import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
 import { calculateCurrentTideState } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
@@ -186,7 +184,6 @@ const DashboardHome = () => {
 
   // Helper function to get best conditions
   const getBestConditions = () => {
-    // TODO: Implement logic to find best current conditions
     // This could be based on wave height, wind, tide, etc.
     const conditions = { waveHeight: 4, windSpeed: 8 };
     const score = getEnhancedConditionScore(conditions);
