@@ -506,3 +506,82 @@ export async function getBestConditionsFromAPI(closestSpots: { id: number; name:
     return null;
   }
 } 
+
+/**
+ * Get the spot with the cleanest conditions (lowest wind/choppiness) from nearby spots
+ * @param closestSpots Array of closest spots - eg; getClosestSpots() returns data thats used here
+ * eg; { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]
+ * @returns Promise<ConditionResult | null> for the cleanest spot
+ */
+export async function getCleanestConditionsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]): Promise<ConditionResult | null> {
+  if (!closestSpots || closestSpots.length === 0) {
+    return null;
+  }
+
+  try {
+    const spotsToCheck = closestSpots.slice(0, 5);
+    
+    const { getForecastCurrent } = await import('@features/forecasts');
+    
+    const forecastPromises = spotsToCheck.map(async (spot) => {
+      try {
+        const forecast = await getForecastCurrent({
+          latitude: spot.latitude,
+          longitude: spot.longitude,
+        });
+        
+        return {
+          spot,
+          forecast,
+          conditionResult: transformForecastToConditionResult(forecast, {
+            id: spot.id,
+            name: spot.name,
+            slug: spot.slug,
+            distance: spot.distance
+          })
+        };
+      } catch (error) {
+        console.warn(`Failed to get forecast for ${spot.name}:`, error);
+        return null;
+      }
+    });
+    
+    const results = await Promise.all(forecastPromises);
+    const validResults = results.filter(result => result !== null);
+    
+    if (validResults.length === 0) {
+      return null;
+    }
+    
+    // Calculate "cleanliness score" for each spot: 70% wind quality + 30% swell period
+    let cleanestResult = validResults[0];
+    let bestCleanlinessScore = 0;
+    
+    validResults.forEach(result => {
+      if (result) {
+        const windScore = getWindQualityScore(result.conditionResult.windSpeedValue || 0);
+        const swellScore = getSwellPeriodScore(result.conditionResult.swellPeriod || 0);
+        
+        // 70% wind quality + 30% swell period
+        const cleanlinessScore = (windScore * 0.70) + (swellScore * 0.30);
+        
+        if (cleanlinessScore > bestCleanlinessScore) {
+          bestCleanlinessScore = cleanlinessScore;
+          cleanestResult = result;
+        }
+      }
+    });
+    
+    // Check if conditions are actually good enough to recommend
+    // If the best cleanliness score is still poor, return null to show "not great" message
+    if (bestCleanlinessScore < 40) {
+      return null; // Will trigger "Nearby spots not great" display
+    }
+    
+    return cleanestResult ? cleanestResult.conditionResult : null;
+    
+  } catch (error) {
+    console.error('Error getting cleanest conditions from API:', error);
+    return null;
+  }
+} 

@@ -5,7 +5,8 @@ import {
   calculateOverallScore,
   getEnhancedConditionScore,
   transformForecastToConditionResult,
-  getBestConditionsFromAPI
+  getBestConditionsFromAPI,
+  getCleanestConditionsFromAPI
 } from '../conditions';
 
 describe('Surf Condition Scoring', () => {
@@ -389,6 +390,21 @@ describe('Surf Condition Scoring', () => {
       // but we can test that the function accepts the right data structure
       expect(typeof getBestConditionsFromAPI).toBe('function');
       expect(getBestConditionsFromAPI.length).toBe(1); // Takes one parameter
+    });
+
+    it('should handle empty closest spots array for cleanest conditions', async () => {
+      const result = await getCleanestConditionsFromAPI([]);
+      expect(result).toBeNull();
+    });
+
+    it('should handle null closest spots array for cleanest conditions', async () => {
+      const result = await getCleanestConditionsFromAPI(null as any);
+      expect(result).toBeNull();
+    });
+
+    it('should have correct function signature for cleanest conditions', () => {
+      expect(typeof getCleanestConditionsFromAPI).toBe('function');
+      expect(getCleanestConditionsFromAPI.length).toBe(1); // Takes one parameter
     });
   });
 }); 
