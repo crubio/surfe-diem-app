@@ -34,7 +34,18 @@ export const formatDateTime = (date: string | undefined) => {
 
 export const formatDateShortWeekday = (date: string | undefined) => {
   if (!date) return '';
-  return dayjs(date).format('ddd, MMM D');
+  
+  // Handle different date formats
+  if (date.includes('Z')) {
+    // ISO format with timezone (e.g., '2023-01-01T12:00:00Z')
+    return dayjs(date).format('ddd, MMM D');
+  } else if (date.includes(' ') && date.includes(':')) {
+    // GMT format with time (e.g., '2023-01-01 12:00')
+    return dayjs(date + ' GMT').format('ddd, MMM D');
+  } else {
+    // Date only format (e.g., '2023-01-01') - treat as local
+    return dayjs(date).format('ddd, MMM D');
+  }
 }
 
 export const getTodaysDate = (n = 0) => {
@@ -53,7 +64,18 @@ export const formatDateWeekday = (date: string | undefined) => {
 
 export const formatDateHour = (date: string | undefined) => {
   if (!date) return '';
-  return dayjs(date).format('h:mm A');
+  
+  // Handle different date formats
+  if (date.includes('Z')) {
+    // ISO format with timezone (e.g., '2023-01-01T12:00:00Z')
+    return dayjs(date).format('h:mm A');
+  } else if (date.includes(' ') && date.includes(':')) {
+    // GMT format with time (e.g., '2023-01-01 12:00')
+    return dayjs(date + ' GMT').format('h:mm A');
+  } else {
+    // Date only format (e.g., '2023-01-01') - treat as local
+    return dayjs(date).format('h:mm A');
+  }
 }
 
 export const formatDate = (date: number | string) => {

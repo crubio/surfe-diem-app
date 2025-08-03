@@ -2,7 +2,7 @@
  * Tide data processing utilities
  */
 
-import { TidesDataDaily } from "@features/tides/api/tides";
+import { TidesDataDaily, TidesDataCurrent } from "@features/tides/api/tides";
 
 export interface TideState {
   currentHeight: number;
@@ -115,6 +115,8 @@ export function getTideDirectionDescription(direction: 'rising' | 'falling'): st
   return direction === 'rising' ? 'Rising' : 'Falling';
 }
 
+
+
 /**
  * Get tide quality indicator based on rate of change
  * @param rateOfChange Rate of change in ft/hr
@@ -127,5 +129,60 @@ export function getTideQualityDescription(rateOfChange: number): string {
     return 'Moderate change';
   } else {
     return 'Fast change';
+  }
+}
+
+/**
+ * Get current tide value from current tide data
+ * @param currentTideData Current tide data from API
+ * @returns Current tide height in feet, or null if data is invalid
+ */
+export function getCurrentTideValue(currentTideData: TidesDataCurrent): number | null {
+  if (!currentTideData?.data || currentTideData.data.length === 0) {
+    return null;
+  }
+  
+  // Get the most recent tide reading (last index)
+  const latestReading = currentTideData.data[currentTideData.data.length - 1];
+  if (!latestReading?.v) {
+    return null;
+  }
+  
+  const tideValue = parseFloat(latestReading.v);
+  return isNaN(tideValue) ? null : tideValue;
+}
+
+/**
+ * Get current tide time from current tide data (converted from GMT to local)
+ * @param currentTideData Current tide data from API
+ * @returns Formatted local time string, or null if data is invalid
+ */
+export function getCurrentTideTime(currentTideData: TidesDataCurrent): string | null {
+  if (!currentTideData?.data || currentTideData.data.length === 0) {
+    return null;
+  }
+  
+  // Get the most recent tide reading (last index)
+  const latestReading = currentTideData.data[currentTideData.data.length - 1];
+  if (!latestReading?.t) {
+    return null;
+  }
+  
+  try {
+    // Parse GMT time and convert to local timezone
+    const gmtTime = new Date(latestReading.t + ' GMT');
+    
+    // Check if the date is valid
+    if (isNaN(gmtTime.getTime())) {
+      return null;
+    }
+    
+    return gmtTime.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  } catch (error) {
+    return null;
   }
 } 

@@ -13,8 +13,8 @@ import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
-import { getClostestTideStation, getDailyTides } from "@features/tides/api/tides";
-import { calculateCurrentTideState } from "utils/tides";
+import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
+import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
 import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor, formatWaterTemp, getWaterTempPercentage, getWaterTempComfortLevel } from "utils/water-temp";
 import { TemperatureGauge, TemperatureCard } from "components";
@@ -85,7 +85,7 @@ const DashboardHome = () => {
   const highestWaves = batchRecommendations?.highestWaves || null;
 
   // Get closest tide station to user's location
-  const {data: closestTideStation} = useQuery({
+  const {data: closestTideStation, isPending: tideStationLoading} = useQuery({
     queryKey: ['closest_tide_station', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getClostestTideStation({
       lat: geolocation!.latitude,
@@ -94,24 +94,29 @@ const DashboardHome = () => {
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
   })
 
-  // Get daily tide predictions for the closest station
-  const {data: dailyTides, isPending: tidesLoading} = useQuery({
-    queryKey: ['daily_tides', closestTideStation?.station_id],
-    queryFn: () => getDailyTides({
+
+
+  // Get current tide data for the closest station
+  const {data: currentTides, isPending: tidesLoading} = useQuery({
+    queryKey: ['current_tides', closestTideStation?.station_id],
+    queryFn: () => getCurrentTides({
       station: closestTideStation!.station_id
     }),
     enabled: !!closestTideStation?.station_id,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
+
+
 
   // Get featured spots from existing spots data
   const featuredSpots = spots ? spots.filter(spot => 
     FEATURED_SPOTS.includes(spot.slug)
   ) : [];
 
-  // Calculate current tide state from daily predictions
-  const currentTideState = dailyTides ? calculateCurrentTideState(dailyTides) : null;
+  // Get current tide value and time
+  const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
+  const currentTideTime = currentTides ? getCurrentTideTime(currentTides) : null;
   
   // Extract swell data from closest spot forecast
   const currentSwellData = closestSpotsForecast ? extractSwellDataFromForecast(closestSpotsForecast) : null;
@@ -816,7 +821,7 @@ const DashboardHome = () => {
                         Loading tide data...
                       </Typography>
                     </Box>
-                  ) : !currentTideState ? (
+                  ) : !currentTideValue ? (
                     <Box sx={{ textAlign: 'center', py: 2 }}>
                       <Typography variant="body2" color="text.secondary">
                         No tide data available
@@ -826,20 +831,20 @@ const DashboardHome = () => {
                     <>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                         <Typography variant="h6" color="primary" gutterBottom>
-                          Tide Status
+                          Current Tide
                         </Typography>
                         <Chip 
-                          label={currentTideState.direction === 'rising' ? 'Rising' : 'Falling'}
+                          label={currentTideTime || 'Now'}
                           color="info"
                           size="small"
                           sx={{ fontWeight: 'bold' }}
                         />
                       </Box>
                       <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight.toFixed(1) : '0.0'}ft
+                        {currentTideValue.toFixed(1)}ft
                       </Typography>
                       <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        {currentTideState.direction === 'rising' ? 'Rising' : 'Falling'} • +{typeof currentTideState.rateOfChange === 'number' ? currentTideState.rateOfChange.toFixed(1) : '0.0'}ft/hr
+                        Current reading • {currentTideTime || 'Recent'}
                       </Typography>
                       
                       {/* Progress bar for tide level */}
@@ -849,12 +854,12 @@ const DashboardHome = () => {
                             Current Level
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight.toFixed(1) : '0.0'}ft
+                            {currentTideValue.toFixed(1)}ft
                           </Typography>
                         </Box>
                         <LinearProgress 
                           variant="determinate" 
-                          value={Math.min(((typeof currentTideState.currentHeight === 'number' ? currentTideState.currentHeight : 0) / 6) * 100, 100)} // Scale 0-6ft to 0-100%
+                          value={Math.min((currentTideValue / 6) * 100, 100)} // Scale 0-6ft to 0-100%
                           sx={{ 
                             height: 6, 
                             borderRadius: 3,
@@ -866,9 +871,9 @@ const DashboardHome = () => {
                         />
                       </Box>
                       
-                                              <Typography variant="body2" color="text.secondary">
-                          {currentTideState.nextType === 'H' ? 'High' : 'Low'} tide in {Math.floor((typeof currentTideState.timeToNext === 'number' ? currentTideState.timeToNext : 0) / 60)}h {(typeof currentTideState.timeToNext === 'number' ? currentTideState.timeToNext : 0) % 60}m
-                        </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Live tide reading
+                      </Typography>
                     </>
                   )}
                 </CardContent>
