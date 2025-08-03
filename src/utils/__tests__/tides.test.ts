@@ -3,9 +3,11 @@ import {
   formatTimeToNext, 
   getTideDirectionDescription, 
   getTideQualityDescription,
+  getCurrentTideValue,
+  getCurrentTideTime,
   TideState 
 } from '../tides';
-import { TidesDataDaily } from '@features/tides/api/tides';
+import { TidesDataDaily, TidesDataCurrent } from '@features/tides/api/tides';
 
 describe('Tide Utilities', () => {
   describe('calculateCurrentTideState', () => {
@@ -147,6 +149,251 @@ describe('Tide Utilities', () => {
     it('should return fast change for high rates', () => {
       expect(getTideQualityDescription(1.0)).toBe('Fast change');
       expect(getTideQualityDescription(2.5)).toBe('Fast change');
+    });
+  });
+
+  describe('getCurrentTideValue', () => {
+    it('should return tide value for valid data', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideValue(mockCurrentTideData);
+      expect(result).toBe(3.245);
+    });
+
+    it('should return last tide value when multiple readings exist', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          },
+          {
+            t: '2025-08-03 15:30',
+            v: '4.123',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          },
+          {
+            t: '2025-08-03 13:30',
+            v: '2.456',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideValue(mockCurrentTideData);
+      expect(result).toBe(2.456); // Should get the last index (13:30)
+    });
+
+    it('should return null for missing value', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: '',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideValue(mockCurrentTideData);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid value', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: 'invalid',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideValue(mockCurrentTideData);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for missing data', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: undefined as any,
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideValue(mockCurrentTideData);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getCurrentTideTime', () => {
+    it('should return formatted local time for valid GMT time', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideTime(mockCurrentTideData);
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
+      // Should contain time format like "2:30 PM" or "14:30"
+      expect(result).toMatch(/\d{1,2}:\d{2}/);
+    });
+
+    it('should return last time when multiple readings exist', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '2025-08-03 14:30',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          },
+          {
+            t: '2025-08-03 15:30',
+            v: '4.123',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          },
+          {
+            t: '2025-08-03 13:30',
+            v: '2.456',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideTime(mockCurrentTideData);
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
+      // Should contain time format like "1:30 PM" (13:30 converted to local time)
+      expect(result).toMatch(/\d{1,2}:\d{2}/);
+    });
+
+    it('should return null for missing time', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: '',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideTime(mockCurrentTideData);
+      expect(result).toBeNull();
+    });
+
+    it('should return null for invalid time format', () => {
+      const mockCurrentTideData: TidesDataCurrent = {
+        metadata: {
+          id: 'test-station',
+          name: 'Test Station',
+          lat: '36.9500',
+          lon: '-122.0333'
+        },
+        data: [
+          {
+            t: 'invalid-time',
+            v: '3.245',
+            s: '0.05',
+            f: '1',
+            q: '1'
+          }
+        ]
+      };
+
+      const result = getCurrentTideTime(mockCurrentTideData);
+      expect(result).toBeNull();
     });
   });
 
