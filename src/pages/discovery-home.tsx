@@ -83,7 +83,7 @@ const DiscoveryHome = () => {
         navigate('/map');
         break;
       case 'near_me':
-        // Handle spots near me
+        navigate('/nearby-spots');
         break;
     }
   };

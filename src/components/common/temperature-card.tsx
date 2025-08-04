@@ -14,7 +14,6 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({
   showComfortLevel = true
 }) => {
   const tempColor = getWaterTempColor(temperature);
-  const qualityDescription = getWaterTempQualityDescription(temperature);
   const comfortLevel = getWaterTempComfortLevel(temperature);
   
   // Format temperature
@@ -107,18 +106,6 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({
         {showFahrenheit ? formatTemp(temperature, 'C') : formatTemp(temperature, 'F')}
         {showComfortLevel && ` • ${comfortLevel}`}
       </Typography>
-
-      {/* Quality chip */}
-      <Chip 
-        label={qualityDescription}
-        color={tempColor}
-        size="small"
-        sx={{ 
-          fontWeight: 'bold',
-          fontSize: '0.75rem',
-          height: 24
-        }}
-      />
 
       {/* Subtle background pattern */}
       <Box

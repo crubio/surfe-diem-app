@@ -149,7 +149,7 @@ describe('Water Temperature Utilities', () => {
     it('should return correct comfort levels for different temperatures', () => {
       expect(getWaterTempComfortLevel(5)).toBe('Wetsuit Required');
       expect(getWaterTempComfortLevel(12)).toBe('Full Wetsuit');
-      expect(getWaterTempComfortLevel(17)).toBe('Spring Suit');
+      expect(getWaterTempComfortLevel(17)).toBe('Spring Suit or Full Wetsuit');
       expect(getWaterTempComfortLevel(22)).toBe('Rash Guard');
       expect(getWaterTempComfortLevel(27)).toBe('Board Shorts');
       expect(getWaterTempComfortLevel(35)).toBe('Board Shorts');
@@ -157,7 +157,7 @@ describe('Water Temperature Utilities', () => {
 
     it('should handle boundary values', () => {
       expect(getWaterTempComfortLevel(10)).toBe('Full Wetsuit');
-      expect(getWaterTempComfortLevel(15)).toBe('Spring Suit');
+      expect(getWaterTempComfortLevel(15)).toBe('Spring Suit or Full Wetsuit');
       expect(getWaterTempComfortLevel(20)).toBe('Rash Guard');
       expect(getWaterTempComfortLevel(25)).toBe('Board Shorts');
       expect(getWaterTempComfortLevel(30)).toBe('Board Shorts');

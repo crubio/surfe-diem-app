@@ -9,6 +9,7 @@ import { AppWrapper } from "./wrapper";
 import SpotPage from "pages/spot";
 import SurfSpotsPage from "pages/spots";
 import AboutPage from "pages/about";
+import NearbySpotsPage from "pages/nearby-spots";
 
 const isMaintenanceMode = MAINTENANCE_MODE === 'true' ? true : false;
 
@@ -46,6 +47,10 @@ export const router = createBrowserRouter([
           {
             path: "about",
             element: <AboutPage />,
+          },
+          {
+            path: "nearby-spots",
+            element: <NearbySpotsPage />,
           }
         ]
       }    ]);
