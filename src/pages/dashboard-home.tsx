@@ -169,7 +169,7 @@ const DashboardHome = () => {
         navigate('/spots');
         break;
       case 'near_me':
-        // Handle spots near me
+        navigate('/nearby-spots');
         break;
     }
   };
@@ -317,6 +317,59 @@ const DashboardHome = () => {
             </Typography>
             </Box>
           </Box>
+        </Item>
+
+        {/* Quick Actions */}
+        <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
+          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
+            Quick Actions
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <Button 
+              variant="outlined" 
+              size="large"
+              onClick={() => handleQuickAction('map')}
+              sx={{ 
+                flex: 1,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                }
+              }}
+            >
+              View Map
+            </Button>
+            <Button 
+              variant="outlined" 
+              size="large"
+              onClick={() => handleQuickAction('spots')}
+              sx={{ 
+                flex: 1,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                }
+              }}
+            >
+              Browse All Spots
+            </Button>
+            {geolocation && (
+              <Button 
+                variant="outlined" 
+                size="large"
+                onClick={() => handleQuickAction('near_me')}
+                sx={{ 
+                  flex: 1,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
+                }}
+              >
+                Spots Near Me
+              </Button>
+            )}
+          </Stack>
         </Item>
 
         {/* My Lineup (Favorites) - First row of content */}
@@ -925,13 +978,9 @@ const DashboardHome = () => {
                         <TemperatureCard 
                           temperature={currentWaterTempData.temperature}
                           showFahrenheit={true}
-                          showComfortLevel={true}
+                          showComfortLevel={false}
                         />
                       </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        {getWaterTempQualityDescription(currentWaterTempData.temperature)} water • {getWaterTempComfortLevel(currentWaterTempData.temperature)}
-                      </Typography>
                     </>
                   )}
                 </CardContent>
@@ -1021,61 +1070,6 @@ const DashboardHome = () => {
             </Grid>
           </Grid>
         </Item>
-
-        {/* Quick Actions */}
-        <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
-            Quick Actions
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Button 
-              variant="contained" 
-              size="large"
-              onClick={() => handleQuickAction('map')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                }
-              }}
-            >
-              View Map
-            </Button>
-            <Button 
-              variant="outlined" 
-              size="large"
-              onClick={() => handleQuickAction('spots')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }
-              }}
-            >
-              Browse All Spots
-            </Button>
-            {geolocation && (
-              <Button 
-                variant="outlined" 
-                size="large"
-                onClick={() => handleQuickAction('near_me')}
-                sx={{ 
-                  flex: 1,
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  }
-                }}
-              >
-                Spots Near Me
-              </Button>
-            )}
-          </Stack>
-        </Item>
-
-
 
         {/* Search Sections (Collapsible) */}
         <Item sx={{ bgcolor: 'background.default', marginTop: "20px" }}>
