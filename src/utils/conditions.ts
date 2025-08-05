@@ -3,6 +3,7 @@
  */
 
 import { Spot } from "@features/locations/types";
+import { formatDirection } from "./formatting";
 
 /**
  * Interface for surf conditions data
@@ -406,14 +407,6 @@ export function transformForecastToConditionResult(
   } else {
     conditionsDescription = 'Choppy';
   }
-  
-  // Format direction (convert degrees to cardinal directions)
-  const formatDirection = (degrees: number): string => {
-    if (!degrees) return 'N/A';
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const index = Math.round(degrees / 22.5) % 16;
-    return directions[index];
-  };
   
   const swellDirectionDisplay = formatDirection(swellDirection);
   
