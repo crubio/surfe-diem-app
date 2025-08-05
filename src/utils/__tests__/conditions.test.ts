@@ -279,7 +279,7 @@ describe('Surf Condition Scoring', () => {
       expect(result.windSpeedValue).toBe(0);
       expect(result.waveHeight).toBe("0-1ft");
       expect(result.conditions).toBe("Glassy"); // windSpeed 0 < 0.5
-      expect(result.direction).toBe("N/A"); // 0 degrees
+      expect(result.direction).toBe("N"); // 0 degrees
       
       // Should still have a score (neutral scores for missing data)
       expect(result.score).toBeDefined();
@@ -287,7 +287,7 @@ describe('Surf Condition Scoring', () => {
 
     it('should format directions correctly', () => {
       const testCases = [
-        { degrees: 0, expected: "N/A" },
+        { degrees: 0, expected: "N" },
         { degrees: 90, expected: "E" },
         { degrees: 180, expected: "S" },
         { degrees: 270, expected: "W" },
