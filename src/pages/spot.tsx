@@ -276,7 +276,15 @@ const SpotPage = () => {
 
           {forecastDataHourly?.hourly && 
             <Box sx={{marginBottom: "20px"}}>
-              <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
+              <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
+                Wave & Tide Forecast
+              </Typography>
+              <WaveChart 
+                waveHeightData={forecastDataHourly?.hourly.swell_wave_height} 
+                wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} 
+                timeData={forecastDataHourly?.hourly.time}
+                tideData={tideData}
+              />
             </Box>
           }
         </Container>
