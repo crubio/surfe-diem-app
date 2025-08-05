@@ -53,29 +53,61 @@ export const MapBox = (props: MapProps) => {
 
     // Create marker points
     const markers: mapboxgl.Marker[] = [];
-    props.geoJson.features.forEach((marker) => {
+    console.log('Creating markers for features:', props.geoJson.features.length);
+    props.geoJson.features.forEach((marker, index) => {
+      if (index < 3) { // Debug first 3 markers
+        console.log(`Marker ${index}:`, marker.properties);
+      }
       const el = document.createElement('div');
-      el.className = 'marker-'+marker.properties.id;
+      // Add type-specific class for visual differentiation
+      const markerType = marker.properties.type || 'unknown';
+      el.className = `marker marker-${markerType} marker-${marker.properties.id}`;
+
+      // Create popup content based on type
+      let popupContent = '';
+      if (marker.properties.type === 'spot_location') {
+        popupContent = `
+          <h3>${marker.properties.name}</h3>
+          <p><strong>Region:</strong> ${marker.properties.subregion_name}</p>
+        `;
+      } else if (marker.properties.type === 'buoy_location') {
+        popupContent = `
+          <h3>${marker.properties.name}</h3>
+          <p><strong>Type:</strong> ${marker.properties.description}</p>
+          <p><strong>Location:</strong> ${marker.properties.location}</p>
+        `;
+      } else {
+        popupContent = `
+          <h3>${marker.properties.name}</h3>
+          <p>${marker.properties.description || 'Unknown location'}</p>
+        `;
+      }
 
       const popup = new mapboxgl.Popup({ offset: 25 })
-      .setHTML(
-        `
-        <h3>${marker.properties.name}</h3>
-        <p>${marker.properties.description}</p>
-        `
-      );
+      .setHTML(popupContent);
 
       if (map.current) {
         // GeoJSON coordinates are typically [lng, lat], so we should use them directly
         const markerLng = marker.geometry.coordinates[0];
         const markerLat = marker.geometry.coordinates[1];
         
-        const mapMarker = new mapboxgl.Marker()
+        // Set color based on type using theme colors
+        let markerColor = '#9e9e9e'; // default gray
+        if (marker.properties.type === 'spot_location') {
+          markerColor = '#1ed6e6'; // theme primary (blue)
+        } else if (marker.properties.type === 'buoy_location') {
+          markerColor = '#f06292'; // theme secondary (pink)
+        }
+        
+        const mapMarker = new mapboxgl.Marker({ color: markerColor })
         .setLngLat([markerLng, markerLat])
         .setPopup(popup)
         .addTo(map.current);
         
-        const clickHandler = () => setSelectedItem(marker.properties);
+        const clickHandler = () => {
+          console.log('Clicked marker:', marker.properties); // Debug
+          setSelectedItem(marker.properties);
+        };
         mapMarker.getElement().addEventListener('click', clickHandler);
         markers.push(mapMarker);
       }
@@ -111,8 +143,14 @@ export const MapBox = (props: MapProps) => {
         {selectedItem && (
           <Item sx={{marginTop: "20px"}}>
             <Stack direction="column" spacing={1}>
-              <LinkRouter to={`/location/${selectedItem.id}`} >{selectedItem.name}</LinkRouter>
-              <span>{selectedItem.description}</span>
+              <LinkRouter to={`${selectedItem.type === 'spot_location' ? '/spot/' + (selectedItem.slug || selectedItem.id) : '/location/' + selectedItem.id}`} >
+                {selectedItem.name}
+              </LinkRouter>
+              {selectedItem.type === 'spot_location' ? (
+                <span>{selectedItem.subregion_name}</span>
+              ) : (
+                <span>{selectedItem.description}</span>
+              )}
             </Stack>
           </Item>
         )}

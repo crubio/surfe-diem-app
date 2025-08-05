@@ -1,10 +1,26 @@
 .marker {
-  background-image: url('./mapbox-icon.png');
   background-size: cover;
   width: 50px;
   height: 50px;
   border-radius: 50%;
   cursor: pointer;
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Spot markers - blue pin */
+.marker-spot_location {
+  background-image: url('./mapbox-icon.png');
+}
+
+/* Buoy markers - orange pin */
+.marker-buoy_location {
+  background-image: url('./mapbox-icon.png');
+}
+
+/* Unknown/fallback markers */
+.marker-unknown {
+  background-image: url('./mapbox-icon.png');
 }
 
 .map-container {
