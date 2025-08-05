@@ -51,82 +51,124 @@ export const MapBox = (props: MapProps) => {
 
     map.current.on('move', moveHandler);
 
-    // Create marker points
-    const markers: mapboxgl.Marker[] = [];
-    console.log('Creating markers for features:', props.geoJson.features.length);
-    props.geoJson.features.forEach((marker, index) => {
-      if (index < 3) { // Debug first 3 markers
-        console.log(`Marker ${index}:`, marker.properties);
-      }
-      const el = document.createElement('div');
-      // Add type-specific class for visual differentiation
-      const markerType = marker.properties.type || 'unknown';
-      el.className = `marker marker-${markerType} marker-${marker.properties.id}`;
-
-      // Create popup content based on type
-      let popupContent = '';
-      if (marker.properties.type === 'spot_location') {
-        popupContent = `
-          <h3>${marker.properties.name}</h3>
-          <p><strong>Region:</strong> ${marker.properties.subregion_name}</p>
-        `;
-      } else if (marker.properties.type === 'buoy_location') {
-        popupContent = `
-          <h3>${marker.properties.name}</h3>
-          <p><strong>Type:</strong> ${marker.properties.description}</p>
-          <p><strong>Location:</strong> ${marker.properties.location}</p>
-        `;
-      } else {
-        popupContent = `
-          <h3>${marker.properties.name}</h3>
-          <p>${marker.properties.description || 'Unknown location'}</p>
-        `;
-      }
-
-      const popup = new mapboxgl.Popup({ offset: 25 })
-      .setHTML(popupContent);
-
+    // Wait for map to load before adding layers
+    map.current.on('load', () => {
       if (map.current) {
-        // GeoJSON coordinates are typically [lng, lat], so we should use them directly
-        const markerLng = marker.geometry.coordinates[0];
-        const markerLat = marker.geometry.coordinates[1];
-        
-        // Set color based on type using theme colors
-        let markerColor = '#9e9e9e'; // default gray
-        if (marker.properties.type === 'spot_location') {
-          markerColor = '#1ed6e6'; // theme primary (blue)
-        } else if (marker.properties.type === 'buoy_location') {
-          markerColor = '#f06292'; // theme secondary (pink)
+        // Add GeoJSON source with clustering
+        map.current.addSource('locations', {
+          type: 'geojson',
+          data: props.geoJson as any, // Type assertion for now
+          cluster: true,
+          clusterMaxZoom: 14, // Max zoom to cluster points
+          clusterRadius: 50, // Radius of each cluster when clustering points
+        });
+
+        console.log('Added GeoJSON source with clustering for:', props.geoJson.features.length, 'features');
+
+        // Add cluster layer
+        map.current.addLayer({
+          id: 'clusters',
+          type: 'circle',
+          source: 'locations',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': '#1ed6e6', // theme primary color
+            'circle-radius': [
+              'step',
+              ['get', 'point_count'],
+              20, 100,
+              30, 750,
+              40
+            ]
+          }
+        });
+
+        // Add cluster count layer
+        map.current.addLayer({
+          id: 'cluster-count',
+          type: 'symbol',
+          source: 'locations',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+          },
+          paint: {
+            'text-color': '#ffffff'
+          }
+        });
+
+        // Add unclustered point layer
+        map.current.addLayer({
+          id: 'unclustered-point',
+          type: 'circle',
+          source: 'locations',
+          filter: ['!', ['has', 'point_count']],
+          paint: {
+            'circle-color': [
+              'case',
+              ['==', ['get', 'type'], 'spot_location'], '#1ed6e6', // theme primary (blue)
+              ['==', ['get', 'type'], 'buoy_location'], '#f06292', // theme secondary (pink)
+              '#9e9e9e' // default gray
+            ],
+            'circle-radius': 8,
+            'circle-stroke-width': 2,
+                      'circle-stroke-color': '#ffffff'
         }
-        
-        const mapMarker = new mapboxgl.Marker({ color: markerColor })
-        .setLngLat([markerLng, markerLat])
-        .setPopup(popup)
-        .addTo(map.current);
-        
-        const clickHandler = () => {
-          console.log('Clicked marker:', marker.properties); // Debug
-          setSelectedItem(marker.properties);
-        };
-        mapMarker.getElement().addEventListener('click', clickHandler);
-        markers.push(mapMarker);
-      }
-    });
+      });
+
+      // Add click handlers for clusters
+      map.current.on('click', 'clusters', (e) => {
+        const features = map.current!.queryRenderedFeatures(e.point, {
+          layers: ['clusters']
+        });
+        const clusterId = features[0].properties!.cluster_id;
+        (map.current!.getSource('locations') as any).getClusterExpansionZoom(
+          clusterId,
+          (err: any, zoom: any) => {
+            if (err) return;
+            map.current!.easeTo({
+              center: (features[0].geometry as any).coordinates,
+              zoom: zoom
+            });
+          }
+        );
+      });
+
+      // Add click handlers for individual points
+      map.current.on('click', 'unclustered-point', (e) => {
+        const features = map.current!.queryRenderedFeatures(e.point, {
+          layers: ['unclustered-point']
+        });
+        if (features.length > 0) {
+          const properties = features[0].properties;
+          console.log('Clicked point:', properties);
+          setSelectedItem(properties as any);
+        }
+      });
+
+      // Change cursor on hover
+      map.current.on('mouseenter', 'clusters', () => {
+        map.current!.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', 'clusters', () => {
+        map.current!.getCanvas().style.cursor = '';
+      });
+      map.current.on('mouseenter', 'unclustered-point', () => {
+        map.current!.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', 'unclustered-point', () => {
+        map.current!.getCanvas().style.cursor = '';
+      });
+    }
+  });
     
     // Cleanup function
     return () => {
       if (map.current) {
         // Remove event listeners
         map.current.off('move', moveHandler);
-        
-        // Remove markers and their event listeners
-        markers.forEach(marker => {
-          const element = marker.getElement();
-          if (element) {
-            element.removeEventListener('click', () => {});
-          }
-          marker.remove();
-        });
         
         // Remove map instance
         map.current.remove();
