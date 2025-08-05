@@ -36,11 +36,6 @@ const MapPage = () => {
         ...spotsGeoJson.features
       ];
       
-      // Debug: Check what types we're getting
-      console.log('Sample buoy feature:', locationsGeoJson.features[0]?.properties);
-      console.log('Sample spot feature:', spotsGeoJson.features[0]?.properties);
-      console.log('Combined features count:', combinedFeatures.length);
-      
       return {
         type: "FeatureCollection",
         features: combinedFeatures

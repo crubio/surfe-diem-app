@@ -11,6 +11,7 @@ import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
+import { getLocationBuoyNearby } from "@features/locations/api/locations"
 import { NoData } from "@features/cards/no_data"
 import { formatCoordinates, formatTemperature, calculateTideStatus, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
@@ -71,6 +72,13 @@ const SpotPage = () => {
     queryKey: ['current_weather'],
     queryFn: () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}),
     enabled: !!spot?.name
+  });
+
+  const {data: nearbyBuoys} = useQuery({
+    queryKey: ['nearby_buoys', spot?.latitude, spot?.longitude],
+    queryFn: () => getLocationBuoyNearby(spot!.longitude, spot!.latitude),
+    enabled: !!spot?.latitude && !!spot?.longitude,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   return (
@@ -266,9 +274,14 @@ const SpotPage = () => {
           { !isEmpty(spot) && (
             <>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={12} md={6} lg={6} sx={{marginBottom: "20px"}}>
-                  <MapBoxSingle lat={spot.latitude} lng={spot.longitude} zoom={8} />
-                </Grid>
+                              <Grid item xs={12} sm={12} md={6} lg={6} sx={{marginBottom: "20px"}}>
+                <MapBoxSingle 
+                  lat={spot.latitude} 
+                  lng={spot.longitude} 
+                  zoom={8} 
+                  nearbyBuoys={nearbyBuoys}
+                />
+              </Grid>
               </Grid>
             </>
           )}

@@ -84,8 +84,6 @@ export const MapBox = (props: MapProps) => {
           maxzoom: 16,
         });
 
-        console.log('Added GeoJSON source with clustering for:', filteredGeoJson.features.length, 'features');
-
         // Add cluster layer with dynamic styling based on filter
         map.current.addLayer({
           id: 'clusters',
@@ -213,7 +211,6 @@ export const MapBox = (props: MapProps) => {
           });
           if (features.length > 0) {
             const properties = features[0].properties;
-            console.log('Clicked point:', properties);
             setSelectedItem(properties as any);
             
             // Create popup
@@ -310,7 +307,6 @@ export const MapBox = (props: MapProps) => {
   useEffect(() => {
     if (map.current && map.current.getSource('locations')) {
       (map.current.getSource('locations') as any).setData(filteredGeoJson);
-      console.log('Updated map source with filtered data:', filteredGeoJson.features.length, 'features');
     }
   }, [filteredGeoJson]);
 
