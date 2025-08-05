@@ -6,15 +6,12 @@ import ErrorPage from "./error"
 import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData } from "components"
 import { getClostestTideStation, getDailyTides, getCurrentTides } from "@features/tides"
 import { getForecastCurrent, getForecastHourly } from "@features/forecasts"
-import { DailyTide } from "@features/tides/components/daily_tide"
 import { isEmpty } from "lodash"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
-import { CurrentWeather } from "@features/weather/components/current_weather"
+import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
-import { NearbyBuoys } from "@features/locations/nearby-buoys"
 import { NoData } from "@features/cards/no_data"
-import { CurrentForecast } from "@features/forecasts/components/current_forecast"
 import { formatCoordinates, formatTemperature, calculateTideStatus, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
 
@@ -219,12 +216,53 @@ const SpotPage = () => {
             </Grid>
           </Box>
           {currentWeather && (
-            <CurrentWeather currentWeather={currentWeather} isLoading={isWeatherLoading}/>
+            <Box sx={{ mb: 3 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <WeatherWind weatherData={currentWeather} isLoading={isWeatherLoading} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
+                      Tide Status
+                    </Typography>
+                    {isTideDataLoading ? (
+                      <Loading />
+                    ) : tideData && currentTides ? (
+                      <Card sx={{ textAlign: 'center' }}>
+                        <CardContent sx={{ py: 1, px: 2 }}>
+                          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
+                            {Math.min(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}-{Math.max(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}ft
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+                            Today's Range
+                          </Typography>
+                          <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                              High: {Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'H' && parseFloat(p.v) === Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Low: {Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'L' && parseFloat(p.v) === Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
+                                hour: 'numeric', 
+                                minute: '2-digit',
+                                hour12: true 
+                              })}
+                            </Typography>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <NoData />
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
           )}
-          {/* Nearby Buoys - will be integrated into map later */}
-          {/* {spot && spot.latitude && spot.longitude && (
-            <NearbyBuoys latitude={spot.latitude} longitude={spot.longitude} />
-          )} */}
           { !isEmpty(spot) && (
             <>
               <Grid container spacing={2}>
@@ -235,54 +273,7 @@ const SpotPage = () => {
             </>
           )}
 
-          <Box sx={{marginBottom: "20px"}}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
-                    Tide Status
-                  </Typography>
-                  {isTideDataLoading ? (
-                    <Loading />
-                  ) : tideData && currentTides ? (
-                    <Grid container spacing={2}>
-                      {/* Today's Range */}
-                      <Grid item xs={12} sm={6}>
-                        <Card sx={{ textAlign: 'center' }}>
-                          <CardContent sx={{ py: 1, px: 2 }}>
-                            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
-                              {Math.min(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}-{Math.max(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}ft
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-                              Today's Range
-                            </Typography>
-                            <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                High: {Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'H' && parseFloat(p.v) === Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
-                                  hour: 'numeric', 
-                                  minute: '2-digit',
-                                  hour12: true 
-                                })}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Low: {Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'L' && parseFloat(p.v) === Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
-                                  hour: 'numeric', 
-                                  minute: '2-digit',
-                                  hour12: true 
-                                })}
-                              </Typography>
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    </Grid>
-                  ) : (
-                    <NoData />
-                  )}
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
+
           {forecastDataHourly?.hourly && 
             <Box sx={{marginBottom: "20px"}}>
               <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
