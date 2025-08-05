@@ -1,10 +1,10 @@
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MAPBOX_API_KEY } from 'config';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import './mapbox.css'
 import { Item, LinkRouter } from 'components';
-import { Stack, Typography, Box, Chip } from '@mui/material';
+import { Stack, Typography, Box, Chip, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { GeoJSON, GeoJSONProperties } from 'features/maps/types'
 import { DEFAULT_CENTER } from 'utils/constants';
 mapboxgl.accessToken = MAPBOX_API_KEY;
@@ -23,9 +23,24 @@ export const MapBox = (props: MapProps) => {
   
   const [selectedItem, setSelectedItem] = useState<GeoJSONProperties | null>(null);
   const [hoveredItem, setHoveredItem] = useState<GeoJSONProperties | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'spots' | 'buoys'>('all');
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const popup = useRef<mapboxgl.Popup | null>(null);
+
+  // Filter GeoJSON based on current filter type
+  const filteredGeoJson = useMemo(() => {
+    if (filterType === 'all') return props.geoJson;
+    
+    return {
+      ...props.geoJson,
+      features: props.geoJson.features.filter(feature => {
+        if (filterType === 'spots') return feature.properties.type === 'spot_location';
+        if (filterType === 'buoys') return feature.properties.type === 'buoy_location';
+        return true;
+      })
+    };
+  }, [props.geoJson, filterType]);
 
   useEffect(() => {
     if (map.current) return; // initialize map only once
@@ -62,16 +77,16 @@ export const MapBox = (props: MapProps) => {
         // Add GeoJSON source with clustering
         map.current.addSource('locations', {
           type: 'geojson',
-          data: props.geoJson as any,
+          data: filteredGeoJson as any,
           cluster: true,
           clusterMaxZoom: 14,
           clusterRadius: 50,
           maxzoom: 16,
         });
 
-        console.log('Added GeoJSON source with clustering for:', props.geoJson.features.length, 'features');
+        console.log('Added GeoJSON source with clustering for:', filteredGeoJson.features.length, 'features');
 
-        // Add cluster layer with improved styling
+        // Add cluster layer with dynamic styling based on filter
         map.current.addLayer({
           id: 'clusters',
           type: 'circle',
@@ -81,11 +96,11 @@ export const MapBox = (props: MapProps) => {
             'circle-color': [
               'step',
               ['get', 'point_count'],
-              '#1ed6e6', // primary color for small clusters
+              filterType === 'spots' ? '#1ed6e6' : filterType === 'buoys' ? '#f06292' : '#1ed6e6', // small clusters
               10,
-              '#f06292', // secondary color for medium clusters
+              filterType === 'spots' ? '#1976d2' : filterType === 'buoys' ? '#c2185b' : '#ff9800', // medium clusters
               50,
-              '#ff9800'  // orange for large clusters
+              filterType === 'spots' ? '#0d47a1' : filterType === 'buoys' ? '#880e4f' : '#9c27b0'  // large clusters
             ],
             'circle-radius': [
               'step',
@@ -289,7 +304,24 @@ export const MapBox = (props: MapProps) => {
         map.current = null;
       }
     };
-  }, [mapContainer, props.geoJson.features]);
+  }, [mapContainer, props.geoJson.features, filterType]);
+
+  // Update map source when filter changes
+  useEffect(() => {
+    if (map.current && map.current.getSource('locations')) {
+      (map.current.getSource('locations') as any).setData(filteredGeoJson);
+      console.log('Updated map source with filtered data:', filteredGeoJson.features.length, 'features');
+    }
+  }, [filteredGeoJson]);
+
+  const handleFilterChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newFilter: 'all' | 'spots' | 'buoys' | null,
+  ) => {
+    if (newFilter !== null) {
+      setFilterType(newFilter);
+    }
+  };
 
   return (
     <>
@@ -297,12 +329,69 @@ export const MapBox = (props: MapProps) => {
       <Box sx={{ position: 'relative' }}>
         <div ref={mapContainer} className="map-container" />
         
+        {/* Filter toggles */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            zIndex: 1000,
+            display: { xs: 'none', sm: 'block' }
+          }}
+        >
+          <ToggleButtonGroup
+            value={filterType}
+            exclusive
+            onChange={handleFilterChange}
+            aria-label="map filters"
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              borderRadius: '20px',
+              '& .MuiToggleButton-root': {
+                color: 'white',
+                border: 'none',
+                borderRadius: '20px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 500,
+                '&.Mui-selected': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  }
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                }
+              }
+            }}
+          >
+            <Tooltip title="Show all locations">
+              <ToggleButton value="all" aria-label="show all">
+                All
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip title="Show only surf spots">
+              <ToggleButton value="spots" aria-label="show spots">
+                Spots
+              </ToggleButton>
+            </Tooltip>
+            <Tooltip title="Show only buoys">
+              <ToggleButton value="buoys" aria-label="show buoys">
+                Buoys
+              </ToggleButton>
+            </Tooltip>
+          </ToggleButtonGroup>
+        </Box>
+        
         {/* Hover tooltip */}
         {hoveredItem && (
           <Box
             sx={{
               position: 'absolute',
-              top: '10px',
+              top: '60px',
               left: '10px',
               backgroundColor: 'rgba(0, 0, 0, 0.8)',
               color: 'white',
@@ -340,56 +429,143 @@ export const MapBox = (props: MapProps) => {
             gap: 2
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                backgroundColor: '#1ed6e6',
-                border: '2px solid white'
-              }}
-            />
-            <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
-              Surf Spots
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                backgroundColor: '#f06292',
-                border: '2px solid white'
-              }}
-            />
-            <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
-              Buoys
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box
-              sx={{
-                width: 14,
-                height: 14,
-                borderRadius: '50%',
-                backgroundColor: '#1ed6e6',
-                border: '2px solid white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '8px',
-                fontWeight: 'bold',
-                color: 'white'
-              }}
-            >
-              5
-            </Box>
-            <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
-              Clusters
-            </Typography>
-          </Box>
+          {/* Show relevant legend items based on filter */}
+          {filterType === 'all' && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: '#1ed6e6',
+                    border: '2px solid white'
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Surf Spots
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: '#f06292',
+                    border: '2px solid white'
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Buoys
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: '50%',
+                    backgroundColor: '#ff9800',
+                    border: '2px solid white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '8px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}
+                >
+                  5
+                </Box>
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Clusters
+                </Typography>
+              </Box>
+            </>
+          )}
+          
+          {filterType === 'spots' && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: '#1ed6e6',
+                    border: '2px solid white'
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Surf Spots
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: '50%',
+                    backgroundColor: '#1976d2',
+                    border: '2px solid white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '8px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}
+                >
+                  5
+                </Box>
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Clusters
+                </Typography>
+              </Box>
+            </>
+          )}
+          
+          {filterType === 'buoys' && (
+            <>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: '#f06292',
+                    border: '2px solid white'
+                  }}
+                />
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Buoys
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: '50%',
+                    backgroundColor: '#c2185b',
+                    border: '2px solid white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '8px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}
+                >
+                  5
+                </Box>
+                <Typography variant="caption" sx={{ color: 'white', fontSize: '12px' }}>
+                  Clusters
+                </Typography>
+              </Box>
+            </>
+          )}
         </Box>
       </Box>
 
