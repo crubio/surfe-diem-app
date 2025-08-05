@@ -30,13 +30,13 @@ const SpotPage = () => {
   });
 
   const {data: tideStationData} = useQuery({
-    queryKey: ['tide_station'],
+    queryKey: ['tide_station', spot?.id],
     queryFn: () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}),
     enabled: !!spot?.latitude
   });
 
   const {data: tideData, isPending: isTideDataLoading} = useQuery({
-    queryKey: ['latest_tides', params],
+    queryKey: ['latest_tides', tideStationData?.station_id],
     queryFn: () => getDailyTides({ station: tideStationData?.station_id}),
     enabled: !!tideStationData?.station_id
   });
@@ -50,7 +50,7 @@ const SpotPage = () => {
   });
 
   const {data: forecastDataHourly, isPending: isHourlyForecastLoading } = useQuery({
-    queryKey: ['forecast_hourly'],
+    queryKey: ['forecast_hourly', spot?.id],
     queryFn: () => getForecastHourly({
       latitude: spot!.latitude,
       longitude: spot!.longitude,
@@ -60,7 +60,7 @@ const SpotPage = () => {
   });
 
   const {data: forecastCurrent} = useQuery({
-    queryKey: ['forecast_current'],
+    queryKey: ['forecast_current', spot?.id],
     queryFn: () => getForecastCurrent({
       latitude: spot!.latitude,
       longitude: spot!.longitude,
@@ -69,13 +69,13 @@ const SpotPage = () => {
   });
 
   const {data: currentWeather, isPending: isWeatherLoading} = useQuery({
-    queryKey: ['current_weather'],
+    queryKey: ['current_weather', spot?.id],
     queryFn: () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}),
     enabled: !!spot?.name
   });
 
   const {data: nearbyBuoys} = useQuery({
-    queryKey: ['nearby_buoys', spot?.latitude, spot?.longitude],
+    queryKey: ['nearby_buoys', spot?.id],
     queryFn: () => getLocationBuoyNearby(spot!.longitude, spot!.latitude),
     enabled: !!spot?.latitude && !!spot?.longitude,
     staleTime: 5 * 60 * 1000, // 5 minutes

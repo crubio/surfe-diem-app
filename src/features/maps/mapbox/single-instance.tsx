@@ -77,16 +77,14 @@ const MapBoxSingle = (props: MapProps) => {
         // Create popup content
         const popupContent = document.createElement('div');
         popupContent.innerHTML = `
-          <div style="padding: 8px; min-width: 200px;">
-            <h4 style="margin: 0 0 8px 0; font-size: 14px;">${buoy.name}</h4>
-            ${buoy.latest_observation ? `
-              <div style="font-size: 12px; color: #666;">
-                <div><strong>Current:</strong> ${buoy.latest_observation[1].swell_height}ft, ${buoy.latest_observation[1].period}s, ${buoy.latest_observation[1].direction}</div>
-              </div>
-            ` : '<div style="font-size: 12px; color: #666;">No current data</div>'}
-            <div style="margin-top: 8px;">
-              <a href="/location/${buoy.location_id}" style="color: #1976d2; text-decoration: none; font-size: 12px;">View Details →</a>
+          <h4 style="margin: 0 0 8px 0; font-size: 14px;">${buoy.name}</h4>
+          ${buoy.latest_observation ? `
+            <div style="font-size: 12px; color: #666;">
+              <div><strong>Current:</strong> ${buoy.latest_observation[1].swell_height}ft, ${buoy.latest_observation[1].period}s, ${buoy.latest_observation[1].direction}</div>
             </div>
+          ` : '<div style="font-size: 12px; color: #666;">No current data</div>'}
+          <div style="margin-top: 8px;">
+            <a href="/location/${buoy.location_id}" style="color: #1976d2; text-decoration: none; font-size: 12px;">View Details →</a>
           </div>
         `;
         
@@ -94,8 +92,7 @@ const MapBoxSingle = (props: MapProps) => {
         const buoyPopup = new mapboxgl.Popup({
           closeButton: true,
           closeOnClick: false,
-          maxWidth: '300px',
-          className: 'mapboxgl-popup-content'
+          maxWidth: '300px'
         }).setDOMContent(popupContent);
         
         // Create marker
