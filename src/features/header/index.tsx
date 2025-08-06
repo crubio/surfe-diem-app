@@ -123,7 +123,7 @@ export default function SearchAppBar() {
           disableGutters 
           sx={{ 
             minHeight: { xs: '64px', sm: '70px' },
-            px: { xs: 1, sm: 2 },
+            px: { xs: 0.5, sm: 2 },
             py: { xs: 0.5, sm: 1 }
           }}
         >
@@ -135,8 +135,8 @@ export default function SearchAppBar() {
               component="div"
               sx={{ 
                 display: { xs: 'block', sm: 'block' }, 
-                marginRight: { xs: '16px', sm: '24px', md: '40px' }, 
-                marginLeft: { xs: '8px', sm: '16px', md: '20px' },
+                marginRight: { xs: '8px', sm: '24px', md: '40px' }, 
+                marginLeft: { xs: '4px', sm: '16px', md: '20px' },
                 fontWeight: 'bold'
               }}
             >
@@ -224,11 +224,12 @@ export default function SearchAppBar() {
           <Box sx={{ 
             flexGrow: { xs: 1, md: 0 },
             maxWidth: { xs: '100%', sm: '300px', md: '250px' },
-            mx: { xs: 1, sm: 2 },
+            mx: { xs: 0.5, sm: 2 },
             order: { xs: 1, md: 2 }
           }}>
             <Search sx={{ 
               width: '100%',
+              minWidth: 0, // Allow shrinking
               '& .MuiInputBase-root': {
                 height: { xs: '40px', sm: '44px' },
                 fontSize: { xs: '14px', sm: '16px' }
