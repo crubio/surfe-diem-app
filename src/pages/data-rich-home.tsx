@@ -22,9 +22,9 @@ const DataRichHome = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Track page view on mount
-  useEffect(() => {
-    trackPageView(variation, 'data-rich-home');
-  }, [variation]);
+  // useEffect(() => {
+  //   trackPageView(variation, 'data-rich-home');
+  // }, [variation];
   
   // Data queries
   const {data: buoys} = useQuery({

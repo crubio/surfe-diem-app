@@ -28,9 +28,9 @@ const DashboardHome = () => {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   
   // Track page view on mount
-  useEffect(() => {
-    trackPageView(variation, 'dashboard-home');
-  }, [variation]);
+  // useEffect(() => {
+  //   trackPageView(variation, 'dashboard-home');
+  // }, [variation]);
   
   // List of all location metadata
   const {data: buoys} = useQuery({
