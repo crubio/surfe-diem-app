@@ -12,7 +12,7 @@ const Home = () => {
       case 'dashboard':
         return <DashboardHome />;
       case 'discovery':
-        return <DashboardHome />; // Temporarily use DashboardHome instead of DiscoveryHome
+        return <DiscoveryHome />;
       case 'data-rich':
         return <DataRichHome />;
       default:
