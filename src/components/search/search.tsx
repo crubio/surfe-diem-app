@@ -8,11 +8,12 @@ export const Search = styled('div')(({ theme }) => ({
   '&:hover': {
     backgroundColor: alpha(theme.palette.common.white, 0.25),
   },
-  marginRight: theme.spacing(2),
+  marginRight: 0,
   marginLeft: 0,
   width: '100%',
   [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
     width: 'auto',
   },
 }));
@@ -34,7 +35,10 @@ export const StyledInputBase = styled(InputBase)(({ theme }) => ({
     // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
-    width: '30ch',
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: '25ch',
+    },
     [theme.breakpoints.up('md')]: {
       width: '30ch',
     },
