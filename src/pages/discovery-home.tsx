@@ -1,4 +1,5 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip } from "@mui/material";
+import manresaImage from "assets/manresa1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { getEnhancedConditionScore, calculateOverallScore, getSwellPeriodScore, getWindQualityScore, getWaveHeightScore } from "utils/conditions";
@@ -92,7 +93,7 @@ const DiscoveryHome = () => {
   });
 
   // Fetch current conditions for trending spots
-  const {data: trendingSpotsData, isPending: trendingSpotsLoading} = useQuery({
+  const {data: trendingSpotsData} = useQuery({
     queryKey: ['trending-spots-batch-data'],
     queryFn: () => {
       if (!spots || spots.length === 0) return { spots: [] };
@@ -200,41 +201,56 @@ const DiscoveryHome = () => {
         {/* Hero Section */}
         <Item sx={{ bgcolor: 'primary.dark', marginBottom: "20px" }}>
           <Box sx={{
-            backgroundColor: "#1ed6e6", 
-            background: "linear-gradient(135deg, #1ed6e6 0%, #0ea5e9 100%)",
-            height: { xs: "120px", sm: "140px" },
+            backgroundImage: `url(${manresaImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            height: { xs: "200px", sm: "250px", md: "300px" },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             textAlign: "center",
-            px: { xs: 2, sm: 3, md: 4 }
+            px: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(135deg, rgba(30, 214, 230, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%)",
+              zIndex: 1
+            }
           }}>
-            <Typography 
-              variant="h3" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center", 
-                fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
-                fontWeight: "bold",
-                mb: 1
-              }}
-            >
-              Discover Your Next Session
-            </Typography>
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center",
-                fontSize: { xs: "1rem", sm: "1.125rem" },
-                opacity: 0.9
-              }}
-            >
-              Find new spots and see what's firing right now
-            </Typography>
+            <Box sx={{ position: "relative", zIndex: 2 }}>
+              <Typography 
+                variant="h3" 
+                component="div" 
+                sx={{ 
+                  color: "white", 
+                  textAlign: "center", 
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  fontWeight: "bold",
+                  mb: 1
+                }}
+              >
+                Discover Your Next Session
+              </Typography>
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  color: "white", 
+                  textAlign: "center",
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                  opacity: 0.9
+                }}
+              >
+                Find new spots and see what's firing right now
+              </Typography>
+            </Box>
           </Box>
         </Item>
 
