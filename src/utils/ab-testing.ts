@@ -23,46 +23,68 @@ const HOME_PAGE_VARIATIONS: ABTestConfig[] = [
 export function getHomePageVariation(): HomePageVariation {
   const storageKey = 'surfe-diem-homepage-variation';
   
-  // Check if user already has an assigned variation
-  const existingVariation = localStorage.getItem(storageKey) as HomePageVariation;
-  if (existingVariation && HOME_PAGE_VARIATIONS.some(v => v.variation === existingVariation)) {
-    return existingVariation;
-  }
-  
-  // If existing variation is not in current config, clear it and reassign
-  if (existingVariation && !HOME_PAGE_VARIATIONS.some(v => v.variation === existingVariation)) {
-    localStorage.removeItem(storageKey);
-  }
-  
-  // Assign new variation based on weights
-  const random = Math.random() * 100;
-  let cumulativeWeight = 0;
-  
-  for (const config of HOME_PAGE_VARIATIONS) {
-    cumulativeWeight += config.weight;
-    if (random <= cumulativeWeight) {
-      localStorage.setItem(storageKey, config.variation);
-      return config.variation;
+  try {
+    // Check if localStorage is available
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return 'data-rich'; // Fallback if localStorage is not available
     }
+    
+    // Check if user already has an assigned variation
+    const existingVariation = localStorage.getItem(storageKey) as HomePageVariation;
+    if (existingVariation && HOME_PAGE_VARIATIONS.some(v => v.variation === existingVariation)) {
+      return existingVariation;
+    }
+    
+    // If existing variation is not in current config, clear it and reassign
+    if (existingVariation && !HOME_PAGE_VARIATIONS.some(v => v.variation === existingVariation)) {
+      localStorage.removeItem(storageKey);
+    }
+    
+    // Assign new variation based on weights
+    const random = Math.random() * 100;
+    let cumulativeWeight = 0;
+    
+    for (const config of HOME_PAGE_VARIATIONS) {
+      cumulativeWeight += config.weight;
+      if (random <= cumulativeWeight) {
+        localStorage.setItem(storageKey, config.variation);
+        return config.variation;
+      }
+    }
+    
+    // Fallback to data-rich if no valid variation is assigned
+    localStorage.setItem(storageKey, 'data-rich');
+    return 'data-rich';
+  } catch (error) {
+    console.warn('Error accessing localStorage for A/B testing:', error);
+    return 'data-rich'; // Fallback on any error
   }
-  
-  // Fallback to data-rich if no valid variation is assigned
-  localStorage.setItem(storageKey, 'data-rich');
-  return 'data-rich';
 }
 
 /**
  * Force a specific variation (for testing)
  */
 export function setHomePageVariation(variation: HomePageVariation): void {
-  localStorage.setItem('surfe-diem-homepage-variation', variation);
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('surfe-diem-homepage-variation', variation);
+    }
+  } catch (error) {
+    console.warn('Error setting A/B test variation:', error);
+  }
 }
 
 /**
  * Reset the A/B test assignment
  */
 export function resetHomePageVariation(): void {
-  localStorage.removeItem('surfe-diem-homepage-variation');
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('surfe-diem-homepage-variation');
+    }
+  } catch (error) {
+    console.warn('Error resetting A/B test variation:', error);
+  }
 }
 
 /**
