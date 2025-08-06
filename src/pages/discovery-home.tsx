@@ -22,9 +22,9 @@ const DiscoveryHome = () => {
   const variation = getHomePageVariation();
   
   // Track page view on mount
-  useEffect(() => {
-    trackPageView(variation, 'discovery-home');
-  }, [variation]);
+  // useEffect(() => {
+  //   trackPageView(variation, 'discovery-home');
+  // }, [variation]);
   
   // Data queries
   const {data: buoys} = useQuery({
