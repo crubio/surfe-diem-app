@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip, ToggleButtonGroup, ToggleButton } from "@mui/material";
+import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, ToggleButtonGroup, ToggleButton } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
@@ -13,16 +13,12 @@ import { useState, useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { formatDirection } from "utils/formatting";
-import { getForecastCurrent } from "@features/forecasts";
 
 const DataRichHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
-  const [selectedSpot, setSelectedSpot] = useState<string | null>(null);
-  const [selectedBuoy, setSelectedBuoy] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState<'name' | 'score' | 'waveHeight' | 'distance'>('score');
   
   // Track page view on mount
   useEffect(() => {
@@ -46,7 +42,7 @@ const DataRichHome = () => {
   });
 
   // Get nearby spots for location-based features
-  const {data: nearbySpots, isPending: nearbySpotsLoading} = useQuery({
+  const {data: nearbySpots} = useQuery({
     queryKey: ['nearby_spots', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
@@ -141,15 +137,7 @@ const DataRichHome = () => {
     }
   };
 
-  const handleSearch = () => {
-    if (selectedSpot) {
-      trackInteraction(variation, 'search-spot', { spotId: selectedSpot });
-      goToSpotPage(selectedSpot);
-    } else if (selectedBuoy) {
-      trackInteraction(variation, 'search-buoy', { buoyId: selectedBuoy });
-      goToBuoyPage(selectedBuoy);
-    }
-  };
+
 
   // Get comprehensive spot data for display
   const getComprehensiveSpotData = () => {
