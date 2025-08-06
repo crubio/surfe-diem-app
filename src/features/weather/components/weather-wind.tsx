@@ -39,7 +39,7 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
         <CardContent sx={{ py: 1, px: 2 }}>
         {/* Current Temperature and Weather */}
         <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
-          {currentTemp}°F
+          {currentTemp && `${currentTemp}°F`}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
           {currentWeather || "Clear"}

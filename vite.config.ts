@@ -54,6 +54,7 @@ export default defineConfig({
       assets: "/src/assets",
       "test-utils": "/src/test/test-utils",
       "@features": "/src/features",
+      "hooks": "/src/hooks",
     },
   },
   build: {
