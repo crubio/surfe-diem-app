@@ -12,6 +12,12 @@ export const ABTestingDebug = () => {
   const [metrics, setMetrics] = useState<any>({});
   const [expanded, setExpanded] = useState<string | false>(false);
 
+  useEffect(() => {
+    refreshMetrics();
+    const interval = setInterval(refreshMetrics, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   if (process.env.NODE_ENV !== 'development') {
     return null;
   }
@@ -36,12 +42,6 @@ export const ABTestingDebug = () => {
   const refreshMetrics = () => {
     setMetrics(getABTestMetrics());
   };
-
-  useEffect(() => {
-    refreshMetrics();
-    const interval = setInterval(refreshMetrics, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <Box
@@ -68,14 +68,6 @@ export const ABTestingDebug = () => {
       </Typography>
       
       <Stack spacing={0.5} sx={{ mb: 2 }}>
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => handleVariationChange('current')}
-          sx={{ fontSize: '10px', py: 0.5 }}
-        >
-          Current
-        </Button>
         <Button
           size="small"
           variant="outlined"
