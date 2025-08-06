@@ -1,7 +1,6 @@
 import { getHomePageVariation } from 'utils/ab-testing';
 import DashboardHome from "./dashboard-home";
 import DiscoveryHome from "./discovery-home";
-import MinimalistHome from "./minimalist-home";
 import DataRichHome from "./data-rich-home";
 
 const Home = () => {
@@ -12,10 +11,9 @@ const Home = () => {
       return <DashboardHome />;
     case 'discovery':
       return <DiscoveryHome />;
-    case 'minimalist':
-      return <MinimalistHome />;
     case 'data-rich':
-    default:
+      return <DataRichHome />;
+    default: // Fallback to data-rich if no valid variation is assigned
       return <DataRichHome />;
   }
 };

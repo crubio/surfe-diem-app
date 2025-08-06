@@ -84,14 +84,7 @@ export const ABTestingDebug = () => {
         >
           Discovery
         </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => handleVariationChange('minimalist')}
-          sx={{ fontSize: '10px', py: 0.5 }}
-        >
-          Minimalist
-        </Button>
+        
         <Button
           size="small"
           variant="outlined"

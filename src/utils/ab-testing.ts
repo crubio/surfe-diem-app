@@ -3,7 +3,7 @@
  * Assigns users to different home page variations for testing
  */
 
-export type HomePageVariation = 'dashboard' | 'discovery' | 'minimalist' | 'data-rich';
+export type HomePageVariation = 'dashboard' | 'discovery' | 'data-rich';
 
 interface ABTestConfig {
   variation: HomePageVariation;
@@ -11,10 +11,9 @@ interface ABTestConfig {
 }
 
 const HOME_PAGE_VARIATIONS: ABTestConfig[] = [
-  { variation: 'dashboard', weight: 25 },  // 25% - Current Conditions Dashboard
-  { variation: 'discovery', weight: 25 },  // 25% - Discovery-Focused
-  { variation: 'minimalist', weight: 25 }, // 25% - Minimalist Action-Oriented
-  { variation: 'data-rich', weight: 25 },  // 25% - Data-Rich Overview
+  { variation: 'dashboard', weight: 33 },  // 33% - Current Conditions Dashboard
+  { variation: 'discovery', weight: 33 },  // 33% - Discovery-Focused
+  { variation: 'data-rich', weight: 34 },  // 34% - Data-Rich Overview
 ];
 
 /**
