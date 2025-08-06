@@ -8,16 +8,8 @@ const Home = () => {
   try {
     const variation = getHomePageVariation();
     
-    switch (variation) {
-      case 'dashboard':
-        return <DashboardHome />;
-      case 'discovery':
-        return <DiscoveryHome />;
-      case 'data-rich':
-        return <DataRichHome />;
-      default:
-        return <DashboardHome />;
-    }
+    // For now, always return DashboardHome until other components are updated
+    return <DashboardHome />;
   } catch (error) {
     console.warn('Error in Home component, falling back to dashboard:', error);
     return <DashboardHome />;
