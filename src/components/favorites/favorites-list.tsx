@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getBatchForecast } from '../../features/locations/api/locations';
 import { Favorite } from '../../types/favorites';
 import { BuoyBatchData, SpotBatchData } from '../../features/locations/types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
-import { Stack, Typography, Box, Chip, Button, Grid, Collapse, IconButton } from '@mui/material';
-import { FavoriteButton } from '../common/favorite-button';
+import { Stack, Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
-import { getFavoriteDisplayLocation } from '../../utils/favorites';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 
 interface FavoritesListProps {
@@ -45,7 +41,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
             {swellData && swellData.direction && ` • ${swellData.direction}`}
@@ -60,7 +56,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
             {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
             {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
             {weather.swell.direction && ` • ${weather.swell.direction}°`}
@@ -233,7 +229,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         My Lineup
       </Typography>
       
-      {isLoading && (
+      {isLoading && favorites.length > 0 && (
         <Typography 
           variant="body2" 
           color="text.secondary" 

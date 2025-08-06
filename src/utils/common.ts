@@ -113,3 +113,16 @@ export function formatLatLong(locationStr: string): [number, number] {
   latLong.splice(-1, 1)
   return [Number(latLong[0]), Number(latLong[1])]
 }
+
+/**
+ * Format distance for display
+ */
+export function formatDistance(distance: number): string {
+  if (distance < 1) {
+    return `${Math.round(distance * 5280)}ft`; // Convert to feet
+  } else if (distance < 10) {
+    return `${distance.toFixed(1)} mi`;
+  } else {
+    return `${Math.round(distance)} mi`;
+  }
+}

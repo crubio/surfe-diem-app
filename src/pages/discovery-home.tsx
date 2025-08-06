@@ -1,6 +1,8 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button } from "@mui/material";
+import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip } from "@mui/material";
+import manresaImage from "assets/manresa1.jpg";
 import { useQuery } from "@tanstack/react-query";
-import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
+import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
+import { getEnhancedConditionScore, calculateOverallScore, getSwellPeriodScore, getWindQualityScore, getWaveHeightScore } from "utils/conditions";
 import { Item, SEO, EnhancedSelect } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +13,8 @@ import { orderBy } from "lodash";
 import { useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
+import { formatDistance } from "utils/common";
+import { formatDirection } from "utils/formatting";
 
 const DiscoveryHome = () => {
   const navigate = useNavigate();
@@ -38,6 +42,20 @@ const DiscoveryHome = () => {
     queryFn: async () => getGeolocation()
   });
   
+  // Get nearby spots using API's distance calculation
+  const {data: nearbySpots, isPending: nearbySpotsLoading} = useQuery({
+    queryKey: ['nearby_spots', geolocation?.latitude, geolocation?.longitude],
+    queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
+    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+  
+  // Filter to reasonable distance and limit results
+  const nearbySpotsForForecast = nearbySpots
+    ?.filter(spot => spot.distance && spot.distance <= 50)
+    .slice(0, 4) || [];
+  
   // Fetch current data for favorites
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
     queryKey: ['favorites-batch-data', favorites.length > 0 ? favorites.map(f => `${f.type}-${f.id}`).join(',') : 'empty'],
@@ -53,6 +71,41 @@ const DiscoveryHome = () => {
       });
     },
     enabled: favorites.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Fetch current conditions for nearby spots
+  const {data: nearbySpotsData, isPending: nearbySpotsDataLoading} = useQuery({
+    queryKey: ['nearby-spots-batch-data', nearbySpotsForForecast.map(s => s.id).join(',')],
+    queryFn: () => {
+      if (nearbySpotsForForecast.length === 0) return { spots: [] };
+      
+      const spotIds = nearbySpotsForForecast.map(spot => spot.id);
+      
+      return getBatchForecast({
+        spot_ids: spotIds,
+      });
+    },
+    enabled: nearbySpotsForForecast.length > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Fetch current conditions for trending spots
+  const {data: trendingSpotsData} = useQuery({
+    queryKey: ['trending-spots-batch-data'],
+    queryFn: () => {
+      if (!spots || spots.length === 0) return { spots: [] };
+      
+      // Fetch conditions for first 20 spots, we'll filter to top 10 with data
+      const spotIds = spots.slice(0, 20).map(spot => spot.id);
+      
+      return getBatchForecast({
+        spot_ids: spotIds,
+      });
+    },
+    enabled: !!spots && spots.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
@@ -88,17 +141,35 @@ const DiscoveryHome = () => {
     }
   };
 
-  // Get trending spots (spots with good conditions)
+  // Get trending spots with condition scoring
   const getTrendingSpots = () => {
-    // Placeholder for future implementation
-    // This could be based on wave height, wind, tide, etc.
-    return spots?.slice(0, 6) || [];
-  };
-
-  // Get spots near user's location
-  const getNearbySpots = () => {
-    // Placeholder for future implementation
-    return spots?.slice(0, 4) || [];
+    if (!trendingSpotsData?.spots) return [];
+    
+    return trendingSpotsData.spots
+      .filter(spot => spot.weather?.swell) // Only spots with swell data
+      .map(spot => {
+        const swell = spot.weather.swell!; // We know it exists due to filter
+        const score = getEnhancedConditionScore({
+          swellPeriod: swell.period,
+          windSpeed: spot.weather.wind?.speed,
+          waveHeight: swell.height
+        });
+        
+        // Calculate overall score for sorting
+        const overallScore = calculateOverallScore({
+          swellPeriod: getSwellPeriodScore(swell.period),
+          windQuality: getWindQualityScore(spot.weather.wind?.speed || 0),
+          waveHeight: getWaveHeightScore(swell.height)
+        });
+        
+        return {
+          ...spot,
+          score,
+          overallScore
+        };
+      })
+      .sort((a, b) => b.overallScore - a.overallScore) // Best conditions first
+      .slice(0, 8); // Max 8 spots
   };
 
   return (
@@ -130,41 +201,56 @@ const DiscoveryHome = () => {
         {/* Hero Section */}
         <Item sx={{ bgcolor: 'primary.dark', marginBottom: "20px" }}>
           <Box sx={{
-            backgroundColor: "#1ed6e6", 
-            background: "linear-gradient(135deg, #1ed6e6 0%, #0ea5e9 100%)",
-            height: { xs: "120px", sm: "140px" },
+            backgroundImage: `url(${manresaImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            height: { xs: "200px", sm: "250px", md: "300px" },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
             textAlign: "center",
-            px: { xs: 2, sm: 3, md: 4 }
+            px: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "linear-gradient(135deg, rgba(30, 214, 230, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%)",
+              zIndex: 1
+            }
           }}>
-            <Typography 
-              variant="h3" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center", 
-                fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
-                fontWeight: "bold",
-                mb: 1
-              }}
-            >
-              Discover Your Next Session
-            </Typography>
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center",
-                fontSize: { xs: "1rem", sm: "1.125rem" },
-                opacity: 0.9
-              }}
-            >
-              Find new spots and see what's firing right now
-            </Typography>
+            <Box sx={{ position: "relative", zIndex: 2 }}>
+              <Typography 
+                variant="h3" 
+                component="div" 
+                sx={{ 
+                  color: "white", 
+                  textAlign: "center", 
+                  fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
+                  fontWeight: "bold",
+                  mb: 1
+                }}
+              >
+                Discover Your Next Session
+              </Typography>
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  color: "white", 
+                  textAlign: "center",
+                  fontSize: { xs: "1rem", sm: "1.125rem" },
+                  opacity: 0.9
+                }}
+              >
+                Find new spots and see what's firing right now
+              </Typography>
+            </Box>
           </Box>
         </Item>
 
@@ -174,23 +260,42 @@ const DiscoveryHome = () => {
             {geolocation ? `Spots near you` : 'Popular spots'}
           </Typography>
           <Grid container spacing={2}>
-            {getNearbySpots().map((spot) => (
-              <Grid item xs={12} sm={6} md={3} key={spot.id}>
-                <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => goToSpotPage(spot.id.toString())}>
-                  <CardContent>
-                    <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
-                      {spot.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {spot.subregion_name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {spot.latitude.toFixed(4)}, {spot.longitude.toFixed(4)}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+            {nearbySpotsForForecast.map((spot) => {
+              // Find current conditions for this spot
+              const spotData = nearbySpotsData?.spots?.find(s => s.id === spot.id);
+              const currentConditions = spotData?.weather?.swell;
+              
+              return (
+                <Grid item xs={12} sm={6} md={3} key={spot.id}>
+                  <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => goToSpotPage(spot.id.toString())}>
+                    <CardContent>
+                      <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+                        {spot.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {spot.subregion_name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        {spot.distance ? `${formatDistance(spot.distance)} away` : 'Distance unknown'}
+                      </Typography>
+                      {currentConditions ? (
+                        <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                          {currentConditions.height.toFixed(1)}ft • {currentConditions.period.toFixed(0)}s • {formatDirection(currentConditions.direction)}
+                        </Typography>
+                      ) : nearbySpotsLoading || nearbySpotsDataLoading ? (
+                        <Typography variant="body2" color="text.secondary">
+                          Loading conditions...
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          No current data
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         </Item>
 
@@ -200,26 +305,31 @@ const DiscoveryHome = () => {
             What's firing right now
           </Typography>
           <Grid container spacing={2}>
-            {getTrendingSpots().map((spot) => (
-              <Grid item xs={12} sm={6} md={4} key={spot.id}>
-                <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => goToSpotPage(spot.id.toString())}>
-                  <CardContent>
-                    <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
-                      {spot.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {spot.subregion_name}
-                    </Typography>
-                    <Typography variant="body1" sx={{ mt: 1, fontWeight: "bold", color: "primary.main" }}>
-                      3-5ft • Clean
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      SW swell • Light wind
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+            {getTrendingSpots().map((spot) => {
+              const swell = spot.weather.swell!;
+              return (
+                <Grid item xs={12} sm={6} md={3} key={spot.id}>
+                  <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => goToSpotPage(spot.id.toString())}>
+                    <CardContent>
+                      <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+                        {spot.name}
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                        {swell.height.toFixed(1)}ft • {swell.period.toFixed(0)}s • {formatDirection(swell.direction)}
+                      </Typography>
+                      <Box sx={{ mt: 1 }}>
+                        <Chip 
+                          label={`${spot.score.label} (${spot.overallScore}/100)`}
+                          color={spot.score.color}
+                          size="small"
+                          sx={{ fontWeight: 'bold' }}
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         </Item>
 

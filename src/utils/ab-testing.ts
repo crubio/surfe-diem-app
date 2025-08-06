@@ -3,7 +3,7 @@
  * Assigns users to different home page variations for testing
  */
 
-export type HomePageVariation = 'current' | 'dashboard' | 'discovery' | 'minimalist' | 'data-rich';
+export type HomePageVariation = 'dashboard' | 'discovery' | 'data-rich';
 
 interface ABTestConfig {
   variation: HomePageVariation;
@@ -11,11 +11,9 @@ interface ABTestConfig {
 }
 
 const HOME_PAGE_VARIATIONS: ABTestConfig[] = [
-  { variation: 'current', weight: 0 },    // 25% - Current home page
-  { variation: 'dashboard', weight: 50 },  // 25% - Current Conditions Dashboard
-  { variation: 'discovery', weight: 50 },  // 25% - Discovery-Focused
-  { variation: 'minimalist', weight: 0 }, // 15% - Minimalist Action-Oriented
-  { variation: 'data-rich', weight: 0 },  // 10% - Data-Rich Overview
+  { variation: 'dashboard', weight: 33 },  // 33% - Current Conditions Dashboard
+  { variation: 'discovery', weight: 33 },  // 33% - Discovery-Focused
+  { variation: 'data-rich', weight: 34 },  // 34% - Data-Rich Overview
 ];
 
 /**
@@ -48,9 +46,9 @@ export function getHomePageVariation(): HomePageVariation {
     }
   }
   
-  // Fallback to dashboard if no valid variation is assigned
-  localStorage.setItem(storageKey, 'dashboard');
-  return 'dashboard';
+  // Fallback to data-rich if no valid variation is assigned
+  localStorage.setItem(storageKey, 'data-rich');
+  return 'data-rich';
 }
 
 /**
