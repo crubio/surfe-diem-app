@@ -16,18 +16,12 @@ import { orderBy } from "lodash";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { useEffect } from "react";
-import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 
 const CurrentHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
-  
-  // Track page view on mount
-  useEffect(() => {
-    trackPageView(variation, 'current-home');
-  }, [variation]);
   
   // Data queries - Updated to React Query v5 object syntax
   const {data: buoys} = useQuery({
@@ -83,7 +77,6 @@ const CurrentHome = () => {
   }
 
   function goToBuoyPage(location_id: string) {
-    trackInteraction(variation, 'buoy_click', { location_id });
     navigate(`/location/${location_id}`)
   }
 
@@ -91,7 +84,6 @@ const CurrentHome = () => {
     // This function is used by the EnhancedSelect component
     // We need to find the spot by ID and use its slug
     const spot = spots?.find(s => s.id.toString() === spot_id);
-    trackInteraction(variation, 'spot_click', { spot_id, spot_name: spot?.name });
     if (spot?.slug) {
       navigate(`/spot/${spot.slug}`);
     } else {

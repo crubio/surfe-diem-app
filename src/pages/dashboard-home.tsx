@@ -9,15 +9,14 @@ import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect, useState } from "react";
-import { trackPageView, trackInteraction } from "utils/analytics";
+import { useState } from "react";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
 import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
 import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor, formatWaterTemp, getWaterTempPercentage, getWaterTempComfortLevel } from "utils/water-temp";
-import { TemperatureGauge, TemperatureCard } from "components";
+import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -26,11 +25,6 @@ const DashboardHome = () => {
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  
-  // Track page view on mount
-  // useEffect(() => {
-  //   trackPageView(variation, 'dashboard-home');
-  // }, [variation]);
   
   // List of all location metadata
   const {data: buoys} = useQuery({
@@ -145,13 +139,11 @@ const DashboardHome = () => {
 
   // Navigation functions with tracking
   const goToBuoyPage = (location_id: string) => {
-    trackInteraction(variation, 'buoy_click', { location_id });
     navigate(`/location/${location_id}`);
   };
 
   const goToSpotPage = (spot_id: string) => {
     const spot = spots?.find(s => s.id.toString() === spot_id);
-    trackInteraction(variation, 'spot_click', { spot_id, spot_name: spot?.name });
     if (spot?.slug) {
       navigate(`/spot/${spot.slug}`);
     } else {
@@ -160,7 +152,6 @@ const DashboardHome = () => {
   };
 
   const handleQuickAction = (action: string) => {
-    trackInteraction(variation, 'quick_action', { action });
     switch (action) {
       case 'map':
         navigate('/map');

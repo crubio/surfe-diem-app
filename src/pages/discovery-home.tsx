@@ -10,8 +10,6 @@ import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect } from "react";
-import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { formatDistance } from "utils/common";
 import { formatDirection } from "utils/formatting";
@@ -20,11 +18,6 @@ const DiscoveryHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
-  
-  // Track page view on mount
-  // useEffect(() => {
-  //   trackPageView(variation, 'discovery-home');
-  // }, [variation]);
   
   // Data queries
   const {data: buoys} = useQuery({
@@ -112,13 +105,11 @@ const DiscoveryHome = () => {
 
   // Navigation functions with tracking
   const goToBuoyPage = (location_id: string) => {
-    trackInteraction(variation, 'buoy_click', { location_id });
     navigate(`/location/${location_id}`);
   };
 
   const goToSpotPage = (spot_id: string) => {
     const spot = spots?.find(s => s.id.toString() === spot_id);
-    trackInteraction(variation, 'spot_click', { spot_id, spot_name: spot?.name });
     if (spot?.slug) {
       navigate(`/spot/${spot.slug}`);
     } else {
@@ -127,7 +118,6 @@ const DiscoveryHome = () => {
   };
 
   const handleQuickAction = (action: string) => {
-    trackInteraction(variation, 'quick_action', { action });
     switch (action) {
       case 'spots':
         navigate('/spots');

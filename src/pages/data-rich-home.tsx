@@ -10,8 +10,8 @@ import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useState, useEffect } from "react";
-import { trackPageView, trackInteraction } from "utils/analytics";
+import { useState } from "react";
+import { trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { formatDirection } from "utils/formatting";
 
@@ -20,11 +20,6 @@ const DataRichHome = () => {
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
-  // Track page view on mount
-  // useEffect(() => {
-  //   trackPageView(variation, 'data-rich-home');
-  // }, [variation];
   
   // Data queries
   const {data: buoys} = useQuery({
@@ -109,12 +104,10 @@ const DataRichHome = () => {
 
   // Navigation functions
   const goToBuoyPage = (location_id: string) => {
-    trackInteraction(variation, 'buoy-navigation', { locationId: location_id });
     navigate(`/location/${location_id}`);
   };
 
   const goToSpotPage = (spot_id: string) => {
-    trackInteraction(variation, 'spot-navigation', { spotId: spot_id });
     const spot = spots?.find(s => s.id.toString() === spot_id);
     if (spot?.slug) {
       navigate(`/spot/${spot.slug}`);
@@ -124,7 +117,6 @@ const DataRichHome = () => {
   };
 
   const handleQuickAction = (action: string) => {
-    trackInteraction(variation, 'quick-action', { action });
     switch (action) {
       case 'spots':
         navigate('/spots');
