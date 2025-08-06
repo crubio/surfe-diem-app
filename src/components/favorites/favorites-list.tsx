@@ -233,7 +233,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         My Lineup
       </Typography>
       
-      {isLoading && (
+      {isLoading && favorites.length > 0 && (
         <Typography 
           variant="body2" 
           color="text.secondary" 
