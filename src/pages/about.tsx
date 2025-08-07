@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Paper, Stack, Link, Divider } from '@mui/material';
+import { Box, Container, Typography, Paper, Stack, Link, Divider, Chip } from '@mui/material';
 import { Email, Share } from '@mui/icons-material';
 import heroImageWebp from '../assets/trmp_dont_sarf.webp';
 import { SEO } from 'components';
