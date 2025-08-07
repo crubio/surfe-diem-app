@@ -9,6 +9,12 @@ vi.mock('@features/locations/api/locations', () => ({
   getLocationBuoyNearby: vi.fn()
 }))
 
+vi.mock('@features/forecasts', () => ({
+  getForecastCurrent: vi.fn(),
+  getForecastHourly: vi.fn(),
+  getForecastDaily: vi.fn()
+}))
+
 describe('Hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()

@@ -1,14 +1,12 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, TextField, InputAdornment } from "@mui/material";
+import { Box, Container, Grid, Typography, Card, CardContent, Button, TextField, InputAdornment } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useQuery } from "@tanstack/react-query";
-import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
-import { Item, SEO, EnhancedSelect } from "components";
+import { getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
+import { Item, SEO } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
-import { orderBy } from "lodash";
 import { useState } from "react";
 
 const MinimalistHome = () => {
@@ -17,19 +15,9 @@ const MinimalistHome = () => {
   const [searchQuery, setSearchQuery] = useState("");
   
   // Data queries
-  const {data: buoys} = useQuery({
-    queryKey: ['locations'],
-    queryFn: async () => getLocations()
-  });
-  
   const {data: spots} = useQuery({
     queryKey: ['spots'],
     queryFn: async () => getSurfSpots()
-  });
-  
-  const {data: geolocation} = useQuery({
-    queryKey: ['geolocation'],
-    queryFn: async () => getGeolocation()
   });
   
   // Fetch current data for favorites
@@ -51,19 +39,7 @@ const MinimalistHome = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Navigation functions
-  const goToBuoyPage = (location_id: string) => {
-    navigate(`/location/${location_id}`);
-  };
 
-  const goToSpotPage = (spot_id: string) => {
-    const spot = spots?.find(s => s.id.toString() === spot_id);
-    if (spot?.slug) {
-      navigate(`/spot/${spot.slug}`);
-    } else {
-      navigate(`/spot/${spot_id}`);
-    }
-  };
 
   // Get current highlights (best conditions)
   const getCurrentHighlights = () => {
@@ -247,7 +223,7 @@ const MinimalistHome = () => {
           <Grid container spacing={2}>
             {getCurrentHighlights().map((spot) => (
               <Grid item xs={12} sm={6} md={3} key={spot.id}>
-                <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => goToSpotPage(spot.id.toString())}>
+                <Card sx={{ height: "100%", cursor: "pointer" }} onClick={() => navigate(`/spot/${spot.slug || spot.id}`)}>
                   <CardContent sx={{ textAlign: "center" }}>
                     <Typography variant="h6" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
                       {spot.name}

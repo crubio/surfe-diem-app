@@ -4,7 +4,7 @@
  */
 
 import isEmpty from 'lodash/isEmpty'
-import { BuoyLocation, BuoyLocationLatestObservation } from './types';
+import { BuoyLocationLatestObservation } from './types';
 import { Box, Button, Card, CardActions, CardContent, Divider, Typography } from '@mui/material';
 import { LocationOn } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';

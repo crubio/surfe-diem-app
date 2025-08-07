@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getBatchForecast } from '../../features/locations/api/locations';
 import { Favorite } from '../../types/favorites';
 import { BuoyBatchData, SpotBatchData } from '../../features/locations/types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
-import { Stack, Typography, Box, Chip, Button, Grid, Collapse, IconButton } from '@mui/material';
-import { FavoriteButton } from '../common/favorite-button';
+import { Stack, Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
-import { getFavoriteDisplayLocation } from '../../utils/favorites';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 
 interface FavoritesListProps {

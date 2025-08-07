@@ -2,7 +2,6 @@
  * Surf condition utilities for color coding and scoring
  */
 
-import { Spot } from "@features/locations/types";
 import { formatDirection } from "./formatting";
 
 /**
@@ -263,100 +262,7 @@ export function getConditionDescription(conditions: SurfConditions): string {
   return 'Small waves or challenging wind';
 }
 
-/**
- * Get the spot with the best current conditions
- * @param spots Array of spot data with current conditions
- * @returns ConditionResult for the best spot
- */
-export function getBestConditions(spots: SpotBatchData[]): ConditionResult {
-  // Placeholder implementation - will be replaced by API-based logic
-  const conditions = { waveHeight: 4, windSpeed: 8, swellPeriod: 12 };
-  const score = getEnhancedConditionScore(conditions);
-  return {
-    spot: "Steamer Lane",
-    spotId: 1,
-    slug: "steamer-lane",
-    waveHeight: "4-6ft",
-    waveHeightValue: 4,
-    windSpeedValue: 8,
-    conditions: "Clean",
-    direction: "SW",
-    score
-  };
-}
-
-/**
- * Get the closest spot to the user's location
- * @param spots Array of spot data, eg; Spot[]
- * @returns ConditionResult for the closest spot
- */
-export function getClosestSpot(spots: Spot[]): ConditionResult | null {
-  // Placeholder implementation - will be replaced by API-based logic
-  if (spots.length === 0) {
-    return null;
-  }
-  const closestSpot = spots[0];
-  
-  // For now, return a placeholder until we have forecast data
-  const conditions = { waveHeight: 3, windSpeed: 12, swellPeriod: 10 };
-  const score = getEnhancedConditionScore(conditions);
-  return {
-    spot: closestSpot.name,
-    spotId: closestSpot.id,
-    slug: closestSpot.slug,
-    waveHeight: "3-4ft",
-    waveHeightValue: 3,
-    windSpeedValue: 12,
-    conditions: "Current conditions",
-    direction: "SW",
-    score,
-    isLocationBased: true
-  };
-}
-
-/**
- * Get the spot with the cleanest conditions (best wind)
- * @param spots Array of spot data with current conditions
- * @returns ConditionResult for the cleanest spot
- */
-export function getCleanestConditions(spots: SpotBatchData[]): ConditionResult {
-  // Placeholder implementation - will be replaced by API-based logic
-  const conditions = { waveHeight: 3, windSpeed: 5, swellPeriod: 14 };
-  const score = getEnhancedConditionScore(conditions);
-  return {
-    spot: "Pleasure Point",
-    spotId: 2,
-    slug: "pleasure-point",
-    waveHeight: "3-4ft",
-    waveHeightValue: 3,
-    windSpeedValue: 5,
-    conditions: "Glassy",
-    direction: "SW",
-    score
-  };
-}
-
-/**
- * Get the spot with the highest waves
- * @param spots Array of spot data with current conditions
- * @returns ConditionResult for the spot with highest waves
- */
-export function getHighestWaves(spots: SpotBatchData[]): ConditionResult {
-  // Placeholder implementation - will be replaced by API-based logic
-  const conditions = { waveHeight: 8, windSpeed: 15, swellPeriod: 16 };
-  const score = getEnhancedConditionScore(conditions);
-  return {
-    spot: "Mavericks",
-    spotId: 3,
-    slug: "mavericks",
-    waveHeight: "8-10ft",
-    waveHeightValue: 8,
-    windSpeedValue: 15,
-    conditions: "Big",
-    direction: "NW",
-    score
-  };
-} 
+ 
 
 /**
  * Transform API forecast response to ConditionResult format for scoring

@@ -1,12 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Autocomplete,
   TextField,
   Box,
   Typography,
-  Chip,
   ListSubheader,
-  CircularProgress,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -19,11 +17,6 @@ interface EnhancedSelectProps {
   doOnSelect: (value: string) => void;
   type: 'spot' | 'buoy';
   placeholder?: string;
-}
-
-interface GroupedOption {
-  group: string;
-  options: any[];
 }
 
 export default function EnhancedSelect({
@@ -39,7 +32,7 @@ export default function EnhancedSelect({
   const [inputValue, setInputValue] = useState('');
 
   // Memoize expensive grouping operations
-  const { groupedOptions, flatOptions } = useMemo(() => {
+  const flatOptions = useMemo(() => {
     if (type === 'spot') {
       const grouped = items.reduce((acc: { [key: string]: any[] }, item) => {
         const region = item.subregion_name || 'Other';
@@ -50,28 +43,17 @@ export default function EnhancedSelect({
         return acc;
       }, {});
 
-      // Sort regions and items within regions
-      const groupedOptions = Object.keys(grouped)
+      // Sort regions and items within regions, then flatten
+      return Object.keys(grouped)
         .sort()
         .map(region => ({
           group: region,
           options: grouped[region].sort((a, b) => a.name.localeCompare(b.name))
-        }));
-
-      return {
-        groupedOptions,
-        flatOptions: groupedOptions.flatMap(group => group.options)
-      };
+        }))
+        .flatMap(group => group.options);
     } else {
       // For buoys, just sort alphabetically
-      const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
-      return {
-        groupedOptions: [{
-          group: 'Buoys',
-          options: sortedItems
-        }],
-        flatOptions: sortedItems
-      };
+      return items.sort((a, b) => a.name.localeCompare(b.name));
     }
   }, [items, type]);
 
@@ -88,7 +70,7 @@ export default function EnhancedSelect({
 
   const renderOption = (props: any, option: any) => {
     const region = option.subregion_name;
-    const { key, ...otherProps } = props;
+    const { ...otherProps } = props;
     
     return (
       <Box component="li" key={option[selectValueKey]} {...otherProps} sx={{ py: 1 }}>

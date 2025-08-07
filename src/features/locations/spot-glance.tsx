@@ -13,7 +13,7 @@ type SpotGlanceProps = {
 
 const SpotGlance = (props: SpotGlanceProps) => {
     const { latitude, longitude } = props;
-    const {data: closestSpots, isPending, error} = useQuery({
+    const {data: closestSpots} = useQuery({
         queryKey: ['closest_spots', latitude, longitude],
         queryFn: () => getSurfSpotClosest(latitude, longitude),
         enabled: !!latitude && !!longitude,

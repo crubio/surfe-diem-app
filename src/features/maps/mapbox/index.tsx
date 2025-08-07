@@ -4,7 +4,7 @@ import { MAPBOX_API_KEY } from 'config';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import './mapbox.css'
 import { Item, LinkRouter } from 'components';
-import { Stack, Typography, Box, Chip, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
+import { Stack, Typography, Box, ToggleButtonGroup, ToggleButton, Tooltip } from '@mui/material';
 import { GeoJSON, GeoJSONProperties } from 'features/maps/types'
 import { DEFAULT_CENTER } from 'utils/constants';
 mapboxgl.accessToken = MAPBOX_API_KEY;
@@ -301,6 +301,7 @@ export const MapBox = (props: MapProps) => {
         map.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapContainer, props.geoJson.features, filterType]);
 
   // Update map source when filter changes

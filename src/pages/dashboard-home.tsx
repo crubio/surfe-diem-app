@@ -16,8 +16,8 @@ import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRe
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
 import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
-import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor, formatWaterTemp, getWaterTempPercentage, getWaterTempComfortLevel } from "utils/water-temp";
-import { TemperatureGauge, TemperatureCard } from "components";
+import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor } from "utils/water-temp";
+import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 
@@ -85,7 +85,7 @@ const DashboardHome = () => {
   const highestWaves = batchRecommendations?.highestWaves || null;
 
   // Get closest tide station to user's location
-  const {data: closestTideStation, isPending: tideStationLoading} = useQuery({
+  const {data: closestTideStation} = useQuery({
     queryKey: ['closest_tide_station', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getClostestTideStation({
       lat: geolocation!.latitude,
@@ -174,21 +174,7 @@ const DashboardHome = () => {
     }
   };
 
-  // Helper function to get best conditions
-  const getBestConditions = () => {
-    // This could be based on wave height, wind, tide, etc.
-    const conditions = { waveHeight: 4, windSpeed: 8 };
-    const score = getEnhancedConditionScore(conditions);
-    return {
-      spot: "Steamer Lane",
-      waveHeight: "4-6ft",
-      conditions: "Clean",
-      direction: "SW",
-      score,
-      waveHeightValue: 4,
-      windSpeedValue: 8
-    };
-  };
+
 
   // Helper function to get closest spot
   const getClosestSpot = () => {

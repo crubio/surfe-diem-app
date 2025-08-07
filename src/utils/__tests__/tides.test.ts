@@ -4,8 +4,7 @@ import {
   getTideDirectionDescription, 
   getTideQualityDescription,
   getCurrentTideValue,
-  getCurrentTideTime,
-  TideState 
+  getCurrentTideTime
 } from '../tides';
 import { TidesDataDaily, TidesDataCurrent } from '@features/tides/api/tides';
 

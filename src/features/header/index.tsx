@@ -17,13 +17,11 @@ import { toast } from 'react-toastify';
 
 export default function SearchAppBar() {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const notify = () => toast("No results found", {});
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState<SearchQueryParams>({q: '', limit: 10})
-  const [queryEnabled, setQueryEnabled] = useState<boolean>(false)
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
@@ -87,7 +85,6 @@ export default function SearchAppBar() {
       const query = e.currentTarget.value
       setSearchQuery({q: query, limit: 10})
       setQueryId(random(1, 1000))
-      setQueryEnabled(true)
     }
   }
 

@@ -5,8 +5,7 @@ import {
   getWaterTempColor,
   formatWaterTemp,
   getWaterTempPercentage,
-  getWaterTempComfortLevel,
-  WaterTempData
+  getWaterTempComfortLevel
 } from '../water-temp';
 
 describe('Water Temperature Utilities', () => {

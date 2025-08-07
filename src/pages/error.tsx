@@ -2,7 +2,7 @@ import { Container } from "@mui/material";
 import ErrorIcon from '@mui/icons-material/Error';
 
 interface ErrorPageProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   error: any
 }
 
