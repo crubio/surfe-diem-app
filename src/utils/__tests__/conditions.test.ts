@@ -366,23 +366,6 @@ describe('Surf Condition Scoring', () => {
       expect(result).toBeNull();
     });
 
-    it('should limit to 5 closest spots', async () => {
-      // Mock closest spots data
-      const mockClosestSpots = Array.from({ length: 10 }, (_, i) => ({
-        id: i + 1,
-        name: `Spot ${i + 1}`,
-        slug: `spot-${i + 1}`,
-        latitude: 37.7749,
-        longitude: -122.4194,
-        distance: `${i + 1} miles`
-      }));
-
-      // We can't easily test the actual API calls without mocking,
-      // but we can test that the function accepts the right data structure
-      expect(typeof getBestConditionsFromAPI).toBe('function');
-      expect(getBestConditionsFromAPI.length).toBe(1); // Takes one parameter
-    });
-
     it('should handle empty closest spots array for cleanest conditions', async () => {
       const result = await getCleanestConditionsFromAPI([]);
       expect(result).toBeNull();

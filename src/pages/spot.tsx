@@ -1,119 +1,73 @@
-import { getSurfSpot, getSurfSpotBySlug } from "@features/locations/api/locations"
 import { Box, Container, Grid, Stack, Typography, Card, CardContent } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
 import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData } from "components"
-import { getClostestTideStation, getDailyTides, getCurrentTides } from "@features/tides"
-import { getForecastCurrent, getForecastHourly } from "@features/forecasts"
 import { isEmpty } from "lodash"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
-import { getLocationBuoyNearby } from "@features/locations/api/locations"
 import { NoData } from "@features/cards/no_data"
-import { formatCoordinates, formatTemperature, calculateTideStatus, formatDirection } from "utils/formatting"
+import { formatCoordinates, formatTemperature, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
-
+import { useSpotData, useTideData, useForecastData, useNearbyBuoys } from "hooks"
 
 const SpotPage = () => {
   const params = useParams()
   const { spotId } = params
 
   // Determine if spotId is a slug (non-numeric) or ID (numeric)
-  const isSlug = spotId && isNaN(Number(spotId))
+  const isSlug = spotId ? isNaN(Number(spotId)) : false
+
+  const {data: spotData, isError, error} = useSpotData(spotId, isSlug)
+
+  const {dailyTides, currentTides, isLoading: isTideDataLoading} = useTideData(spotData?.latitude, spotData?.longitude)
+
+  const {hourly: forecastDataHourly, current: forecastCurrent, isLoading: isWeatherLoading} = useForecastData(spotData?.latitude, spotData?.longitude)
   
-  const {data: spot, isError, error} = useQuery({
-    queryKey: ['spots', spotId, isSlug],
-    queryFn: () => isSlug ? getSurfSpotBySlug(spotId) : getSurfSpot(spotId)
+  // TODO: create hook for current weather if thats needed in the future.
+  const {data: currentWeather} = useQuery({
+    queryKey: ['current_weather', spotData?.id],
+    queryFn: () => getCurrentWeather({lat: spotData!.latitude, lng: spotData!.longitude}),
+    enabled: !!spotData?.name
   });
 
-  const {data: tideStationData} = useQuery({
-    queryKey: ['tide_station', spot?.id],
-    queryFn: () => getClostestTideStation({lat: spot?.latitude, lng: spot?.longitude}),
-    enabled: !!spot?.latitude
-  });
-
-  const {data: tideData, isPending: isTideDataLoading} = useQuery({
-    queryKey: ['latest_tides', tideStationData?.station_id],
-    queryFn: () => getDailyTides({ station: tideStationData?.station_id}),
-    enabled: !!tideStationData?.station_id
-  });
-
-  const {data: currentTides} = useQuery({
-    queryKey: ['current_tides', tideStationData?.station_id],
-    queryFn: () => getCurrentTides({ station: tideStationData!.station_id}),
-    enabled: !!tideStationData?.station_id,
-    staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
-    gcTime: 10 * 60 * 1000, // 10 minutes
-  });
-
-  const {data: forecastDataHourly, isPending: isHourlyForecastLoading } = useQuery({
-    queryKey: ['forecast_hourly', spot?.id],
-    queryFn: () => getForecastHourly({
-      latitude: spot!.latitude,
-      longitude: spot!.longitude,
-      forecast_days: 1,
-    }),
-    enabled: !!spot?.name
-  });
-
-  const {data: forecastCurrent} = useQuery({
-    queryKey: ['forecast_current', spot?.id],
-    queryFn: () => getForecastCurrent({
-      latitude: spot!.latitude,
-      longitude: spot!.longitude,
-    }),
-    enabled: !!spot?.name
-  });
-
-  const {data: currentWeather, isPending: isWeatherLoading} = useQuery({
-    queryKey: ['current_weather', spot?.id],
-    queryFn: () => getCurrentWeather({lat: spot!.latitude, lng: spot!.longitude}),
-    enabled: !!spot?.name
-  });
-
-  const {data: nearbyBuoys} = useQuery({
-    queryKey: ['nearby_buoys', spot?.id],
-    queryFn: () => getLocationBuoyNearby(spot!.longitude, spot!.latitude),
-    enabled: !!spot?.latitude && !!spot?.longitude,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const {data: nearbyBuoys} = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
 
   return (
     <>
-      {spot && (
+      {spotData && (
         <>
           <SEO 
-            title={`${spot.name} Surf Spot - Surfe Diem`}
-            description={`Get current surf conditions, forecasts, and tide information for ${spot.name} in ${spot.subregion_name}. Real-time surf data and weather.`}
-            keywords={`${spot.name} surf spot, ${spot.subregion_name} surf, ${spot.name} surf conditions, ${spot.name} surf forecast, ${spot.subregion_name} surf spots`}
-            url={`https://surfe-diem.com/spot/${spot.slug}`}
+            title={`${spotData.name} Surf Spot - Surfe Diem`}
+            description={`Get current surf conditions, forecasts, and tide information for ${spotData.name} in ${spotData.subregion_name}. Real-time surf data and weather.`}
+            keywords={`${spotData.name} surf spot, ${spotData.subregion_name} surf, ${spotData.name} surf conditions, ${spotData.name} surf forecast, ${spotData.subregion_name} surf spots`}
+            url={`https://surfe-diem.com/spot/${spotData.slug}`}
           />
           <SurfSpotStructuredData
-            name={spot.name}
-            description={`Surf spot in ${spot.subregion_name} with current conditions and forecasts`}
-            latitude={spot.latitude}
-            longitude={spot.longitude}
-            subregion={spot.subregion_name}
-            timezone={spot.timezone}
-            url={`https://surfe-diem.com/spot/${spot.slug}`}
+            name={spotData.name}
+            description={`Surf spot in ${spotData.subregion_name} with current conditions and forecasts`}
+            latitude={spotData.latitude}
+            longitude={spotData.longitude}
+            subregion={spotData.subregion_name}
+            timezone={spotData.timezone}
+            url={`https://surfe-diem.com/spot/${spotData.slug}`}
           />
         </>
       )}
       {isError && <ErrorPage error={error} />}
-      {spot ? (
+      {spotData ? (
         <Container sx={{marginBottom: "20px"}}>
           {/* Hero Section */}
           <Box sx={{ mb: 4 }}>
             {/* Header with spot name and favorite button */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
-                {spot.name}
+                {spotData.name}
               </Typography>
               <Box sx={{ ml: 2.5 }}> {/* 20px margin left */}
-                <FavoriteButton showTooltip={true} id={spot.id} type="spot" name={spot.name} subregion_name={spot.subregion_name} latitude={spot.latitude} longitude={spot.longitude} />
+                <FavoriteButton showTooltip={true} id={spotData.id} type="spot" name={spotData.name} subregion_name={spotData.subregion_name} latitude={spotData.latitude} longitude={spotData.longitude} />
               </Box>
             </Box>
 
@@ -121,17 +75,17 @@ const SpotPage = () => {
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
               <Item>
                 <Typography variant="body2" color="text.secondary">
-                  {formatCoordinates(spot.latitude, spot.longitude)}
+                  {formatCoordinates(spotData.latitude, spotData.longitude)}
                 </Typography>
               </Item>
               <Item>
                 <Typography variant="body2" color="text.secondary">
-                  {spot.subregion_name}
+                  {spotData.subregion_name}
                 </Typography>
               </Item>
               <Item>
                 <Typography variant="body2" color="text.secondary">
-                  {spot.timezone}
+                  {spotData.timezone}
                 </Typography>
               </Item>
             </Stack>
@@ -142,12 +96,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {forecastCurrent?.current?.swell_wave_height ? `${forecastCurrent.current.swell_wave_height.toFixed(1)}ft` : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Wave Height
-                    </Typography>
+                    {isWeatherLoading ? (
+                      <Loading />
+                    ) : forecastCurrent?.data?.current?.swell_wave_height ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {`${forecastCurrent.data.current.swell_wave_height.toFixed(1)}ft`}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Wave Height
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -156,12 +118,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {forecastCurrent?.current?.swell_wave_period ? `${forecastCurrent.current.swell_wave_period}s` : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Period
-                    </Typography>
+                    {isWeatherLoading ? (
+                      <Loading />
+                    ) : forecastCurrent?.data?.current?.swell_wave_period ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {`${forecastCurrent.data.current.swell_wave_period}s`}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Period
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -170,12 +140,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {forecastCurrent?.current?.swell_wave_direction ? formatDirection(forecastCurrent.current.swell_wave_direction) : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Direction
-                    </Typography>
+                    {isWeatherLoading ? (
+                      <Loading />
+                    ) : forecastCurrent?.data?.current?.swell_wave_direction ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {formatDirection(forecastCurrent.data.current.swell_wave_direction)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Direction
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -184,12 +162,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {forecastCurrent?.current?.sea_surface_temperature ? formatTemperature(forecastCurrent.current.sea_surface_temperature) : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Water Temp
-                    </Typography>
+                    {isWeatherLoading ? (
+                      <Loading />
+                    ) : forecastCurrent?.data?.current?.sea_surface_temperature ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {formatTemperature(forecastCurrent.data.current.sea_surface_temperature)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Water Temp
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -198,12 +184,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {forecastCurrent?.current?.wind_wave_direction ? formatDirection(forecastCurrent.current.wind_wave_direction) : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Wind
-                    </Typography>
+                    {isWeatherLoading ? (
+                      <Loading />
+                    ) : forecastCurrent?.data?.current?.wind_wave_direction ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {formatDirection(forecastCurrent.data.current.wind_wave_direction)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Wind
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -212,12 +206,20 @@ const SpotPage = () => {
               <Grid item xs={6} sm={4} md={2}>
                 <Card sx={{ height: '100%', textAlign: 'center' }}>
                   <CardContent sx={{ py: 2 }}>
-                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                      {currentTides ? `${getCurrentTideValue(currentTides)?.toFixed(1)}ft` : 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Current Tide
-                    </Typography>
+                    {isTideDataLoading ? (
+                      <Loading />
+                    ) : currentTides?.data ? (
+                      <>
+                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                          {`${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Current Tide
+                        </Typography>
+                      </>
+                    ) : (
+                      <NoData />
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -236,25 +238,25 @@ const SpotPage = () => {
                     </Typography>
                     {isTideDataLoading ? (
                       <Loading />
-                    ) : tideData && currentTides ? (
+                    ) : dailyTides?.data && currentTides?.data ? (
                       <Card sx={{ textAlign: 'center' }}>
                         <CardContent sx={{ py: 1, px: 2 }}>
                           <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
-                            {Math.min(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}-{Math.max(...tideData.predictions.map(p => parseFloat(p.v))).toFixed(1)}ft
+                            {Math.min(...dailyTides.data.predictions.map((p: any) => parseFloat(p.v))).toFixed(1)}-{Math.max(...dailyTides.data.predictions.map((p: any) => parseFloat(p.v))).toFixed(1)}ft
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
                             Today's Range
                           </Typography>
                           <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
                             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                              High: {Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'H' && parseFloat(p.v) === Math.max(...tideData.predictions.filter(p => p.type === 'H').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
+                              High: {Math.max(...dailyTides.data.predictions.filter((p: any) => p.type === 'H').map((p: any) => parseFloat(p.v))).toFixed(1)}ft at {new Date(dailyTides.data.predictions.find((p: any) => p.type === 'H' && parseFloat(p.v) === Math.max(...dailyTides.data.predictions.filter((p: any) => p.type === 'H').map((p: any) => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
                                 hour: 'numeric', 
                                 minute: '2-digit',
                                 hour12: true 
                               })}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
-                              Low: {Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))).toFixed(1)}ft at {new Date(tideData.predictions.find(p => p.type === 'L' && parseFloat(p.v) === Math.min(...tideData.predictions.filter(p => p.type === 'L').map(p => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
+                              Low: {Math.min(...dailyTides.data.predictions.filter((p: any) => p.type === 'L').map((p: any) => parseFloat(p.v))).toFixed(1)}ft at {new Date(dailyTides.data.predictions.find((p: any) => p.type === 'L' && parseFloat(p.v) === Math.min(...dailyTides.data.predictions.filter((p: any) => p.type === 'L').map((p: any) => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
                                 hour: 'numeric', 
                                 minute: '2-digit',
                                 hour12: true 
@@ -271,15 +273,15 @@ const SpotPage = () => {
               </Grid>
             </Box>
           )}
-          { !isEmpty(spot) && (
+          { !isEmpty(spotData) && (
             <>
               <Grid container spacing={2}>
                               <Grid item xs={12} sm={12} md={6} lg={6} sx={{marginBottom: "20px"}}>
                 <MapBoxSingle 
-                  lat={spot.latitude} 
-                  lng={spot.longitude} 
+                  lat={spotData.latitude} 
+                  lng={spotData.longitude} 
                   zoom={8} 
-                  nearbyBuoys={nearbyBuoys}
+                  nearbyBuoys={nearbyBuoys || []}
                 />
               </Grid>
               </Grid>
@@ -287,16 +289,16 @@ const SpotPage = () => {
           )}
 
 
-          {forecastDataHourly?.hourly && 
+                     {forecastDataHourly?.data?.hourly &&  
             <Box sx={{marginBottom: "20px"}}>
               <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
                 Wave & Tide Forecast
               </Typography>
               <WaveChart 
-                waveHeightData={forecastDataHourly?.hourly.swell_wave_height} 
-                wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} 
-                timeData={forecastDataHourly?.hourly.time}
-                tideData={tideData}
+                waveHeightData={forecastDataHourly?.data.hourly.swell_wave_height} 
+                wavePeriodData={forecastDataHourly?.data.hourly.swell_wave_period} 
+                timeData={forecastDataHourly?.data.hourly.time}
+                tideData={dailyTides?.data}
               />
             </Box>
           }

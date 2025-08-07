@@ -12,7 +12,7 @@ type Props = {
     numToRender?: number;
 }
 
-const BuoyDisplay = ({ children, ...props }: BuoyNearestType & { children?: React.ReactNode }) => {
+const BuoyDisplay = ({ ...props }: BuoyNearestType) => {
     return (
         <Item sx={{maxWidth: "fit-content", padding: "10px"}}>
             <Typography variant="body1" component="div">

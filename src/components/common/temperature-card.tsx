@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Typography, Chip } from '@mui/material';
-import { getWaterTempColor, getWaterTempQualityDescription, getWaterTempComfortLevel } from 'utils/water-temp';
+import { Box, Typography } from '@mui/material';
+import { getWaterTempColor, getWaterTempComfortLevel } from 'utils/water-temp';
 
 interface TemperatureCardProps {
   temperature: number; // Celsius

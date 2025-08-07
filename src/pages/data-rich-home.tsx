@@ -1,33 +1,17 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
-import { Item, SEO, EnhancedSelect } from "components";
+import { getBatchForecast } from "@features/locations/api/locations";
+import { Item, SEO } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
-import { orderBy } from "lodash";
 
 const DataRichHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   
-  // Data queries
-  const {data: buoys} = useQuery({
-    queryKey: ['locations'],
-    queryFn: async () => getLocations()
-  });
-  
-  const {data: spots} = useQuery({
-    queryKey: ['spots'],
-    queryFn: async () => getSurfSpots()
-  });
-  
-  const {data: geolocation} = useQuery({
-    queryKey: ['geolocation'],
-    queryFn: async () => getGeolocation()
-  });
+
   
   // Fetch current data for favorites
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -48,19 +32,7 @@ const DataRichHome = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  // Navigation functions
-  const goToBuoyPage = (location_id: string) => {
-    navigate(`/location/${location_id}`);
-  };
 
-  const goToSpotPage = (spot_id: string) => {
-    const spot = spots?.find(s => s.id.toString() === spot_id);
-    if (spot?.slug) {
-      navigate(`/spot/${spot.slug}`);
-    } else {
-      navigate(`/spot/${spot_id}`);
-    }
-  };
 
   // Get regional conditions summary
   const getRegionalConditions = () => {

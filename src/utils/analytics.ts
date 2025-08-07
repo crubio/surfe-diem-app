@@ -60,7 +60,7 @@ const trackEvent = (event: ABTestEvent): void => {
 };
 
 // Track page view with variation
-export const trackPageView = (variation: string, page: string = 'home'): void => {
+export const trackPageView = (variation: string, page = 'home'): void => {
   trackEvent({
     variation,
     event: 'page_view',

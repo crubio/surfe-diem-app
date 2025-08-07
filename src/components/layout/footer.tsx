@@ -1,7 +1,7 @@
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
-import { Box, Stack, Divider } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 import { LinkRouter } from "components";
 
 export default function Footer() {

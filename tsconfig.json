@@ -9,7 +9,9 @@
     "baseUrl": "./src",
     "paths":{
       "@features/*": ["features/*"],
-      "test-utils": ["./utils/test-utils"]
+      "test-utils": ["./utils/test-utils"],
+      "hooks": ["./hooks"],
+      "hooks/*": ["./hooks/*"]
     },
 
     /* Bundler mode */

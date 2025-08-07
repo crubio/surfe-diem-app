@@ -20,7 +20,6 @@ const MapBoxSingle = (props: MapProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const popup = useRef<mapboxgl.Popup | null>(null);
   const buoyMarkers = useRef<mapboxgl.Marker[]>([]);
 
   useEffect(() => {

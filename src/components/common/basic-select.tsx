@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Box, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Typography } from "@mui/material";
 import { useState } from "react";
 
