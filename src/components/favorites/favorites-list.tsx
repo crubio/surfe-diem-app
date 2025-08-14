@@ -6,6 +6,7 @@ import { LinkRouter } from '../common/link-router';
 import { Stack, Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import { getSwellDirectionText } from 'utils/swell';
 
 interface FavoritesListProps {
   favorites: Favorite[];
@@ -44,7 +45,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
           <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
-            {swellData && swellData.direction && ` • ${swellData.direction}`}
+            {swellData && swellData.direction && ` • ${getSwellDirectionText(parseInt(swellData.direction))}`}
           </Typography>
         </Box>
       );
@@ -59,7 +60,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
           <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
             {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
-            {weather.swell.direction && ` • ${weather.swell.direction}°`}
+            {weather.swell.direction && ` • ${getSwellDirectionText(weather.swell.direction)}`}
           </Typography>
         </Box>
       );
