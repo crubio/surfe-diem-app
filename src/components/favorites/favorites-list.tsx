@@ -210,7 +210,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   currentData, 
   isLoading 
 }) => {
-
+  const [expanded, setExpanded] = useState(true);
   // Separate favorites by type
   const spotFavorites = favorites.filter(f => f.type === 'spot');
   const buoyFavorites = favorites.filter(f => f.type === 'buoy');
@@ -227,6 +227,16 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         }}
       >
         My Lineup
+        <IconButton
+          onClick={() => setExpanded(!expanded)}
+          size="small"
+          sx={{ 
+            color: 'primary.main',
+            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
+          }}
+        >
+          {expanded ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
       </Typography>
       
       {isLoading && (
@@ -255,6 +265,8 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         </Typography>
       )}
       
+      <Collapse in={expanded} timeout="auto">
+      
       <Stack spacing={3}>
         <FavoriteSection
           title="Surf Spots"
@@ -272,6 +284,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           itemsPerRow={5}
         />
       </Stack>
+      </Collapse>
     </Box>
   );
 }; 

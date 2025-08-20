@@ -1,5 +1,4 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
-import manresaImage from "assets/manresa1.jpg";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
@@ -269,29 +268,10 @@ const DashboardHome = () => {
         >
           <Container maxWidth="lg">
           <Box sx={{ position: "relative", zIndex: 2 }}>
-            <Typography 
-              variant="h3" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center", 
-                fontSize: { xs: "1.75rem", sm: "2.25rem", md: "2.5rem" },
-                fontWeight: "bold",
-                mb: 1
-              }}
-            >
+            <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
               What's the surf like now?
             </Typography>
-            <Typography 
-              variant="h6" 
-              component="div" 
-              sx={{ 
-                color: "white", 
-                textAlign: "center",
-                fontSize: { xs: "1rem", sm: "1.125rem" },
-                opacity: 0.9
-              }}
-            >
+            <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
               Real-time conditions and current forecasts
             </Typography>
             </Box>
