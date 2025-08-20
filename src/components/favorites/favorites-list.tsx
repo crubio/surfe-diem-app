@@ -24,7 +24,6 @@ interface FavoriteItemProps {
 }
 
 const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type }) => {
-  
   /**
    * Get current conditions based on type and data structure
    */
@@ -45,7 +44,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
           <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
-            {swellData && swellData.direction && ` • ${getSwellDirectionText(parseInt(swellData.direction))}`}
+            {swellData && swellData.direction && ` • ${swellData.direction}`}
           </Typography>
         </Box>
       );

@@ -1,5 +1,6 @@
 import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
 import manresaImage from "assets/manresa1.jpg";
+import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { Item, SEO, EnhancedSelect, LocationPrompt } from "components";
@@ -244,38 +245,30 @@ const DashboardHome = () => {
       </Helmet>
       
       <Container maxWidth="xl" sx={{ 
-        marginTop: { xs: '10px', sm: '20px' }, 
+        marginTop: { xs: '10px', sm: '0px' }, 
         padding: { xs: "12px", sm: "20px" }, 
-        paddingTop: { xs: "4px", sm: "4px" }
+        paddingTop: { xs: "0px", sm: "0px" }
       }}>
         
         {/* Hero Section */}
-        <Item sx={{ bgcolor: 'primary.dark', marginBottom: "20px" }}>
-          <Box sx={{
-            backgroundImage: `url(${manresaImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            height: { xs: "200px", sm: "250px", md: "300px" },
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            px: { xs: 2, sm: 3, md: 4 },
-            position: "relative",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: "linear-gradient(135deg, rgba(30, 214, 230, 0.4) 0%, rgba(14, 165, 233, 0.4) 100%)",
-              zIndex: 1
-            }
-          }}>
-            <Box sx={{ position: "relative", zIndex: 2 }}>
+        <Box
+          sx={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${sharks})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            height: '400px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            textAlign: 'center',
+            position: 'relative',
+            marginBottom: '20px',
+          }}
+        >
+          <Container maxWidth="lg">
+          <Box sx={{ position: "relative", zIndex: 2 }}>
             <Typography 
               variant="h3" 
               component="div" 
@@ -302,8 +295,8 @@ const DashboardHome = () => {
               Real-time conditions and current forecasts
             </Typography>
             </Box>
-          </Box>
-        </Item>
+          </Container>
+        </Box>
 
         {/* Quick Actions */}
         <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
