@@ -94,24 +94,24 @@ const SpotPage = () => {
             <Grid container spacing={2}>
               {/* Wave Height */}
               <Grid item xs={6} sm={4} md={2}>
-                <Card sx={{ height: '100%', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2 }}>
-                    {isWeatherLoading ? (
-                      <Loading />
-                    ) : forecastCurrent?.data?.current?.swell_wave_height ? (
-                      <>
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {`${forecastCurrent.data.current.swell_wave_height.toFixed(1)}ft`}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Wave Height
-                        </Typography>
-                      </>
-                    ) : (
-                      <NoData />
-                    )}
-                  </CardContent>
-                </Card>
+              <Card sx={{ height: '100%', textAlign: 'center' }}>
+                <CardContent sx={{ py: 2 }}>
+                  {isWeatherLoading ? (
+                    <Loading />
+                  ) : forecastCurrent?.data?.current?.swell_wave_height ? (
+                    <>
+                      <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
+                        {`${forecastCurrent.data.current.swell_wave_height.toFixed(1)}ft`}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Wave Height
+                      </Typography>
+                    </>
+                  ) : (
+                    <NoData />
+                  )}
+                </CardContent>
+              </Card>
               </Grid>
 
               {/* Period */}

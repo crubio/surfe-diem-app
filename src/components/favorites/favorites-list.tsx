@@ -238,19 +238,6 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           {expanded ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
       </Typography>
-      
-      {isLoading && (
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
-            mb: 2,
-            fontSize: { xs: '0.875rem', sm: '1rem' }
-          }}
-        >
-          Loading current conditions...
-        </Typography>
-      )}
 
       {favorites.length === 0 && (
         <Typography 

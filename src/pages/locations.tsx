@@ -4,16 +4,16 @@ import { LatestReportedForecast } from "@features/forecasts/components/latest_re
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { getDailyTides } from "@features/tides"
 import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Container, Grid, Link, Stack} from "@mui/material"
+import { Box, Card, CardContent, Container, Grid, Link, Stack, Typography} from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { FavoriteButton, Item, Loading, SEO, BuoyStructuredData } from "components"
+import { FavoriteButton, Item, Loading, SEO, BuoyStructuredData, TemperatureCard } from "components"
 import { isEmpty } from "lodash"
 import { useParams } from "react-router-dom"
 import { formatLatLong, getTodaysDate } from "utils/common"
 import ErrorPage from "./error"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
-import { CurrentForecast } from "@features/forecasts/components/current_forecast"
+import ValueCardSmall from "components/common/value-card-small"
 
 const LocationsPage = () => {
   const params = useParams()
@@ -68,9 +68,8 @@ const LocationsPage = () => {
     enabled: !!locationData?.location_id
   });
 
-  const obsData = latestObservationData || []
-
-  const latestReported = obsData || []
+  const latestWave = (latestObservationData ?? [])[0] || [];
+  const latestSwell = (latestObservationData ?? [])[1] || [];
   
   return (
     <>
@@ -111,6 +110,45 @@ const LocationsPage = () => {
             <Item>{locationData?.location?.split("(")[0]}</Item>
             <Item><Link href={locationData?.url} target="_blank">more info</Link></Item>
           </Stack>
+
+          <Grid container spacing={2} sx={{ marginBottom: '20px' }}>
+            <Grid item xs={6} sm={4} md={2}>
+              <ValueCardSmall
+                title="Swell Height"
+                value={latestSwell.swell_height}
+                isLoading={isLatestObsvLoading}
+              />
+            </Grid>
+            <Grid item xs={6} sm={4} md={2}>
+              <ValueCardSmall
+                title="Swell Period"
+                value={latestSwell.period}
+                isLoading={isLatestObsvLoading}
+              />
+            </Grid>
+            <Grid item xs={6} sm={4} md={2}>
+              <ValueCardSmall
+                title="Swell Direction"
+                value={latestSwell.direction}
+                isLoading={isLatestObsvLoading}
+              />
+            </Grid>
+            <Grid item xs={6} sm={4} md={2}>
+              {latestWave.water_temp && (
+                // TODO: Uncomment when water temp card is ready
+                // <TemperatureCard
+                //   temperature={10}
+                //   showFahrenheit={true}
+                //   showComfortLevel={false}
+                // />
+                <ValueCardSmall
+                  title="Water Temp"
+                  value={latestWave.water_temp}
+                  isLoading={isLatestObsvLoading}
+                />
+              )}
+            </Grid>
+          </Grid>
           { locationData?.location && latLong[0] && (
             <>
               <Grid container spacing={2}>
@@ -120,56 +158,11 @@ const LocationsPage = () => {
               </Grid>
             </>
           )}
-        <Box>
-          {latestReported ? (
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Current conditions</h2>
-                { isLatestObsvLoading ? (
-                  <Loading />
-                ) : (
-                  <LatestReportedForecast {...latestReported} />
-                )}
-              </Grid>
-              <Grid item xs={12} sm={12} md={3} lg={3}>
-                <h2>Next hour forecast</h2>
-                { isCurrentForecastLoading && (<Loading />)}
-                {forecastCurrent ? (<CurrentForecast forecast={forecastCurrent} />) : <NoData />}
-              </Grid>
-              {(location as { station_id?: string })?.station_id && (
-                <Grid item xs={12} sm={12} md={3} lg={3}>
-                  <h2>Tide</h2>
-                  {isTideDataLoading ? (
-                    <Loading />
-                  ) : tideData && (
-                    <DailyTide {...tideData} />
-                  )}
-                </Grid>
-              )}
-            </Grid>
-          ) : isLatestObsvLoading ? (
-            <Item><Loading /></Item>
-          ) : (
-            <Item><p>No current data</p></Item>
-          )}
-        </Box>
         {forecastDataHourly?.hourly &&
           <Box sx={{marginTop: "20px"}}>
             <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
           </Box>
         }
-        <Box>
-          <h2>Forecast</h2>
-          { !isEmpty(forecastDataDaily) ? (
-            <Stack direction={{ xs: 'column', sm: 'column', md: 'row' }} spacing={2}>
-              <DailyForecast forecast={forecastDataDaily} />
-            </Stack>
-          ): isForecastLoading ? (
-            <Item><Loading /></Item>
-          ) : (
-            <NoData />
-          )}
-        </Box>
       </Container>
       )}
       </div>
