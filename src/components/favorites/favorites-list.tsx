@@ -24,7 +24,6 @@ interface FavoriteItemProps {
 }
 
 const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type }) => {
-  
   /**
    * Get current conditions based on type and data structure
    */
@@ -45,7 +44,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
           <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
-            {swellData && swellData.direction && ` • ${getSwellDirectionText(parseInt(swellData.direction))}`}
+            {swellData && swellData.direction && ` • ${swellData.direction}`}
           </Typography>
         </Box>
       );
@@ -211,7 +210,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   currentData, 
   isLoading 
 }) => {
-
+  const [expanded, setExpanded] = useState(true);
   // Separate favorites by type
   const spotFavorites = favorites.filter(f => f.type === 'spot');
   const buoyFavorites = favorites.filter(f => f.type === 'buoy');
@@ -228,20 +227,17 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         }}
       >
         My Lineup
-      </Typography>
-      
-      {isLoading && (
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
+        <IconButton
+          onClick={() => setExpanded(!expanded)}
+          size="small"
           sx={{ 
-            mb: 2,
-            fontSize: { xs: '0.875rem', sm: '1rem' }
+            color: 'primary.main',
+            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
           }}
         >
-          Loading current conditions...
-        </Typography>
-      )}
+          {expanded ? <ExpandLess /> : <ExpandMore />}
+        </IconButton>
+      </Typography>
 
       {favorites.length === 0 && (
         <Typography 
@@ -255,6 +251,8 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           No favorites in your quiver yet. Add some to get quick surf conditions for your favorite spots and buoys.
         </Typography>
       )}
+      
+      <Collapse in={expanded} timeout="auto">
       
       <Stack spacing={3}>
         <FavoriteSection
@@ -273,6 +271,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           itemsPerRow={5}
         />
       </Stack>
+      </Collapse>
     </Box>
   );
 }; 
