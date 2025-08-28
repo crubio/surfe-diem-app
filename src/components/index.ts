@@ -12,5 +12,6 @@ export * from './favorites/favorites-list'
 export * from './common/value-card-small'
 export { default as SEO } from './common/seo'
 export * from './common/structured-data'
+export { default as HeroSection } from './common/hero';
 export { default as LocationPrompt } from './common/location-prompt';
 export { default as TemperatureCard } from './common/temperature-card';

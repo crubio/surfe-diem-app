@@ -20,6 +20,9 @@ import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterT
 import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
+import { NoData } from "@features/cards/no_data";
+import HeroSection from "components/common/hero";
+import ExploreActions from "components/common/explore-actions";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -94,8 +97,6 @@ const DashboardHome = () => {
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
   })
 
-
-
   // Get current tide data for the closest station
   const {data: currentTides, isPending: tidesLoading} = useQuery({
     queryKey: ['current_tides', closestTideStation?.station_id],
@@ -106,8 +107,6 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
-
-
 
   // Get featured spots from existing spots data
   const featuredSpots = spots ? spots.filter(spot => 
@@ -158,23 +157,6 @@ const DashboardHome = () => {
       navigate(`/spot/${spot_id}`);
     }
   };
-
-  const handleQuickAction = (action: string) => {
-    trackInteraction(variation, 'quick_action', { action });
-    switch (action) {
-      case 'map':
-        navigate('/map');
-        break;
-      case 'spots':
-        navigate('/spots');
-        break;
-      case 'near_me':
-        navigate('/nearby-spots');
-        break;
-    }
-  };
-
-
 
   // Helper function to get closest spot
   const getClosestSpot = () => {
@@ -250,86 +232,10 @@ const DashboardHome = () => {
       }}>
         
         {/* Hero Section */}
-        <Box
-          sx={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${sharks})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            height: '400px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            textAlign: 'center',
-            position: 'relative',
-            marginBottom: '20px',
-          }}
-        >
-          <Container maxWidth="lg">
-          <Box sx={{ position: "relative", zIndex: 2 }}>
-            <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
-              What's the surf like now?
-            </Typography>
-            <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
-              Real-time conditions and current forecasts
-            </Typography>
-            </Box>
-          </Container>
-        </Box>
+        <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
-        {/* Quick Actions */}
-        <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
-            Quick Actions
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Button 
-              variant="outlined" 
-              size="large"
-              onClick={() => handleQuickAction('map')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                }
-              }}
-            >
-              View Map
-            </Button>
-            <Button 
-              variant="outlined" 
-              size="large"
-              onClick={() => handleQuickAction('spots')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }
-              }}
-            >
-              Browse All Spots
-            </Button>
-            {geolocation && (
-              <Button 
-                variant="outlined" 
-                size="large"
-                onClick={() => handleQuickAction('near_me')}
-                sx={{ 
-                  flex: 1,
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  }
-                }}
-              >
-                Spots Near Me
-              </Button>
-            )}
-          </Stack>
-        </Item>
+        {/* Explore section */}
+        <ExploreActions page="home" geolocation={!!geolocation} />
 
         {/* My Lineup (Favorites) - First row of content */}
         <Box sx={{ marginBottom: "20px" }}>
@@ -625,6 +531,11 @@ const DashboardHome = () => {
                     }}
                     onMouseEnter={() => setHoveredCard('cleanest')}
                     onMouseLeave={() => setHoveredCard(null)}
+                    onClick={() => {
+                      if (cleanestConditions?.slug) {
+                        navigate(`/spot/${cleanestConditions.slug}`);
+                      }
+                    }}
                   >
                     <CardContent>
                       {recommendationsLoading ? (
@@ -636,7 +547,7 @@ const DashboardHome = () => {
                       ) : !cleanestConditions ? (
                         <Box sx={{ textAlign: 'center', py: 2 }}>
                           <Typography variant="body2" color="text.secondary">
-                            Nearby spots not great
+                            <NoData message="No cleanest conditions data available" />
                           </Typography>
                         </Box>
                       ) : (
@@ -1033,7 +944,7 @@ const DashboardHome = () => {
         {/* Search Sections (Collapsible) */}
         <Item sx={{ bgcolor: 'background.default', marginTop: "20px" }}>
           <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
-            Search & Explore
+            Search
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
