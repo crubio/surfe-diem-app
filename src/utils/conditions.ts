@@ -575,7 +575,7 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
   }
 
   try {
-    const spotsToCheck = closestSpots.slice(0, 5);
+    const spotsToCheck = closestSpots.slice(0, 10);
     
     const { getForecastCurrent } = await import('@features/forecasts');
     
@@ -613,6 +613,7 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
         highestWaves: null
       };
     }
+    console.log(validResults);
     
     // Process best conditions (highest overall score)
     let bestResult = validResults[0];

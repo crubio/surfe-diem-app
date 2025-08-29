@@ -1,3 +1,6 @@
+import { useNavigate } from "react-router-dom";
+import { trackInteraction } from "./analytics";
+
 // Use with base url environment variable to make a request url
 export const API_PREFIX = "/api/v1";
 export const WEATHER_GOV_API_PREFIX = "https://api.weather.gov";
@@ -19,6 +22,7 @@ export const API_ROUTES = {
   WEATHER: `${API_PREFIX}/weather`,
   BATCH_FORECAST: `${API_PREFIX}/batch-forecast`,
 }
+
 
 // Helpers
 export const goToBuoyPage = (location_id: string) => {return `/location/${location_id}`}

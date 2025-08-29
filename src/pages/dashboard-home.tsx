@@ -1,31 +1,45 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
+import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
-import { Item, SEO, EnhancedSelect, LocationPrompt } from "components";
+import { Item, SEO, LocationPrompt } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
+import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
 import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
-import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
-import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor } from "utils/water-temp";
+import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
+import { extractWaterTempFromForecast } from "utils/water-temp";
 import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
+import HeroSection from "components/common/hero";
+import ExploreActions from "components/common/explore-actions";
+import DashboardCard from "@features/cards/dashboard-card";
+import SearchCard from "@features/cards/search-select";
+import {
+  GRID_ITEM_SPACING,
+  ITEM_PADDING,
+  SECTION_MARGIN_BOTTOM,
+  TITLE_FONT_WEIGHT,
+  SECTION_TITLE_MB,
+  SUBSECTION_TITLE_MB,
+  FAVORITES_SECTION_MB,
+  DASHBOARD_CARD_SECTION_MB,
+  SEARCH_SECTION_MT
+} from "utils/layout-constants";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   
   // Track page view on mount
   useEffect(() => {
@@ -51,14 +65,14 @@ const DashboardHome = () => {
   });
 
   // List of closest spots to user's geolocation if available
-  const {data: closestSpots} = useQuery({
+  const {data: closestSpots, isError: isClosestSpotsError} = useQuery({
     queryKey: ['closest_spots', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const {data: closestSpotsForecast} = useQuery({
+  const {data: closestSpotsForecast, isLoading: isForecastLoading, isError: isForecastError} = useQuery({
     queryKey: ['closest_spot_forecast', closestSpots?.[0]?.latitude, closestSpots?.[0]?.longitude],
     queryFn: () => getForecastCurrent({
       latitude: Number(closestSpots![0].latitude),
@@ -68,7 +82,7 @@ const DashboardHome = () => {
   })
 
   // Get batch recommendations from nearby spots (optimized - single API call for all 3 cards)
-  const {data: batchRecommendations, isPending: recommendationsLoading} = useQuery({
+  const {data: batchRecommendations, isLoading: isBatchLoading, isError: isBatchError} = useQuery({
     queryKey: ['batch_recommendations', closestSpots?.map(s => s.id).join(',')],
     queryFn: () => getBatchRecommendationsFromAPI(closestSpots!.map(spot => ({
       ...spot,
@@ -94,10 +108,8 @@ const DashboardHome = () => {
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
   })
 
-
-
   // Get current tide data for the closest station
-  const {data: currentTides, isPending: tidesLoading} = useQuery({
+  const {data: currentTides, isLoading: tidesLoading, isError: tidesError} = useQuery({
     queryKey: ['current_tides', closestTideStation?.station_id],
     queryFn: () => getCurrentTides({
       station: closestTideStation!.station_id
@@ -106,8 +118,6 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
-
-
 
   // Get featured spots from existing spots data
   const featuredSpots = spots ? spots.filter(spot => 
@@ -159,23 +169,6 @@ const DashboardHome = () => {
     }
   };
 
-  const handleQuickAction = (action: string) => {
-    trackInteraction(variation, 'quick_action', { action });
-    switch (action) {
-      case 'map':
-        navigate('/map');
-        break;
-      case 'spots':
-        navigate('/spots');
-        break;
-      case 'near_me':
-        navigate('/nearby-spots');
-        break;
-    }
-  };
-
-
-
   // Helper function to get closest spot
   const getClosestSpot = () => {
     // If we have geolocation, show closest spot
@@ -211,17 +204,14 @@ const DashboardHome = () => {
     }
   };
 
-  // Helper function to get wave height percentage for progress bar
-  const getWaveHeightPercentage = (waveHeight: number) => {
-    // Scale 0-15ft to 0-100%
-    return Math.min((waveHeight / 15) * 100, 100);
-  };
+  // Move getClosestSpot call out of JSX
+  const closestSpotData = getClosestSpot();
 
-  // Helper function to get wind speed percentage for progress bar
-  const getWindSpeedPercentage = (windSpeed: number) => {
-    // Scale 0-30mph to 0-100%
-    return Math.min((windSpeed / 30) * 100, 100);
-  };
+  const recommendations = [
+    { key: 'best', title: 'Best Right Now', data: bestConditions },
+    { key: 'closest', title: 'Closest to You', data: closestSpotData },
+    { key: 'cleanest', title: 'Cleanest Conditions', data: cleanestConditions }
+  ];
 
   return (
     <>
@@ -250,89 +240,13 @@ const DashboardHome = () => {
       }}>
         
         {/* Hero Section */}
-        <Box
-          sx={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${sharks})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            height: '400px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            textAlign: 'center',
-            position: 'relative',
-            marginBottom: '20px',
-          }}
-        >
-          <Container maxWidth="lg">
-          <Box sx={{ position: "relative", zIndex: 2 }}>
-            <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
-              What's the surf like now?
-            </Typography>
-            <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
-              Real-time conditions and current forecasts
-            </Typography>
-            </Box>
-          </Container>
-        </Box>
+        <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
-        {/* Quick Actions */}
-        <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
-            Quick Actions
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <Button 
-              variant="outlined" 
-              size="large"
-              onClick={() => handleQuickAction('map')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                }
-              }}
-            >
-              View Map
-            </Button>
-            <Button 
-              variant="outlined" 
-              size="large"
-              onClick={() => handleQuickAction('spots')}
-              sx={{ 
-                flex: 1,
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }
-              }}
-            >
-              Browse All Spots
-            </Button>
-            {geolocation && (
-              <Button 
-                variant="outlined" 
-                size="large"
-                onClick={() => handleQuickAction('near_me')}
-                sx={{ 
-                  flex: 1,
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  }
-                }}
-              >
-                Spots Near Me
-              </Button>
-            )}
-          </Stack>
-        </Item>
+        {/* Explore section */}
+        <ExploreActions page="home" geolocation={!!geolocation} />
 
         {/* My Lineup (Favorites) - First row of content */}
-        <Box sx={{ marginBottom: "20px" }}>
+        <Box sx={{ marginBottom: FAVORITES_SECTION_MB }}>
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}
@@ -340,735 +254,144 @@ const DashboardHome = () => {
           />
         </Box>
 
-          {/* Current Conditions Grid */}
-          <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 600 }}>
+        {/* Current Conditions Grid */}
+        <Item sx={{ bgcolor: 'background.default', marginBottom: DASHBOARD_CARD_SECTION_MB, p: ITEM_PADDING }}>
+          <Typography variant="h5" component="h2" sx={{ mb: SECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
             Current Conditions Dashboard
           </Typography>
           
           {/* Recommendations Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
             Recommendations
           </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6} md={4}>
-              {!geolocation ? (
-                <LocationPrompt 
-                  onMouseEnter={() => setHoveredCard('best')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                />
-              ) : (
-                <Tooltip title="Click to view detailed conditions" arrow>
-                  <Card 
-                    sx={{ 
-                      height: "100%", 
-                      bgcolor: hoveredCard === 'best' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      '&:hover': {
-                        bgcolor: 'rgba(30, 214, 230, 0.05)',
-                      }
-                    }}
-                    onMouseEnter={() => setHoveredCard('best')}
-                    onMouseLeave={() => setHoveredCard(null)}
-                    onClick={() => {
-                      if (bestConditions?.slug) {
-                        navigate(`/spot/${bestConditions.slug}`);
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      {recommendationsLoading ? (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Finding best conditions...
-                          </Typography>
-                        </Box>
-                      ) : !bestConditions ? (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            No conditions data available
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="h6" color="primary" gutterBottom>
-                              Best Right Now
-                            </Typography>
-                            <Chip 
-                              label={bestConditions.score.label}
-                              color={bestConditions.score.color}
-                              size="small"
-                              sx={{ fontWeight: 'bold' }}
-                            />
-                          </Box>
-                          <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                            {bestConditions.spot}
-                          </Typography>
-                          <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                            {bestConditions.waveHeight} • {bestConditions.conditions}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            {bestConditions.direction} swell
-                          </Typography>
-                    
-                          {/* Progress bars for conditions */}
-                          <Box sx={{ mt: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Wave Height
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {bestConditions.waveHeightValue?.toFixed(1)}ft
-                              </Typography>
-                            </Box>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={getWaveHeightPercentage(bestConditions.waveHeightValue || 0)}
-                              sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                backgroundColor: 'rgba(0,0,0,0.1)',
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: getWaveHeightColor(bestConditions.waveHeightValue || 0) === 'success' ? '#4caf50' : 
-                                                 getWaveHeightColor(bestConditions.waveHeightValue || 0) === 'warning' ? '#ff9800' : '#f44336'
-                                }
-                              }}
-                            />
-                          </Box>
-                          
-                          <Box sx={{ mt: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Wind Speed
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {bestConditions.windSpeedValue?.toFixed(1)}mph
-                              </Typography>
-                            </Box>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={getWindSpeedPercentage(bestConditions.windSpeedValue || 0)}
-                              sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                backgroundColor: 'rgba(0,0,0,0.1)',
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: getWindColor(bestConditions.windSpeedValue || 0) === 'success' ? '#4caf50' : 
-                                                 getWindColor(bestConditions.windSpeedValue || 0) === 'warning' ? '#ff9800' : '#f44336'
-                                }
-                              }}
-                            />
-                          </Box>
-                        
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                            {bestConditions.score.description}
-                          </Typography>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Tooltip>
-              )}
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              <Tooltip title="Click to view detailed conditions" arrow>
-                <Card 
-                  sx={{ 
-                    height: "100%", 
-                    bgcolor: hoveredCard === 'closest' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                    '&:hover': {
-                      bgcolor: 'rgba(30, 214, 230, 0.05)',
-                    }
-                  }}
-                  onMouseEnter={() => setHoveredCard('closest')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                  onClick={() => {
-                    const closestSpotData = getClosestSpot();
-                    if (closestSpotData?.slug) {
-                      navigate(`/spot/${closestSpotData.slug}`);
-                    } else if (closestSpotData?.spotId) {
-                      navigate(`/spot/${closestSpotData.spotId}`);
-                    }
-                  }}
-                >
-                  <CardContent>
-                    {(() => {
-                      const closestSpotData = getClosestSpot();
-                      
-                      if (!closestSpotData) {
-                        return (
-                          <Box sx={{ textAlign: 'center', py: 2 }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Loading spot data...
-                            </Typography>
-                          </Box>
-                        );
-                      }
-                      
-                      return (
-                        <>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="h6" color="primary" gutterBottom>
-                              {closestSpotData.isLocationBased ? "Closest to You" : "Featured"}
-                            </Typography>
-                            {closestSpotData.score && (
-                              <Chip 
-                                label={closestSpotData.score.label}
-                                color={closestSpotData.score.color}
-                                size="small"
-                                sx={{ fontWeight: 'bold' }}
-                              />
-                            )}
-                          </Box>
-                          <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                            {closestSpotData.spot}
-                          </Typography>
-                          <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                            {closestSpotData.waveHeight ? `${closestSpotData.waveHeight}` : 'Featured SF Bay Area spot'}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            {closestSpotData.isLocationBased 
-                              ? `${closestSpotData.distance?.toFixed(1) || ''}mi • Based on your location`
-                              : "SF Bay Area • Iconic surf spot"
-                            }
-                          </Typography>
-                    
-                          {/* Progress bars for conditions - only show if we have forecast data */}
-                          {closestSpotData.waveHeightValue !== undefined && (
-                            <>
-                              <Box sx={{ mt: 2 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Wave Height
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {closestSpotData.waveHeightValue.toFixed(1)}ft
-                                  </Typography>
-                                </Box>
-                                <LinearProgress 
-                                  variant="determinate" 
-                                  value={getWaveHeightPercentage(closestSpotData.waveHeightValue)}
-                                  sx={{ 
-                                    height: 6, 
-                                    borderRadius: 3,
-                                    backgroundColor: 'rgba(0,0,0,0.1)',
-                                    '& .MuiLinearProgress-bar': {
-                                      backgroundColor: getWaveHeightColor(closestSpotData.waveHeightValue) === 'success' ? '#4caf50' : 
-                                                     getWaveHeightColor(closestSpotData.waveHeightValue) === 'warning' ? '#ff9800' : '#f44336'
-                                    }
-                                  }}
-                                />
-                              </Box>
-                              
-                              <Box sx={{ mt: 1.5 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Wind Speed
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {closestSpotData.windSpeedValue}mph
-                                  </Typography>
-                                </Box>
-                                <LinearProgress 
-                                  variant="determinate" 
-                                  value={getWindSpeedPercentage(closestSpotData.windSpeedValue)}
-                                  sx={{ 
-                                    height: 6, 
-                                    borderRadius: 3,
-                                    backgroundColor: 'rgba(0,0,0,0.1)',
-                                    '& .MuiLinearProgress-bar': {
-                                      backgroundColor: getWindColor(closestSpotData.windSpeedValue) === 'success' ? '#4caf50' : 
-                                                     getWindColor(closestSpotData.windSpeedValue) === 'warning' ? '#ff9800' : '#f44336'
-                                    }
-                                  }}
-                                />
-                              </Box>
-                            
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                                {closestSpotData.score?.description}
-                              </Typography>
-                            </>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </Tooltip>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              {!geolocation ? (
-                <LocationPrompt 
-                  onMouseEnter={() => setHoveredCard('cleanest')}
-                  onMouseLeave={() => setHoveredCard(null)}
-                />
-              ) : (
-                <Tooltip title="Click to view detailed conditions" arrow>
-                  <Card 
-                    sx={{ 
-                      height: "100%", 
-                      bgcolor: hoveredCard === 'cleanest' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                      '&:hover': {
-                        bgcolor: 'rgba(30, 214, 230, 0.05)',
-                      }
-                    }}
-                    onMouseEnter={() => setHoveredCard('cleanest')}
-                    onMouseLeave={() => setHoveredCard(null)}
-                  >
-                    <CardContent>
-                      {recommendationsLoading ? (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Finding cleanest conditions...
-                          </Typography>
-                        </Box>
-                      ) : !cleanestConditions ? (
-                        <Box sx={{ textAlign: 'center', py: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Nearby spots not great
-                          </Typography>
-                        </Box>
-                      ) : (
-                        <>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                            <Typography variant="h6" color="primary" gutterBottom>
-                              Cleanest Conditions
-                            </Typography>
-                            <Chip 
-                              label={cleanestConditions.score.label}
-                              color={cleanestConditions.score.color}
-                              size="small"
-                              sx={{ fontWeight: 'bold' }}
-                            />
-                          </Box>
-                          <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                            {cleanestConditions.spot}
-                          </Typography>
-                          <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                            {cleanestConditions.waveHeight} • {cleanestConditions.conditions}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                            {cleanestConditions.direction} swell
-                          </Typography>
-                      
-                          {/* Progress bars for conditions */}
-                          <Box sx={{ mt: 2 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Wave Height
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {cleanestConditions.waveHeightValue?.toFixed(1)}ft
-                              </Typography>
-                            </Box>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={getWaveHeightPercentage(cleanestConditions.waveHeightValue || 0)}
-                              sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                backgroundColor: 'rgba(0,0,0,0.1)',
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: getWaveHeightColor(cleanestConditions.waveHeightValue || 0) === 'success' ? '#4caf50' : 
-                                                 getWaveHeightColor(cleanestConditions.waveHeightValue || 0) === 'warning' ? '#ff9800' : '#f44336'
-                                }
-                              }}
-                            />
-                          </Box>
-                          
-                          <Box sx={{ mt: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Wind Speed
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {cleanestConditions.windSpeedValue?.toFixed(1)}mph
-                              </Typography>
-                            </Box>
-                            <LinearProgress 
-                              variant="determinate" 
-                              value={getWindSpeedPercentage(cleanestConditions.windSpeedValue || 0)}
-                              sx={{ 
-                                height: 6, 
-                                borderRadius: 3,
-                                backgroundColor: 'rgba(0,0,0,0.1)',
-                                '& .MuiLinearProgress-bar': {
-                                  backgroundColor: getWindColor(cleanestConditions.windSpeedValue || 0) === 'success' ? '#4caf50' : 
-                                                 getWindColor(cleanestConditions.windSpeedValue || 0) === 'warning' ? '#ff9800' : '#f44336'
-                                }
-                              }}
-                            />
-                          </Box>
-                        
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                            {cleanestConditions.score.description}
-                          </Typography>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Tooltip>
-              )}
-            </Grid>
+          
+          <Grid container spacing={GRID_ITEM_SPACING}>
+            {recommendations.map(({ key, title, data }) => (
+              <Grid item xs={12} sm={6} md={4} key={key}>
+                {!geolocation ? (
+                  <LocationPrompt />
+                ) : (
+                  <DashboardCard
+                    isLoading={isBatchLoading}
+                    isError={isBatchError}
+                    title={title}
+                    name={data?.spot || ''}
+                    subtitle={data?.waveHeight || ''}
+                    score={data?.score}
+                    heightValue={data?.waveHeightValue}
+                    speedValue={data?.windSpeedValue}
+                    description={data?.score?.description}
+                    onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
+                  />
+                )}
+              </Grid>
+            ))}
           </Grid>
 
           {/* Divider */}
           <Box sx={{ 
             borderTop: '1px solid', 
             borderColor: 'divider', 
-            my: 3,
+            my: SECTION_MARGIN_BOTTOM,
             opacity: 0.6 
           }} />
 
           {/* Current Conditions Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
             Current Conditions
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={GRID_ITEM_SPACING}>
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  bgcolor: hoveredCard === 'swell' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: 'rgba(30, 214, 230, 0.05)',
-                  }
-                }}
-                onMouseEnter={() => setHoveredCard('swell')}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <CardContent>
-                  {!currentSwellData ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading swell data...
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Current Swell
-                        </Typography>
-                        <Chip 
-                          label={getSwellQualityDescription(currentSwellData.period)}
-                          color={getSwellHeightColor(currentSwellData.height)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {formatSwellHeight(currentSwellData.height)}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        {formatSwellPeriod(currentSwellData.period)} • {getSwellDirectionText(currentSwellData.direction)}
-                      </Typography>
-                      
-                      {/* Progress bar for swell height */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Swell Height
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {formatSwellHeight(currentSwellData.height)}
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={getSwellHeightPercentage(currentSwellData.height)}
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getSwellHeightColor(currentSwellData.height) === 'success' ? '#4caf50' : 
-                                              getSwellHeightColor(currentSwellData.height) === 'warning' ? '#ff9800' : 
-                                              getSwellHeightColor(currentSwellData.height) === 'error' ? '#f44336' : '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        {getSwellQualityDescription(currentSwellData.period)} from {getSwellDirectionText(currentSwellData.direction)}
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <DashboardCard
+                isLoading={isForecastLoading}
+                isError={isForecastError}
+                title="Current Swell"
+                name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
+                score={currentSwellData ? {
+                  label: getSwellQualityDescription(currentSwellData.period),
+                  color: getSwellHeightColor(currentSwellData.height),
+                  description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
+                } : undefined}
+                subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+                heightValue={currentSwellData?.height}
+                description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+              />
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  bgcolor: hoveredCard === 'tide' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: 'rgba(30, 214, 230, 0.05)',
-                  }
-                }}
-                onMouseEnter={() => setHoveredCard('tide')}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <CardContent>
-                  {tidesLoading ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading tide data...
-                      </Typography>
-                    </Box>
-                  ) : !currentTideValue ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No tide data available
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Current Tide
-                        </Typography>
-                        <Chip 
-                          label={currentTideTime || 'Now'}
-                          color="info"
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {currentTideValue.toFixed(1)}ft
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        Current reading • {currentTideTime || 'Recent'}
-                      </Typography>
-                      
-                      {/* Progress bar for tide level */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Current Level
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {currentTideValue.toFixed(1)}ft
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={Math.min((currentTideValue / 6) * 100, 100)} // Scale 0-6ft to 0-100%
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        Live tide reading
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <DashboardCard
+                isLoading={tidesLoading}
+                isError={tidesError}
+                title="Current Tide"
+                name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
+                score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
+                description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
+                heightValue={currentTideValue !== null ? currentTideValue : undefined}
+              />
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  bgcolor: hoveredCard === 'water-temp' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: 'rgba(30, 214, 230, 0.05)',
-                  }
-                }}
-                onMouseEnter={() => setHoveredCard('water-temp')}
-                onMouseLeave={() => setHoveredCard(null)}
+              <DashboardCard 
+                isLoading={isForecastLoading}
+                isError={isClosestSpotsError}
+                title={"Current Water Temperature"}
+                name="" // No main name, using card below
               >
-                <CardContent>
-                  {!closestSpotsForecast ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading water temp...
-                      </Typography>
-                    </Box>
-                  ) : !currentWaterTempData ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No water temp data available
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Water Temperature
-                        </Typography>
-                        <Chip 
-                          label={getWaterTempQualityDescription(currentWaterTempData.temperature)}
-                          color={getWaterTempColor(currentWaterTempData.temperature)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      {/* Temperature Card */}
-                      <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
-                        <TemperatureCard 
-                          temperature={currentWaterTempData.temperature}
-                          showFahrenheit={true}
-                          showComfortLevel={false}
-                        />
-                      </Box>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                <TemperatureCard 
+                  temperature={typeof currentWaterTempData?.temperature === 'number' ? currentWaterTempData.temperature : 0}
+                  showFahrenheit={true}
+                  showComfortLevel={false}
+                />
+              </DashboardCard>
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  bgcolor: hoveredCard === 'waves' ? 'rgba(30, 214, 230, 0.05)' : 'background.default',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: 'rgba(30, 214, 230, 0.05)',
+              <DashboardCard
+                isLoading={isBatchLoading}
+                isError={isBatchError}
+                title="Highest Waves"
+                name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
+                subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
+                heightValue={highestWaves?.waveHeightValue}
+                onClick={() => {
+                  if (highestWaves?.slug) {
+                    navigate(`/spot/${highestWaves.slug}`);
                   }
                 }}
-                onMouseEnter={() => setHoveredCard('waves')}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <CardContent>
-                  {recommendationsLoading ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Finding highest waves...
-                      </Typography>
-                    </Box>
-                  ) : !highestWaves ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No significant waves nearby
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Highest Waves
-                        </Typography>
-                        <Chip 
-                          label={highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Big' : 'Medium'}
-                          color={getWaveHeightColor(highestWaves.waveHeightValue || 0)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {highestWaves.waveHeight}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        {highestWaves.spot} • {highestWaves.conditions}
-                      </Typography>
-                      
-                      {/* Progress bar for wave height */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Wave Height
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {highestWaves.waveHeightValue?.toFixed(1)}ft
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={getWaveHeightPercentage(highestWaves.waveHeightValue || 0)}
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'success' ? '#4caf50' : 
-                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'warning' ? '#ff9800' : 
-                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'error' ? '#f44336' : '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        {highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available'}
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                score={highestWaves?.score
+                  ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
+                  : undefined
+                }
+              />
             </Grid>
           </Grid>
         </Item>
 
         {/* Search Sections (Collapsible) */}
-        <Item sx={{ bgcolor: 'background.default', marginTop: "20px" }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
-            Search & Explore
+        <Item sx={{ bgcolor: 'background.default', marginTop: SEARCH_SECTION_MT }}>
+          <Typography variant="h5" component="h2" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
+            Search
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={GRID_ITEM_SPACING}>
             <Grid item xs={12} md={6}>
-              <Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Find a Buoy
-                </Typography>
-                {buoys && buoys.length > 0 && (
-                  <EnhancedSelect 
-                    label="Select a buoy" 
-                    items={orderBy(buoys, ["name"], ["asc"])} 
-                    selectValueKey="location_id" 
-                    doOnSelect={goToBuoyPage}
-                    type="buoy"
-                    placeholder="Search buoys..."
-                  />
-                )}
-              </Box>
+              <SearchCard
+                label="Find a Buoy"
+                items={buoys && buoys.length > 0 ? orderBy(buoys, ["name"], ["asc"]) : []}
+                selectValueKey="location_id"
+                doOnSelect={goToBuoyPage}
+                type="buoy"
+                placeholder="Search buoys..."
+              />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Find a Spot
-                </Typography>
-                {spots && spots.length > 0 && (
-                  <EnhancedSelect 
-                    label="Select a surf spot" 
-                    items={orderBy(spots, ["subregion_name", "name"], ["asc"])} 
-                    selectValueKey="id" 
-                    doOnSelect={goToSpotPage}
-                    type="spot"
-                    placeholder="Search surf spots..."
-                  />
-                )}
-              </Box>
+              <SearchCard
+                label="Find a Spot"
+                items={spots && spots.length > 0 ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
+                selectValueKey="id"
+                doOnSelect={goToSpotPage}
+                type="spot"
+                placeholder="Search surf spots..."
+              />
             </Grid>
           </Grid>
         </Item>

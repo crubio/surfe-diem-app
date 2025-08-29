@@ -1,12 +1,16 @@
 import { WarningAmberOutlined } from "@mui/icons-material"
 import { Stack, Typography } from "@mui/material"
 
-export const NoData = () => {
+type NoDataProps = {
+  message?: string;
+}
+
+export const NoData = (props: NoDataProps) => {
   return(
     <Stack direction="row" spacing={2}>
       <WarningAmberOutlined color="warning"/>
       <Typography sx={{marginBottom: 2}} variant="subtitle2" color={"text.secondary"}>
-        No data available
+        {props.message || "No data available"}
       </Typography>
     </Stack>
   )
