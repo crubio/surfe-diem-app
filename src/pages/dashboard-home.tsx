@@ -384,144 +384,42 @@ const DashboardHome = () => {
                 isError={tidesError}
                 description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
                 heightValue={currentTideValue !== null ? currentTideValue : undefined}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6} md={3}>
+              <DashboardCard 
+                isLoading={isForecastLoading}
+                isError={isClosestSpotsError}
+                title={"Current Water Temperature"}
+                name="" // No main name, using card below
               >
+                <TemperatureCard 
+                  temperature={typeof currentWaterTempData?.temperature === 'number' ? currentWaterTempData.temperature : 0}
+                  showFahrenheit={true}
+                  showComfortLevel={false}
+                />
               </DashboardCard>
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255,255,255,0.04)'
-                        : 'rgba(0,0,0,0.02)',
-                  },
+              <DashboardCard
+                isLoading={isBatchLoading}
+                isError={isBatchError}
+                title="Highest Waves"
+                name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
+                subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
+                heightValue={highestWaves?.waveHeightValue}
+                onClick={() => {
+                  if (highestWaves?.slug) {
+                    navigate(`/spot/${highestWaves.slug}`);
+                  }
                 }}
-              >
-                <CardContent>
-                  {!closestSpotsForecast ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading water temp...
-                      </Typography>
-                    </Box>
-                  ) : !currentWaterTempData ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No water temp data available
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Water Temperature
-                        </Typography>
-                        <Chip 
-                          label={getWaterTempQualityDescription(currentWaterTempData.temperature)}
-                          color={getWaterTempColor(currentWaterTempData.temperature)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      {/* Temperature Card */}
-                      <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
-                        <TemperatureCard 
-                          temperature={currentWaterTempData.temperature}
-                          showFahrenheit={true}
-                          showComfortLevel={false}
-                        />
-                      </Box>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255,255,255,0.04)'
-                        : 'rgba(0,0,0,0.02)',
-                  },
-                }}
-              >
-                <CardContent>
-                  {isBatchLoading ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Finding highest waves...
-                      </Typography>
-                    </Box>
-                  ) : !highestWaves ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No significant waves nearby
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Highest Waves
-                        </Typography>
-                        <Chip 
-                          label={highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Big' : 'Medium'}
-                          color={getWaveHeightColor(highestWaves.waveHeightValue || 0)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {highestWaves.waveHeight}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        {highestWaves.spot} • {highestWaves.conditions}
-                      </Typography>
-                      
-                      {/* Progress bar for wave height */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Wave Height
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {highestWaves.waveHeightValue?.toFixed(1)}ft
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={getWaveHeightPercentage(highestWaves.waveHeightValue || 0)}
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'success' ? '#4caf50' : 
-                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'warning' ? '#ff9800' : 
-                                             getWaveHeightColor(highestWaves.waveHeightValue || 0) === 'error' ? '#f44336' : '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        {highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available'}
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                score={highestWaves?.score
+                  ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
+                  : undefined
+                }
+              />
             </Grid>
           </Grid>
         </Item>

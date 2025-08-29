@@ -120,11 +120,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
                 backgroundColor: 'rgba(0,0,0,0.1)',
                 '& .MuiLinearProgress-bar': {
                   backgroundColor:
-                    getWindColor(speedValue) === 'success'
-                      ? '#4caf50'
-                      : getWindColor(speedValue) === 'warning'
-                      ? '#ff9800'
-                      : '#f44336',
+                    getWindColor(speedValue)
                 },
               }}
             />
