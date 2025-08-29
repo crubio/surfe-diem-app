@@ -1,30 +1,40 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent, Button, Chip, LinearProgress, Tooltip } from "@mui/material";
+import { Box, Container, Grid, Stack, Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
-import { Item, SEO, EnhancedSelect, LocationPrompt } from "components";
+import { Item, SEO, LocationPrompt } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
-import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
+import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
-import { getCurrentTideValue, getCurrentTideTime, calculateCurrentTideState } from "utils/tides";
-import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
-import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor } from "utils/water-temp";
+import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
+import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
+import { extractWaterTempFromForecast } from "utils/water-temp";
 import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
 import { getForecastCurrent } from "@features/forecasts";
 import HeroSection from "components/common/hero";
 import ExploreActions from "components/common/explore-actions";
-import { getWaveHeightPercentage } from "utils/formatting";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
+import {
+  GRID_ITEM_SPACING,
+  ITEM_PADDING,
+  SECTION_MARGIN_BOTTOM,
+  TITLE_FONT_WEIGHT,
+  SECTION_TITLE_MB,
+  SUBSECTION_TITLE_MB,
+  FAVORITES_SECTION_MB,
+  DASHBOARD_CARD_SECTION_MB,
+  SEARCH_SECTION_MT
+} from "utils/layout-constants";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -55,7 +65,7 @@ const DashboardHome = () => {
   });
 
   // List of closest spots to user's geolocation if available
-  const {data: closestSpots, isLoading: isClosestSpotsLoading, isError: isClosestSpotsError} = useQuery({
+  const {data: closestSpots, isError: isClosestSpotsError} = useQuery({
     queryKey: ['closest_spots', geolocation?.latitude, geolocation?.longitude],
     queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
     enabled: !!geolocation?.latitude && !!geolocation?.longitude,
@@ -236,7 +246,7 @@ const DashboardHome = () => {
         <ExploreActions page="home" geolocation={!!geolocation} />
 
         {/* My Lineup (Favorites) - First row of content */}
-        <Box sx={{ marginBottom: "20px" }}>
+        <Box sx={{ marginBottom: FAVORITES_SECTION_MB }}>
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}
@@ -244,18 +254,18 @@ const DashboardHome = () => {
           />
         </Box>
 
-          {/* Current Conditions Grid */}
-          <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 3, fontWeight: 600 }}>
+        {/* Current Conditions Grid */}
+        <Item sx={{ bgcolor: 'background.default', marginBottom: DASHBOARD_CARD_SECTION_MB, p: ITEM_PADDING }}>
+          <Typography variant="h5" component="h2" sx={{ mb: SECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
             Current Conditions Dashboard
           </Typography>
           
           {/* Recommendations Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
             Recommendations
           </Typography>
           
-          <Grid container spacing={2}>
+          <Grid container spacing={GRID_ITEM_SPACING}>
             {recommendations.map(({ key, title, data }) => (
               <Grid item xs={12} sm={6} md={4} key={key}>
                 {!geolocation ? (
@@ -282,15 +292,15 @@ const DashboardHome = () => {
           <Box sx={{ 
             borderTop: '1px solid', 
             borderColor: 'divider', 
-            my: 3,
+            my: SECTION_MARGIN_BOTTOM,
             opacity: 0.6 
           }} />
 
           {/* Current Conditions Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
+          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
             Current Conditions
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={GRID_ITEM_SPACING}>
             <Grid item xs={12} sm={6} md={3}>
               <DashboardCard
                 isLoading={isForecastLoading}
@@ -358,11 +368,11 @@ const DashboardHome = () => {
         </Item>
 
         {/* Search Sections (Collapsible) */}
-        <Item sx={{ bgcolor: 'background.default', marginTop: "20px" }}>
-          <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
+        <Item sx={{ bgcolor: 'background.default', marginTop: SEARCH_SECTION_MT }}>
+          <Typography variant="h5" component="h2" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
             Search
           </Typography>
-          <Grid container spacing={2}>
+          <Grid container spacing={GRID_ITEM_SPACING}>
             <Grid item xs={12} md={6}>
               <SearchCard
                 label="Find a Buoy"
