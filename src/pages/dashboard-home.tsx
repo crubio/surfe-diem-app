@@ -196,6 +196,12 @@ const DashboardHome = () => {
   // Move getClosestSpot call out of JSX
   const closestSpotData = getClosestSpot();
 
+  const recommendations = [
+    { key: 'best', title: 'Best Right Now', data: bestConditions },
+    { key: 'closest', title: 'Closest to You', data: closestSpotData },
+    { key: 'cleanest', title: 'Cleanest Conditions', data: cleanestConditions }
+  ];
+
   return (
     <>
       <SEO 
@@ -247,102 +253,28 @@ const DashboardHome = () => {
           <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600, color: 'primary.main' }}>
             Recommendations
           </Typography>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            {/* Best Right Now Card */}
-            <Grid item xs={12} sm={6} md={4}>
-              {!geolocation ? (
-                <LocationPrompt/>
-              ) : (
-                <DashboardCard
-                  isLoading={isBatchLoading}
-                  isError={isBatchError}
-                  title="Best Right Now"
-                  name={bestConditions?.spot || ''}
-                  subtitle={
-                    bestConditions
-                      ? `${bestConditions.waveHeight}`
-                      : ''
-                  }
-                  score={bestConditions?.score}
-                  heightValue={bestConditions?.waveHeightValue}
-                  speedValue={bestConditions?.windSpeedValue}
-                  onClick={() => {
-                    if (bestConditions?.slug) {
-                      navigate(`/spot/${bestConditions.slug}`);
-                    }
-                  }}
-                  description={
-                    bestConditions?.score?.description
-                  }
-                />
-              )}
-            </Grid>
-            {/* Closest to You Card */}
-            <Grid item xs={12} sm={6} md={4}>
-              {!geolocation ? (
-                <LocationPrompt/>
-              ) : (
-                <DashboardCard
-                  isLoading={isClosestSpotsLoading}
-                  isError={isClosestSpotsError}
-                  name={closestSpotData?.spot || ''}
-                  title="Closest to You"
-                  subtitle={
-                    closestSpotData
-                      ? `${closestSpotData.waveHeight || ''}`
-                      : ''
-                  }
-                  score={closestSpotData?.score}
-                  heightValue={closestSpotData?.waveHeightValue}
-                  speedValue={closestSpotData?.windSpeedValue}
-                  onClick={() => {
-                    if (closestSpotData?.slug) {
-                      navigate(`/spot/${closestSpotData.slug}`);
-                    } else if (closestSpotData?.spotId) {
-                      navigate(`/spot/${closestSpotData.spotId}`);
-                    }
-                  }}
-                  description={
-                    closestSpotData?.isLocationBased
-                      ? `${closestSpotData.distance ? `${closestSpotData.distance.toFixed(1)}mi` : ''} • Based on your location`
-                      : undefined
-                  }
-                />
-              )}
-            </Grid>
-            {/* Cleanest Conditions Card */}
-            <Grid item xs={12} sm={6} md={4}>
-              {!geolocation ? (
-                <LocationPrompt/>
-              ) : (
-                <DashboardCard
-                  name={cleanestConditions?.spot || ''}
-                  title="Cleanest Conditions"
-                  subtitle={
-                    cleanestConditions
-                      ? `${cleanestConditions.waveHeight}`
-                      : ''
-                  }
-                  score={cleanestConditions?.score}
-                  heightValue={cleanestConditions?.waveHeightValue}
-                  speedValue={cleanestConditions?.windSpeedValue}
-                  onClick={() => {
-                    if (cleanestConditions?.slug) {
-                      navigate(`/spot/${cleanestConditions.slug}`);
-                    }
-                  }}
-                  description={
-                    cleanestConditions
-                      ? cleanestConditions.direction
-                        ? `${cleanestConditions.direction} swell • ${cleanestConditions.score?.description || ''}`
-                        : cleanestConditions.score?.description
-                      : undefined
-                  }
-                  isError={isBatchError}
-                  isLoading={isBatchLoading}
-                />
-              )}
-            </Grid>
+          
+          <Grid container spacing={2}>
+            {recommendations.map(({ key, title, data }) => (
+              <Grid item xs={12} sm={6} md={4} key={key}>
+                {!geolocation ? (
+                  <LocationPrompt />
+                ) : (
+                  <DashboardCard
+                    title={title}
+                    name={data?.spot || ''}
+                    subtitle={data?.waveHeight || ''}
+                    score={data?.score}
+                    heightValue={data?.waveHeightValue}
+                    speedValue={data?.windSpeedValue}
+                    description={data?.score?.description}
+                    onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
+                    isLoading={isBatchLoading}
+                    isError={isBatchError}
+                  />
+                )}
+              </Grid>
+            ))}
           </Grid>
 
           {/* Divider */}
