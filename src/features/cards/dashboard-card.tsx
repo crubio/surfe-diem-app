@@ -17,8 +17,8 @@ interface DashboardCardProps {
   title: string;
   subtitle?: string;
   score?: Score;
-  waveHeightValue?: number;
-  windSpeedValue?: number;
+  heightValue?: number;
+  speedValue?: number;
   onClick?: () => void;
   children?: React.ReactNode;
   tooltip?: string;
@@ -32,14 +32,15 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   title,
   subtitle,
   score,
-  waveHeightValue,
-  windSpeedValue,
+  heightValue,
+  speedValue,
   onClick,
   children,
   description,
   isLoading,
   isError,
 }) => {
+  const getSwellHeightColor = (heightValue !== undefined ? getWaveHeightColor(heightValue) : undefined);
 
   const cardContent = (
     <Card
@@ -83,50 +84,45 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           </Typography>
         )}
 
-        {waveHeightValue !== undefined && (
+        {heightValue !== undefined && (
           <Box sx={{ mt: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="text.secondary">Wave Height</Typography>
-              <Typography variant="caption" color="text.secondary">{waveHeightValue.toFixed(1)}ft</Typography>
+              <Typography variant="caption" color="text.secondary">{heightValue.toFixed(1)}ft</Typography>
             </Box>
             <LinearProgress
               variant="determinate"
-              value={getWaveHeightPercentage(waveHeightValue)}
+              value={getWaveHeightPercentage(heightValue)}
               sx={{
                 height: 6,
                 borderRadius: 3,
                 backgroundColor: 'rgba(0,0,0,0.1)',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor:
-                    getWaveHeightColor(waveHeightValue) === 'success'
-                      ? '#4caf50'
-                      : getWaveHeightColor(waveHeightValue) === 'warning'
-                      ? '#ff9800'
-                      : '#f44336',
+                  backgroundColor: getSwellHeightColor
                 },
               }}
             />
           </Box>
         )}
 
-        {windSpeedValue !== undefined && (
+        {speedValue !== undefined && (
           <Box sx={{ mt: 1.5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="text.secondary">Wind Speed</Typography>
-              <Typography variant="caption" color="text.secondary">{windSpeedValue.toFixed(1)}mph</Typography>
+              <Typography variant="caption" color="text.secondary">{speedValue.toFixed(1)}mph</Typography>
             </Box>
             <LinearProgress
               variant="determinate"
-              value={getWindSpeedPercentage(windSpeedValue)}
+              value={getWindSpeedPercentage(speedValue)}
               sx={{
                 height: 6,
                 borderRadius: 3,
                 backgroundColor: 'rgba(0,0,0,0.1)',
                 '& .MuiLinearProgress-bar': {
                   backgroundColor:
-                    getWindColor(windSpeedValue) === 'success'
+                    getWindColor(speedValue) === 'success'
                       ? '#4caf50'
-                      : getWindColor(windSpeedValue) === 'warning'
+                      : getWindColor(speedValue) === 'warning'
                       ? '#ff9800'
                       : '#f44336',
                 },

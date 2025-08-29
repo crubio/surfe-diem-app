@@ -115,8 +115,6 @@ export function getTideDirectionDescription(direction: 'rising' | 'falling'): st
   return direction === 'rising' ? 'Rising' : 'Falling';
 }
 
-
-
 /**
  * Get tide quality indicator based on rate of change
  * @param rateOfChange Rate of change in ft/hr

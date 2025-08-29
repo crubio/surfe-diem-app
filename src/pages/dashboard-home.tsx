@@ -14,7 +14,7 @@ import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getWaveHeightColor, getWindColor, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
-import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
+import { getCurrentTideValue, getCurrentTideTime, calculateCurrentTideState } from "utils/tides";
 import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod, getSwellHeightPercentage } from "utils/swell";
 import { extractWaterTempFromForecast, getWaterTempQualityDescription, getWaterTempColor } from "utils/water-temp";
 import { TemperatureCard } from "components";
@@ -61,7 +61,7 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const {data: closestSpotsForecast} = useQuery({
+  const {data: closestSpotsForecast, isLoading: isForecastLoading} = useQuery({
     queryKey: ['closest_spot_forecast', closestSpots?.[0]?.latitude, closestSpots?.[0]?.longitude],
     queryFn: () => getForecastCurrent({
       latitude: Number(closestSpots![0].latitude),
@@ -98,7 +98,7 @@ const DashboardHome = () => {
   })
 
   // Get current tide data for the closest station
-  const {data: currentTides, isPending: tidesLoading} = useQuery({
+  const {data: currentTides, isLoading: tidesLoading, isError: tidesError} = useQuery({
     queryKey: ['current_tides', closestTideStation?.station_id],
     queryFn: () => getCurrentTides({
       station: closestTideStation!.station_id
@@ -264,8 +264,8 @@ const DashboardHome = () => {
                       : ''
                   }
                   score={bestConditions?.score}
-                  waveHeightValue={bestConditions?.waveHeightValue}
-                  windSpeedValue={bestConditions?.windSpeedValue}
+                  heightValue={bestConditions?.waveHeightValue}
+                  speedValue={bestConditions?.windSpeedValue}
                   onClick={() => {
                     if (bestConditions?.slug) {
                       navigate(`/spot/${bestConditions.slug}`);
@@ -293,8 +293,8 @@ const DashboardHome = () => {
                       : ''
                   }
                   score={closestSpotData?.score}
-                  waveHeightValue={closestSpotData?.waveHeightValue}
-                  windSpeedValue={closestSpotData?.windSpeedValue}
+                  heightValue={closestSpotData?.waveHeightValue}
+                  speedValue={closestSpotData?.windSpeedValue}
                   onClick={() => {
                     if (closestSpotData?.slug) {
                       navigate(`/spot/${closestSpotData.slug}`);
@@ -324,8 +324,8 @@ const DashboardHome = () => {
                       : ''
                   }
                   score={cleanestConditions?.score}
-                  waveHeightValue={cleanestConditions?.waveHeightValue}
-                  windSpeedValue={cleanestConditions?.windSpeedValue}
+                  heightValue={cleanestConditions?.waveHeightValue}
+                  speedValue={cleanestConditions?.windSpeedValue}
                   onClick={() => {
                     if (cleanestConditions?.slug) {
                       navigate(`/spot/${cleanestConditions.slug}`);
@@ -359,160 +359,33 @@ const DashboardHome = () => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%",
-                  bgcolor: 'background.paper',
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255,255,255,0.04)'
-                        : 'rgba(0,0,0,0.02)',
-                  },
-                }}
-              >
-                <CardContent>
-                  {!currentSwellData ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading swell data...
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Current Swell
-                        </Typography>
-                        <Chip 
-                          label={getSwellQualityDescription(currentSwellData.period)}
-                          color={getSwellHeightColor(currentSwellData.height)}
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {formatSwellHeight(currentSwellData.height)}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        {formatSwellPeriod(currentSwellData.period)} • {getSwellDirectionText(currentSwellData.direction)}
-                      </Typography>
-                      
-                      {/* Progress bar for swell height */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Swell Height
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {formatSwellHeight(currentSwellData.height)}
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={getSwellHeightPercentage(currentSwellData.height)}
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getSwellHeightColor(currentSwellData.height) === 'success' ? '#4caf50' : 
-                                              getSwellHeightColor(currentSwellData.height) === 'warning' ? '#ff9800' : 
-                                              getSwellHeightColor(currentSwellData.height) === 'error' ? '#f44336' : '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        {getSwellQualityDescription(currentSwellData.period)} from {getSwellDirectionText(currentSwellData.direction)}
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <DashboardCard
+                title="Current Swell"
+                name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
+                isLoading={isForecastLoading}
+                isError={isClosestSpotsError}
+                score={currentSwellData ? {
+                  label: getSwellQualityDescription(currentSwellData.period),
+                  color: getSwellHeightColor(currentSwellData.height),
+                  description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
+                } : undefined}
+                subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+                heightValue={currentSwellData?.height}
+                description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+              />
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <Card 
-                sx={{ 
-                  height: "100%", 
-                  transition: 'all 0.2s ease-in-out',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  '&:hover': {
-                    bgcolor: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255,255,255,0.04)'
-                        : 'rgba(0,0,0,0.02)',
-                  },
-                }}
+              <DashboardCard 
+                title="Current Tide"
+                name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
+                score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
+                isLoading={tidesLoading}
+                isError={tidesError}
+                description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
+                heightValue={currentTideValue !== null ? currentTideValue : undefined}
               >
-                <CardContent>
-                  {tidesLoading ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Loading tide data...
-                      </Typography>
-                    </Box>
-                  ) : !currentTideValue ? (
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        No tide data available
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Typography variant="h6" color="primary" gutterBottom>
-                          Current Tide
-                        </Typography>
-                        <Chip 
-                          label={currentTideTime || 'Now'}
-                          color="info"
-                          size="small"
-                          sx={{ fontWeight: 'bold' }}
-                        />
-                      </Box>
-                      <Typography variant="h4" component="div" sx={{ fontWeight: "bold", mb: 1 }}>
-                        {currentTideValue.toFixed(1)}ft
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                        Current reading • {currentTideTime || 'Recent'}
-                      </Typography>
-                      
-                      {/* Progress bar for tide level */}
-                      <Box sx={{ mt: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Current Level
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {currentTideValue.toFixed(1)}ft
-                          </Typography>
-                        </Box>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={Math.min((currentTideValue / 6) * 100, 100)} // Scale 0-6ft to 0-100%
-                          sx={{ 
-                            height: 6, 
-                            borderRadius: 3,
-                            backgroundColor: 'rgba(0,0,0,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: '#2196f3'
-                            }
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="body2" color="text.secondary">
-                        Live tide reading
-                      </Typography>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              </DashboardCard>
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
