@@ -2,6 +2,18 @@
  * Formatting utilities for consistent display across the site
  */
 
+// Helper function to get wave height percentage for progress bar
+export const getWaveHeightPercentage = (waveHeight: number) => {
+  // Scale 0-15ft to 0-100%
+  return Math.min((waveHeight / 15) * 100, 100);
+};
+
+// Helper function to get wind speed percentage for progress bar
+export const getWindSpeedPercentage = (windSpeed: number) => {
+  // Scale 0-30mph to 0-100%
+  return Math.min((windSpeed / 30) * 100, 100);
+};
+
 /**
  * Format coordinates to 4 decimal places
  * @param lat Latitude
