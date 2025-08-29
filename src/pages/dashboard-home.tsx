@@ -24,6 +24,7 @@ import HeroSection from "components/common/hero";
 import ExploreActions from "components/common/explore-actions";
 import { getWaveHeightPercentage } from "utils/formatting";
 import DashboardCard from "@features/cards/dashboard-card";
+import SearchCard from "@features/cards/search-select";
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const {data: closestSpotsForecast, isLoading: isForecastLoading} = useQuery({
+  const {data: closestSpotsForecast, isLoading: isForecastLoading, isError: isForecastError} = useQuery({
     queryKey: ['closest_spot_forecast', closestSpots?.[0]?.latitude, closestSpots?.[0]?.longitude],
     queryFn: () => getForecastCurrent({
       latitude: Number(closestSpots![0].latitude),
@@ -261,6 +262,8 @@ const DashboardHome = () => {
                   <LocationPrompt />
                 ) : (
                   <DashboardCard
+                    isLoading={isBatchLoading}
+                    isError={isBatchError}
                     title={title}
                     name={data?.spot || ''}
                     subtitle={data?.waveHeight || ''}
@@ -269,8 +272,6 @@ const DashboardHome = () => {
                     speedValue={data?.windSpeedValue}
                     description={data?.score?.description}
                     onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
-                    isLoading={isBatchLoading}
-                    isError={isBatchError}
                   />
                 )}
               </Grid>
@@ -292,10 +293,10 @@ const DashboardHome = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
               <DashboardCard
+                isLoading={isForecastLoading}
+                isError={isForecastError}
                 title="Current Swell"
                 name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
-                isLoading={isForecastLoading}
-                isError={isClosestSpotsError}
                 score={currentSwellData ? {
                   label: getSwellQualityDescription(currentSwellData.period),
                   color: getSwellHeightColor(currentSwellData.height),
@@ -308,12 +309,12 @@ const DashboardHome = () => {
             </Grid>
             
             <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard 
+              <DashboardCard
+                isLoading={tidesLoading}
+                isError={tidesError}
                 title="Current Tide"
                 name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
                 score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
-                isLoading={tidesLoading}
-                isError={tidesError}
                 description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
                 heightValue={currentTideValue !== null ? currentTideValue : undefined}
               />
@@ -363,38 +364,24 @@ const DashboardHome = () => {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Find a Buoy
-                </Typography>
-                {buoys && buoys.length > 0 && (
-                  <EnhancedSelect 
-                    label="Select a buoy" 
-                    items={orderBy(buoys, ["name"], ["asc"])} 
-                    selectValueKey="location_id" 
-                    doOnSelect={goToBuoyPage}
-                    type="buoy"
-                    placeholder="Search buoys..."
-                  />
-                )}
-              </Box>
+              <SearchCard
+                label="Find a Buoy"
+                items={buoys && buoys.length > 0 ? orderBy(buoys, ["name"], ["asc"]) : []}
+                selectValueKey="location_id"
+                doOnSelect={goToBuoyPage}
+                type="buoy"
+                placeholder="Search buoys..."
+              />
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Find a Spot
-                </Typography>
-                {spots && spots.length > 0 && (
-                  <EnhancedSelect 
-                    label="Select a surf spot" 
-                    items={orderBy(spots, ["subregion_name", "name"], ["asc"])} 
-                    selectValueKey="id" 
-                    doOnSelect={goToSpotPage}
-                    type="spot"
-                    placeholder="Search surf spots..."
-                  />
-                )}
-              </Box>
+              <SearchCard
+                label="Find a Spot"
+                items={spots && spots.length > 0 ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
+                selectValueKey="id"
+                doOnSelect={goToSpotPage}
+                type="spot"
+                placeholder="Search surf spots..."
+              />
             </Grid>
           </Grid>
         </Item>
