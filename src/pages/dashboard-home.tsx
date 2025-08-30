@@ -297,74 +297,84 @@ const DashboardHome = () => {
           }} />
 
           {/* Current Conditions Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
-            Current Conditions
-          </Typography>
-          <Grid container spacing={GRID_ITEM_SPACING}>
-            <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard
-                isLoading={isForecastLoading}
-                isError={isForecastError}
-                title="Current Swell"
-                name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
-                score={currentSwellData ? {
-                  label: getSwellQualityDescription(currentSwellData.period),
-                  color: getSwellHeightColor(currentSwellData.height),
-                  description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
-                } : undefined}
-                subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
-                heightValue={currentSwellData?.height}
-                description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard
-                isLoading={tidesLoading}
-                isError={tidesError}
-                title="Current Tide"
-                name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
-                score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
-                description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
-                heightValue={currentTideValue !== null ? currentTideValue : undefined}
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard 
-                isLoading={isForecastLoading}
-                isError={isClosestSpotsError}
-                title={"Current Water Temperature"}
-                name="" // No main name, using card below
-              >
-                <TemperatureCard 
-                  temperature={typeof currentWaterTempData?.temperature === 'number' ? currentWaterTempData.temperature : 0}
-                  showFahrenheit={true}
-                  showComfortLevel={false}
+          {geolocation ? (
+            <>
+              <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
+                Current Conditions
+              </Typography>
+              <Grid container spacing={GRID_ITEM_SPACING}>
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard
+                  isLoading={isForecastLoading}
+                  isError={isForecastError}
+                  title="Current Swell"
+                  name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
+                  score={currentSwellData ? {
+                    label: getSwellQualityDescription(currentSwellData.period),
+                    color: getSwellHeightColor(currentSwellData.height),
+                    description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
+                  } : undefined}
+                  subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+                  heightValue={currentSwellData?.height}
+                  description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
                 />
-              </DashboardCard>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <DashboardCard
-                isLoading={isBatchLoading}
-                isError={isBatchError}
-                title="Highest Waves"
-                name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
-                subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
-                heightValue={highestWaves?.waveHeightValue}
-                onClick={() => {
-                  if (highestWaves?.slug) {
-                    navigate(`/spot/${highestWaves.slug}`);
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard
+                  isLoading={tidesLoading}
+                  isError={tidesError}
+                  title="Current Tide"
+                  name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
+                  score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
+                  description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
+                  heightValue={currentTideValue !== null ? currentTideValue : undefined}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard 
+                  isLoading={isForecastLoading}
+                  isError={isClosestSpotsError}
+                  title={"Current Water Temperature"}
+                  name="" // No main name, using card below
+                >
+                  {currentWaterTempData?.temperature ? (
+                    <TemperatureCard 
+                      temperature={currentWaterTempData?.temperature}
+                      showFahrenheit={true}
+                      showComfortLevel={false}
+                    />
+                  ) : (
+                    <Typography variant="body1" color="text.secondary">
+                      No data available
+                    </Typography>
+                  )}
+                </DashboardCard>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <DashboardCard
+                  isLoading={isBatchLoading}
+                  isError={isBatchError}
+                  title="Highest Waves"
+                  name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
+                  subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
+                  heightValue={highestWaves?.waveHeightValue}
+                  onClick={() => {
+                    if (highestWaves?.slug) {
+                      navigate(`/spot/${highestWaves.slug}`);
+                    }
+                  }}
+                  score={highestWaves?.score
+                    ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
+                    : undefined
                   }
-                }}
-                score={highestWaves?.score
-                  ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
-                  : undefined
-                }
-              />
+                />
+              </Grid>
             </Grid>
-          </Grid>
+            </>
+          ) : null}
         </Item>
 
         {/* Search Sections (Collapsible) */}
