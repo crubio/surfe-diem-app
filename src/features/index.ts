@@ -1,4 +1,5 @@
 export * from './cards/maintenance_card'
+export * from './dashboard'
 export * from './header'
 export * from './locations/summary'
 export * from './forecasts'
