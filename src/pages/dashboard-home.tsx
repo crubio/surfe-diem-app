@@ -1,8 +1,8 @@
-import { Box, Container, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
-import { SEO, LocationPrompt } from "components";
+import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
@@ -25,9 +25,7 @@ import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
-import {
-  FAVORITES_SECTION_MB
-} from "utils/layout-constants";
+
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -226,11 +224,11 @@ const DashboardHome = () => {
         </script>
       </Helmet>
       
-      <Container maxWidth="xl" sx={{ 
-        marginTop: { xs: '10px', sm: '0px' }, 
-        padding: { xs: "12px", sm: "20px" }, 
-        paddingTop: { xs: "0px", sm: "0px" }
-      }}>
+      <PageContainer 
+        maxWidth="XL" 
+        padding="MEDIUM" 
+        marginTop={{ xs: 1, sm: 0 }}
+      >
         
         {/* Hero Section */}
         <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
@@ -239,13 +237,13 @@ const DashboardHome = () => {
         <ExploreActions page="home" geolocation={!!geolocation} />
 
         {/* My Lineup (Favorites) - First row of content */}
-        <Box sx={{ marginBottom: FAVORITES_SECTION_MB }}>
+        <ContentWrapper margin="LG">
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}
             isLoading={favoritesLoading}
           />
-        </Box>
+        </ContentWrapper>
 
         {/* Current Conditions Dashboard */}
         <DashboardGrid 
@@ -371,7 +369,7 @@ const DashboardHome = () => {
           />
         </DashboardGrid>
 
-      </Container>
+      </PageContainer>
     </>
   );
 };
