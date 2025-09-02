@@ -349,7 +349,7 @@ const DashboardHome = () => {
         <DashboardGrid 
           title="Search"
           columns={GRID_CONFIGS.SEARCH}
-          marginTop={20}
+          marginTop={0}
         >
           <SearchCard
             label="Find a Buoy"
