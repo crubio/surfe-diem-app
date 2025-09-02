@@ -7,6 +7,7 @@ interface PageContainerProps {
   maxWidth?: keyof typeof CONTAINER_MAX_WIDTHS;
   padding?: keyof typeof PAGE_PADDING;
   marginTop?: number | { xs: number; sm: number };
+  marginBottom?: number;
   background?: keyof typeof BACKGROUND_VARIANTS;
   fullHeight?: boolean;
   centered?: boolean;
@@ -17,6 +18,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
   maxWidth = 'XL',
   padding = 'MEDIUM',
   marginTop = 0,
+  marginBottom,
   background = 'DEFAULT',
   fullHeight = false,
   centered = false,
@@ -34,6 +36,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
         flexDirection: 'column',
         alignItems: centered ? 'center' : 'stretch',
         marginTop: typeof marginTop === 'object' ? marginTop : marginTop,
+        marginBottom: marginBottom,
       }}
     >
       <Container
