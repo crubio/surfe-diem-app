@@ -215,7 +215,7 @@ const SpotPage = () => {
                     ) : currentTides?.data ? (
                       <>
                         <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {`${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`}
+                          {getCurrentTideValue(currentTides.data) ? `${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`: <NoData/>}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Current Tide
