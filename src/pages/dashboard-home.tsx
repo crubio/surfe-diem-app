@@ -1,8 +1,8 @@
-import { Box, Container, Grid, Stack, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
-import { Item, SEO, LocationPrompt } from "components";
+import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
@@ -24,17 +24,8 @@ import HeroSection from "components/common/hero";
 import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
-import {
-  GRID_ITEM_SPACING,
-  ITEM_PADDING,
-  SECTION_MARGIN_BOTTOM,
-  TITLE_FONT_WEIGHT,
-  SECTION_TITLE_MB,
-  SUBSECTION_TITLE_MB,
-  FAVORITES_SECTION_MB,
-  DASHBOARD_CARD_SECTION_MB,
-  SEARCH_SECTION_MT
-} from "utils/layout-constants";
+import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
+
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -233,11 +224,11 @@ const DashboardHome = () => {
         </script>
       </Helmet>
       
-      <Container maxWidth="xl" sx={{ 
-        marginTop: { xs: '10px', sm: '0px' }, 
-        padding: { xs: "12px", sm: "20px" }, 
-        paddingTop: { xs: "0px", sm: "0px" }
-      }}>
+      <PageContainer 
+        maxWidth="XL" 
+        padding="MEDIUM" 
+        marginTop={{ xs: 1, sm: 0 }}
+      >
         
         {/* Hero Section */}
         <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
@@ -246,167 +237,139 @@ const DashboardHome = () => {
         <ExploreActions page="home" geolocation={!!geolocation} />
 
         {/* My Lineup (Favorites) - First row of content */}
-        <Box sx={{ marginBottom: FAVORITES_SECTION_MB }}>
+        <ContentWrapper margin="LG">
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}
             isLoading={favoritesLoading}
           />
-        </Box>
+        </ContentWrapper>
 
-        {/* Current Conditions Grid */}
-        <Item sx={{ bgcolor: 'background.default', marginBottom: DASHBOARD_CARD_SECTION_MB, p: ITEM_PADDING }}>
-          <Typography variant="h5" component="h2" sx={{ mb: SECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
-            Current Conditions Dashboard
-          </Typography>
-          
-          {/* Recommendations Section */}
-          <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
-            Recommendations
-          </Typography>
-          
-          <Grid container spacing={GRID_ITEM_SPACING}>
-            {recommendations.map(({ key, title, data }) => (
-              <Grid item xs={12} sm={6} md={4} key={key}>
-                {!geolocation ? (
-                  <LocationPrompt />
-                ) : (
-                  <DashboardCard
-                    isLoading={isBatchLoading}
-                    isError={isBatchError}
-                    title={title}
-                    name={data?.spot || ''}
-                    subtitle={data?.waveHeight || ''}
-                    score={data?.score}
-                    heightValue={data?.waveHeightValue}
-                    speedValue={data?.windSpeedValue}
-                    description={data?.score?.description}
-                    onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
-                  />
-                )}
-              </Grid>
-            ))}
-          </Grid>
-
-          {/* Divider */}
-          <Box sx={{ 
-            borderTop: '1px solid', 
-            borderColor: 'divider', 
-            my: SECTION_MARGIN_BOTTOM,
-            opacity: 0.6 
-          }} />
-
-          {/* Current Conditions Section */}
-          {geolocation ? (
-            <>
-              <Typography variant="h6" component="h3" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}>
-                Current Conditions
-              </Typography>
-              <Grid container spacing={GRID_ITEM_SPACING}>
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  isLoading={isForecastLoading}
-                  isError={isForecastError}
-                  title="Current Swell"
-                  name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
-                  score={currentSwellData ? {
-                    label: getSwellQualityDescription(currentSwellData.period),
-                    color: getSwellHeightColor(currentSwellData.height),
-                    description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
-                  } : undefined}
-                  subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
-                  heightValue={currentSwellData?.height}
-                  description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  isLoading={tidesLoading}
-                  isError={tidesError}
-                  title="Current Tide"
-                  name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
-                  score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
-                  description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
-                  heightValue={currentTideValue !== null ? currentTideValue : undefined}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard 
-                  isLoading={isForecastLoading}
-                  isError={isClosestSpotsError}
-                  title={"Current Water Temperature"}
-                  name="" // No main name, using card below
-                >
-                  {currentWaterTempData?.temperature ? (
-                    <TemperatureCard 
-                      temperature={currentWaterTempData?.temperature}
-                      showFahrenheit={true}
-                      showComfortLevel={false}
-                    />
-                  ) : (
-                    <Typography variant="body1" color="text.secondary">
-                      No data available
-                    </Typography>
-                  )}
-                </DashboardCard>
-              </Grid>
-              
-              <Grid item xs={12} sm={6} md={3}>
-                <DashboardCard
-                  isLoading={isBatchLoading}
-                  isError={isBatchError}
-                  title="Highest Waves"
-                  name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
-                  subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
-                  heightValue={highestWaves?.waveHeightValue}
-                  onClick={() => {
-                    if (highestWaves?.slug) {
-                      navigate(`/spot/${highestWaves.slug}`);
-                    }
-                  }}
-                  score={highestWaves?.score
-                    ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
-                    : undefined
-                  }
-                />
-              </Grid>
-            </Grid>
-            </>
-          ) : null}
-        </Item>
-
-        {/* Search Sections (Collapsible) */}
-        <Item sx={{ bgcolor: 'background.default', marginTop: SEARCH_SECTION_MT }}>
-          <Typography variant="h5" component="h2" sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT }}>
-            Search
-          </Typography>
-          <Grid container spacing={GRID_ITEM_SPACING}>
-            <Grid item xs={12} md={6}>
-              <SearchCard
-                label="Find a Buoy"
-                items={buoys && buoys.length > 0 ? orderBy(buoys, ["name"], ["asc"]) : []}
-                selectValueKey="location_id"
-                doOnSelect={goToBuoyPage}
-                type="buoy"
-                placeholder="Search buoys..."
+        {/* Current Conditions Dashboard */}
+        <DashboardGrid 
+          title="Current Conditions Dashboard"
+          subtitle="Recommendations"
+          showSubtitle={true}
+          columns={GRID_CONFIGS.RECOMMENDATIONS}
+          showDivider={true}
+        >
+          {recommendations.map(({ key, title, data }) => (
+            !geolocation ? (
+              <LocationPrompt key={key} />
+            ) : (
+              <DashboardCard
+                key={key}
+                isLoading={isBatchLoading}
+                isError={isBatchError}
+                title={title}
+                name={data?.spot || ''}
+                subtitle={data?.waveHeight || ''}
+                score={data?.score}
+                heightValue={data?.waveHeightValue}
+                speedValue={data?.windSpeedValue}
+                description={data?.score?.description}
+                onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <SearchCard
-                label="Find a Spot"
-                items={spots && spots.length > 0 ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
-                selectValueKey="id"
-                doOnSelect={goToSpotPage}
-                type="spot"
-                placeholder="Search surf spots..."
-              />
-            </Grid>
-          </Grid>
-        </Item>
+            )
+          ))}
+        </DashboardGrid>
 
-      </Container>
+        {/* Current Conditions Section */}
+        {geolocation && (
+          <DashboardGrid 
+            title="Current Conditions"
+            showSubtitle={true}
+            columns={GRID_CONFIGS.CURRENT_CONDITIONS}
+          >
+            <DashboardCard
+              isLoading={isForecastLoading}
+              isError={isForecastError}
+              title="Current Swell"
+              name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
+              score={currentSwellData ? {
+                label: getSwellQualityDescription(currentSwellData.period),
+                color: getSwellHeightColor(currentSwellData.height),
+                description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
+              } : undefined}
+              subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+              heightValue={currentSwellData?.height}
+              description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+            />
+            
+            <DashboardCard
+              isLoading={tidesLoading}
+              isError={tidesError}
+              title="Current Tide"
+              name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
+              score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
+              description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
+              heightValue={currentTideValue !== null ? currentTideValue : undefined}
+            />
+            
+            <DashboardCard 
+              isLoading={isForecastLoading}
+              isError={isClosestSpotsError}
+              title={"Current Water Temperature"}
+              name="" // No main name, using card below
+            >
+              {currentWaterTempData?.temperature ? (
+                <TemperatureCard 
+                  temperature={currentWaterTempData?.temperature}
+                  showFahrenheit={true}
+                  showComfortLevel={false}
+                />
+              ) : (
+                <Typography variant="body1" color="text.secondary">
+                  No data available
+                </Typography>
+              )}
+            </DashboardCard>
+            
+            <DashboardCard
+              isLoading={isBatchLoading}
+              isError={isBatchError}
+              title="Highest Waves"
+              name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
+              subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
+              heightValue={highestWaves?.waveHeightValue}
+              onClick={() => {
+                if (highestWaves?.slug) {
+                  navigate(`/spot/${highestWaves.slug}`);
+                }
+              }}
+              score={highestWaves?.score
+                ? {...highestWaves.score, description: highestWaves.score.description || (highestWaves.waveHeightValue && highestWaves.waveHeightValue >= 6 ? 'Experienced surfers only' : 'Good waves available')}
+                : undefined
+              }
+            />
+          </DashboardGrid>
+        )}
+
+        {/* Search Sections */}
+        <DashboardGrid 
+          title="Search"
+          columns={GRID_CONFIGS.SEARCH}
+          marginTop={0}
+        >
+          <SearchCard
+            label="Find a Buoy"
+            items={buoys && buoys.length > 0 ? orderBy(buoys, ["name"], ["asc"]) : []}
+            selectValueKey="location_id"
+            doOnSelect={goToBuoyPage}
+            type="buoy"
+            placeholder="Search buoys..."
+          />
+          <SearchCard
+            label="Find a Spot"
+            items={spots && spots.length > 0 ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
+            selectValueKey="id"
+            doOnSelect={goToSpotPage}
+            type="spot"
+            placeholder="Search surf spots..."
+          />
+        </DashboardGrid>
+
+      </PageContainer>
     </>
   );
 };

@@ -1,8 +1,8 @@
 import { getSurfSpots } from "@features/locations/api/locations";
 import { Spot } from "@features/locations/types";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { Item, LinkRouter, SEO } from "components";
+import { Item, LinkRouter, SEO, PageContainer, SectionContainer, ContentWrapper } from "components";
 import { sortBy } from "lodash";
 import surfImage from "assets/sharks1.jpg";
 import NoDataFound from "components/common/not-found";
@@ -36,46 +36,36 @@ const SpotsPage = () => {
               keywords="surf spots, surf locations, surf regions, surf spot directory, surf spot finder, surf spot guide"
               url="https://surfe-diem.com/spots"
           />
-          <Container maxWidth="xl" sx={{ 
-            marginTop: { xs: '10px', sm: '0px' }, 
-            padding: { xs: "12px", sm: "20px" }, 
-            paddingTop: { xs: "0px", sm: "0px" }
-          }}>
-            <Box sx={{
-              backgroundColor: "#1ed6e6", 
-              backgroundImage: `url(${surfImage})`, 
-              backgroundRepeat: "no-repeat", 
-              backgroundSize: "cover", 
-              height: { xs: "200px", sm: "240px", md: "290px" },
-              backgroundPosition: "center",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              textAlign: "center"
-            }}>
-              <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Surf spots
-              </Typography>
-              <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
-                Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
-              </Typography>
-            </Box>
-            <Box sx={{ 
-                marginTop: { xs: "10px", sm: "20px" }, 
-                padding: { xs: "8px", sm: "10px" }, 
-                borderRadius: "8px" 
-            }}>
-            <Typography 
-                variant="h5" 
-                sx={{
-                  marginBottom: { xs: "8px", sm: "10px" },
-                  fontSize: { xs: "1.25rem", sm: "1.5rem" },
-                  fontWeight: 600
-                }}
-            >
-                Surf spots by region
-            </Typography>
+      <PageContainer maxWidth="XL" padding="MEDIUM" marginTop={{ xs: 1, sm: 0 }}>
+        
+        {/* Hero Section */}
+        <Box sx={{
+          backgroundColor: "#1ed6e6", 
+          backgroundImage: `url(${surfImage})`, 
+          backgroundRepeat: "no-repeat", 
+          backgroundSize: "cover", 
+          height: { xs: "200px", sm: "240px", md: "290px" },
+          backgroundPosition: "center",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center"
+        }}>
+          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Surf spots
+          </Typography>
+          <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
+            Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
+          </Typography>
+        </Box>
+        {/* Content Section */}
+        <ContentWrapper margin="LG">
+          <SectionContainer 
+            title="Surf spots by region"
+            background="DEFAULT"
+            spacing="NORMAL"
+          >
               {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
                   Object.keys(sortedSpots).map((subregion) => (
                       <Box key={subregion} sx={{ 
@@ -89,7 +79,7 @@ const SpotsPage = () => {
                                   marginBottom: { xs: "8px", sm: "10px" },
                                   fontSize: { xs: "1.125rem", sm: "1.25rem" },
                                   fontWeight: 600,
-                                  color: "primary.main"
+                                  color: "text.secondary"
                               }}
                           >
                               {subregion}
@@ -126,8 +116,9 @@ const SpotsPage = () => {
                       </Box>
                   ))
               ) : <NoDataFound />}
-            </Box>
-          </Container>
+          </SectionContainer>
+        </ContentWrapper>
+      </PageContainer>
         </>
     )
 }

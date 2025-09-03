@@ -136,7 +136,7 @@ export function getTideQualityDescription(rateOfChange: number): string {
  * @returns Current tide height in feet, or null if data is invalid
  */
 export function getCurrentTideValue(currentTideData: TidesDataCurrent): number | null {
-  if (!currentTideData?.data || currentTideData.data.length === 0) {
+  if (!currentTideData?.data || currentTideData.data.length === 0 ) {
     return null;
   }
   

@@ -1,8 +1,8 @@
-import { Box, Container, Grid, Stack, Typography, Card, CardContent } from "@mui/material"
+import { Box, Grid, Stack, Typography, Card, CardContent } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData } from "components"
+import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData, PageContainer, SectionContainer } from "components"
 import { isEmpty } from "lodash"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
@@ -58,9 +58,13 @@ const SpotPage = () => {
       )}
       {isError && <ErrorPage error={error} />}
       {spotData ? (
-        <Container sx={{marginBottom: "20px"}}>
+        <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
           {/* Hero Section */}
-          <Box sx={{ mb: 4 }}>
+          <SectionContainer 
+            background="DEFAULT"
+            spacing="NORMAL"
+            marginBottom="LARGE"
+          >
             {/* Header with spot name and favorite button */}
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
               <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
@@ -211,7 +215,7 @@ const SpotPage = () => {
                     ) : currentTides?.data ? (
                       <>
                         <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {`${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`}
+                          {getCurrentTideValue(currentTides.data) ? `${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`: <NoData/>}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Current Tide
@@ -224,16 +228,21 @@ const SpotPage = () => {
                 </Card>
               </Grid>
             </Grid>
-          </Box>
+          </SectionContainer>
           {currentWeather && (
-            <Box sx={{ mb: 3 }}>
+            <SectionContainer 
+              title="Weather & Tide Status"
+              background="PAPER"
+              spacing="NORMAL"
+              marginBottom="NORMAL"
+            >
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <WeatherWind weatherData={currentWeather} isLoading={isWeatherLoading} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Box>
-                    <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
+                    <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 3 }}>
                       Tide Status
                     </Typography>
                     {isTideDataLoading ? (
@@ -271,38 +280,45 @@ const SpotPage = () => {
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
+            </SectionContainer>
           )}
           { !isEmpty(spotData) && (
-            <>
+            <SectionContainer 
+              title="Location Map"
+              background="PAPER"
+              spacing="NORMAL"
+              marginBottom="NORMAL"
+            >
               <Grid container spacing={2}>
-                              <Grid item xs={12} sm={12} md={6} lg={6} sx={{marginBottom: "20px"}}>
-                <MapBoxSingle 
-                  lat={spotData.latitude} 
-                  lng={spotData.longitude} 
-                  zoom={8} 
-                  nearbyBuoys={nearbyBuoys || []}
-                />
+                <Grid item xs={12} sm={12} md={6} lg={6}>
+                  <MapBoxSingle 
+                    lat={spotData.latitude} 
+                    lng={spotData.longitude} 
+                    zoom={8} 
+                    nearbyBuoys={nearbyBuoys || []}
+                  />
+                </Grid>
               </Grid>
-              </Grid>
-            </>
+            </SectionContainer>
           )}
 
 
-                     {forecastDataHourly?.data?.hourly &&  
-            <Box sx={{marginBottom: "20px"}}>
-              <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
-                Wave & Tide Forecast
-              </Typography>
+          {forecastDataHourly?.data?.hourly && (
+            <SectionContainer 
+              title="Wave & Tide Forecast"
+              background="PAPER"
+              spacing="NORMAL"
+              marginBottom="NORMAL"
+            >
               <WaveChart 
                 waveHeightData={forecastDataHourly?.data.hourly.swell_wave_height} 
                 wavePeriodData={forecastDataHourly?.data.hourly.swell_wave_period} 
                 timeData={forecastDataHourly?.data.hourly.time}
                 tideData={dailyTides?.data}
               />
-            </Box>
-          }
-        </Container>
+            </SectionContainer>
+          )}
+        </PageContainer>
       ): null}
     </>
   )

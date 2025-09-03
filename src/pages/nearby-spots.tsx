@@ -3,13 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
 import { getSurfSpotClosest, getBatchForecast } from "@features/locations/api/locations";
-import { SEO, Loading } from "components";
+import { SEO, Loading, HeroSection } from "components";
 import { getWaveHeightColor } from "utils/conditions";
 import { getSwellDirectionText, formatSwellHeight, formatSwellPeriod } from "utils/swell";
 import { formatWaterTemp } from "utils/water-temp";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { useEffect } from "react";
 import heroImageJpeg from '../assets/manresa1.jpg';
+import {PageContainer, ContentWrapper} from "components";
 
 const NearbySpotsPage = () => {
   const navigate = useNavigate();
@@ -69,43 +70,15 @@ const NearbySpotsPage = () => {
       />
       
       {/* Hero Section */}
-      <Box
-        sx={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImageJpeg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          height: '400px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          textAlign: 'center',
-          position: 'relative'
-        }}
-      >
-        <Container maxWidth="lg">
-          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
-            Nearby Surf Spots
-          </Typography>
-          <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
-            Discover the best waves closest to you
-          </Typography>
-          {geolocationLoading && (
-            <Typography variant="body1" sx={{ opacity: 0.8 }}>
-              Getting your location...
-            </Typography>
-          )}
-          {geolocation && (
-            <Typography variant="body1" sx={{ opacity: 0.8 }}>
-              Showing spots near your location
-            </Typography>
-          )}
-        </Container>
-      </Box>
+      <HeroSection image={heroImageJpeg} headline="Nearby Surf Spots" body="Discover the closest surf spots to your location with current conditions and forecasts"/>
 
       {/* Content Section */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <PageContainer 
+        maxWidth="XL" 
+        padding="MEDIUM" 
+        marginTop={{ xs: 1, sm: 0 }}
+      >
+        <ContentWrapper>
         {isLoading ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Loading />
@@ -156,11 +129,9 @@ const NearbySpotsPage = () => {
                         height: '100%',
                         cursor: 'pointer',
                         bgcolor: 'background.default',
-                        transition: 'all 0.2s ease-in-out',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                         '&:hover': {
                           bgcolor: 'rgba(30, 214, 230, 0.05)',
-                          transform: 'translateY(-2px)',
                           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                         }
                       }}
@@ -258,7 +229,8 @@ const NearbySpotsPage = () => {
             </Grid>
           </>
         )}
-      </Container>
+        </ContentWrapper>
+      </PageContainer>
     </>
   );
 };
