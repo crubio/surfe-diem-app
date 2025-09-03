@@ -1,7 +1,7 @@
 import { Box, Typography, Stack, Link, Divider, Chip } from '@mui/material';
 import { Email, Share } from '@mui/icons-material';
 import heroImageWebp from '../assets/trmp_dont_sarf.webp';
-import { SEO, PageContainer, SectionContainer, ContentWrapper } from 'components';
+import { SEO, PageContainer, SectionContainer, ContentWrapper, HeroSection } from 'components';
 
 const AboutPage = () => {
   return (
@@ -13,53 +13,7 @@ const AboutPage = () => {
         url="https://surfe-diem.com/about"
       />
       {/* Hero Section */}
-      <Box
-        sx={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImageWebp})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          minHeight: { xs: '40vh', sm: '50vh', md: '60vh' },
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          mb: { xs: 2, sm: 3, md: 4 },
-        }}
-      >
-        <ContentWrapper 
-          centered 
-          padding="LG"
-          maxWidth="md"
-        >
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            sx={{ 
-              textAlign: 'center', 
-              color: 'white',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-              fontWeight: 'bold',
-              mb: { xs: 1, sm: 2 },
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
-            }}
-          >
-            About Surfe Diem
-          </Typography>
-          <Typography 
-            variant="h5" 
-            sx={{ 
-              textAlign: 'center', 
-              color: 'white',
-              textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
-              fontStyle: 'italic',
-              fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5rem' },
-              px: { xs: 1, sm: 2 }
-            }}
-          >
-            Free surf conditions for the community
-          </Typography>
-        </ContentWrapper>
-      </Box>
+      <HeroSection image={heroImageWebp} headline="About Surfe Diem" body="Free surf conditions for the community"/>
 
       <PageContainer maxWidth="MD" padding="MEDIUM">
         
