@@ -8,6 +8,7 @@
     "types": [],
     "baseUrl": "./src",
     "paths":{
+      "@/*": ["./*"],
       "@features/*": ["features/*"],
       "test-utils": ["./utils/test-utils"],
       "hooks": ["./hooks"],

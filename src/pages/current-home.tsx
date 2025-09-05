@@ -2,7 +2,7 @@ import {Box, Container, Grid, Stack, Typography} from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast } from "@features/locations/api/locations";
 import { isEmpty } from "lodash";
-import { Spot } from "@features/locations/types";
+import { Spot } from "../types";
 import { Item, SEO, EnhancedSelect } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";

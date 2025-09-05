@@ -9,7 +9,7 @@ import {
   getFavoriteById,
   getFavoriteDisplayLocation,
 } from '../favorites';
-import { Favorite } from '../../types/favorites';
+import { Favorite } from '../../types';
 
 // Mock localStorage
 const localStorageMock = {

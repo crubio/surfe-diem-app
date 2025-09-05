@@ -1,7 +1,7 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot, BatchForecastResponse} from '../types';
+import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot, BatchForecastResponse } from '../../../types';
 
 type QueryParams = {
   limit?: number;

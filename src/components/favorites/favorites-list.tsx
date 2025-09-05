@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Favorite } from '../../types/favorites';
-import { BuoyBatchData, SpotBatchData } from '../../features/locations/types';
+import { Favorite, BuoyBatchData, SpotBatchData } from '../../types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
 import { Stack, Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
@@ -67,8 +66,8 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
   };
 
   const linkTo = type === 'spot' 
-    ? goToSpotPage(favorite.id, (currentData as any)?.slug)
-    : goToBuoyPage(favorite.id);
+    ? goToSpotPage(favorite.id as number, (currentData as any)?.slug)
+    : goToBuoyPage(favorite.id as string);
 
   // Color coding for spots vs buoys
   const getTypeColor = () => {

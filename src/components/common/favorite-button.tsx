@@ -2,7 +2,7 @@ import React from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material';
 import { useFavorites } from '../../providers/favorites-provider';
-import { Favorite } from '../../types/favorites';
+import { Favorite } from '../../types';
 
 interface FavoriteButtonProps {
   id: string | number; // Accept both string and number, convert to string internally

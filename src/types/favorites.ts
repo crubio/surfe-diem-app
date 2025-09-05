@@ -1,5 +1,7 @@
+import { Spot, Buoy } from './core';
+
 export interface Favorite {
-  id: string; // Using string for flexibility with both numeric and string IDs
+  id: string | number; // Flexible for both numeric and string IDs
   type: 'spot' | 'buoy';
   name: string;
   subregion_name?: string;
@@ -8,6 +10,13 @@ export interface Favorite {
   location?: string;
   addedAt: string; // ISO timestamp
 }
+
+/**
+ * Discriminated union for type-safe favorite handling
+ */
+export type FavoritableItem = 
+  | { type: 'spot'; data: Spot }
+  | { type: 'buoy'; data: Buoy };
 
 export interface FavoritesState {
   favorites: Favorite[];
