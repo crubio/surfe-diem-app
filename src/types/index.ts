@@ -16,6 +16,9 @@ export * from './common';
 export type { FavoritableItem } from './favorites';
 export * from './favorites';
 
+// Advanced utility types
+export * from './utils';
+
 // Re-export feature types for convenience
 export * from '../features/forecasts/types';
 export * from '../features/weather/types';

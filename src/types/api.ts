@@ -100,3 +100,78 @@ export interface SwellData {
   direction: number;
   period: number;
 }
+
+// ========================================
+// UTILITY TYPES FOR API OPERATIONS
+// ========================================
+
+/**
+ * Batch data for updates (all fields optional except id)
+ */
+export type BuoyBatchDataUpdate = Partial<Omit<BuoyBatchData, 'id'>> & { id: string };
+export type SpotBatchDataUpdate = Partial<Omit<SpotBatchData, 'id'>> & { id: number };
+
+/**
+ * Batch data for creation (required fields only)
+ */
+export type BuoyBatchDataCreate = Pick<BuoyBatchData, 'name'> & 
+  Partial<Omit<BuoyBatchData, 'name'>>;
+export type SpotBatchDataCreate = Pick<SpotBatchData, 'name' | 'slug'> & 
+  Partial<Omit<SpotBatchData, 'name' | 'slug'>>;
+
+/**
+ * Batch data for display (readonly)
+ */
+export type BuoyBatchDataDisplay = Readonly<BuoyBatchData>;
+export type SpotBatchDataDisplay = Readonly<SpotBatchData>;
+
+/**
+ * Weather data for updates
+ */
+export type BuoyWeatherUpdate = Partial<BuoyWeather>;
+export type SpotWeatherUpdate = Partial<SpotWeather>;
+
+/**
+ * Observation data for updates
+ */
+export type BuoyObservationUpdate = Partial<BuoyObservation>;
+
+/**
+ * Swell data for updates
+ */
+export type SwellDataUpdate = Partial<SwellData>;
+
+// ========================================
+// UTILITY TYPES FOR API RESPONSES
+// ========================================
+
+/**
+ * API response with metadata
+ */
+export type ApiResponseWithMeta<T> = ApiResponse<T> & {
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    hasMore?: boolean;
+  };
+};
+
+/**
+ * Paginated API response
+ */
+export type PaginatedResponse<T> = {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+};
+
+/**
+ * Batch API response with utility types
+ */
+export type BatchForecastResponseUpdate = Partial<BatchForecastResponse>;
+export type BatchForecastResponseDisplay = Readonly<BatchForecastResponse>;
