@@ -1,7 +1,9 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType, Spot, BatchForecastResponse } from '../../../types';
+import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType } from '../../../types';
+import { Spot, Buoy } from '../../../types/core';
+import { BatchForecastResponse, ApiResponse } from '../../../types/api';
 
 type QueryParams = {
   limit?: number;
@@ -33,7 +35,7 @@ type LatestObservationItem = {
   [key: string]: string
 }
 
-export const getSearchResults = async <T>(params: SearchParams): Promise<Record<string, T>[]> => {
+export const getSearchResults = async <T>(params: SearchParams): Promise<ApiResponse<T>> => {
   return axios.get(API_ROUTES.SEARCH, {
     params: params
   }).then((response) => {
@@ -44,12 +46,28 @@ export const getSearchResults = async <T>(params: SearchParams): Promise<Record<
   })
 }
 
-export const getSurfSpots = async (params?: QueryParams): Promise<Spot[]> => {
+export const getSurfSpots = async (params?: QueryParams): Promise<ApiResponse<Spot[]>> => {
   return axios.get(API_ROUTES.SURF_SPOTS, {
     params: params
   }).then((response) => {
-    return response.data;
-  })
+    const successResponse: ApiResponse<Spot[]> = {
+      status: 'success' as const,
+      data: response.data,
+      timestamp: new Date().toISOString()
+    };
+    return successResponse;
+  }).catch((error) => {
+    const errorResponse: ApiResponse<Spot[]> = {
+      status: 'error' as const,
+      data: null,
+      timestamp: new Date().toISOString(),
+      error: {
+        code: error.code || 'UNKNOWN_ERROR',
+        message: error.message || 'An unknown error occurred'
+      }
+    };
+    return errorResponse;
+  });
 }
 
 export const getSurfSpot = async (id: string | number | undefined): Promise<Spot> => {
@@ -95,13 +113,29 @@ export const getGeoJsonLocations = (): Promise<GeoJSON> => {
   })
 }
 
-export const getLocations = (params?: QueryParams): Promise<BuoyLocation[]> => {
+export const getLocations = (params?: QueryParams): Promise<ApiResponse<Buoy[]>> => {
   return axios.get(API_ROUTES.LOCATIONS, {
     params: params
   }).then((response) => {
-    return response.data;
-  })
-} 
+    const successResponse: ApiResponse<Buoy[]> = {
+      status: 'success' as const,
+      data: response.data,
+      timestamp: new Date().toISOString()
+    };
+    return successResponse;
+  }).catch((error) => {
+    const errorResponse: ApiResponse<Buoy[]> = {
+      status: 'error' as const,
+      data: null,
+      timestamp: new Date().toISOString(),
+      error: {
+        code: error.code || 'UNKNOWN_ERROR',
+        message: error.message || 'An unknown error occurred'
+      }
+    };
+    return errorResponse;
+  });
+}
 
 export const getLocation = (id: string | undefined): Promise<BuoyLocation> => {
   return axios.get(`${API_ROUTES.LOCATIONS}/${id}`).then((response) => {
