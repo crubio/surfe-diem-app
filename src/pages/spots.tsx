@@ -1,5 +1,5 @@
 import { getSurfSpots } from "@features/locations/api/locations";
-import { Spot } from "@features/locations/types";
+import { Spot } from "../types";
 import { Box, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { Item, LinkRouter, SEO, PageContainer, SectionContainer, ContentWrapper } from "components";
@@ -26,7 +26,8 @@ const SpotsPage = () => {
         return sortedData;
     }
 
-    const sortedSpots = sortBySubregion(data || []);
+    const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
+    const sortedSpots = sortBySubregion(spotsArray);
 
     return (
         <>

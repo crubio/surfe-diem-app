@@ -613,7 +613,6 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
         highestWaves: null
       };
     }
-    console.log(validResults);
     
     // Process best conditions (highest overall score)
     let bestResult = validResults[0];

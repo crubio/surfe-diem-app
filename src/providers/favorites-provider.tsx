@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Favorite, FavoritesState, FavoritesContextType } from '../types/favorites';
+import { Favorite, FavoritesState, FavoritesContextType } from '../types';
 import {
   loadFavoritesFromStorage,
   saveFavoritesToStorage,

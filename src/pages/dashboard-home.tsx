@@ -6,6 +6,8 @@ import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
+import { ApiResponse } from "types/api";
+import { Spot, Buoy } from "types/core";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
@@ -38,16 +40,21 @@ const DashboardHome = () => {
   }, [variation]);
   
   // List of all location metadata
-  const {data: buoys} = useQuery({
+  const {data: buoysResponse} = useQuery<ApiResponse<Buoy[]>>({
     queryKey: ['locations'],
     queryFn: async () => getLocations()
   });
   
+  const buoys = buoysResponse?.status === 'success' ? buoysResponse.data : [];
+  
   // List of all surf spots metadata
-  const {data: spots} = useQuery({
+  const {data: spotsResponse} = useQuery<ApiResponse<Spot[]>>({
     queryKey: ['spots'],
     queryFn: async () => getSurfSpots()
   });
+  console.log(spotsResponse)
+  
+  const spots = spotsResponse?.status === 'success' ? spotsResponse.data : [];
   
   // Users geolocation if available
   const {data: geolocation} = useQuery({
@@ -111,7 +118,7 @@ const DashboardHome = () => {
   })
 
   // Get featured spots from existing spots data
-  const featuredSpots = spots ? spots.filter(spot => 
+  const featuredSpots = spots ? spots.filter((spot: Spot) => 
     FEATURED_SPOTS.includes(spot.slug)
   ) : [];
 
@@ -131,7 +138,7 @@ const DashboardHome = () => {
     queryFn: () => {
       if (favorites.length === 0) return { buoys: [], spots: [] };
       
-      const buoyIds = favorites.filter(f => f.type === 'buoy').map(f => f.id);
+      const buoyIds = favorites.filter(f => f.type === 'buoy').map(f => String (f.id));
       const spotIds = favorites.filter(f => f.type === 'spot').map(f => Number(f.id));
       
       return getBatchForecast({
@@ -151,7 +158,7 @@ const DashboardHome = () => {
   };
 
   const goToSpotPage = (spot_id: string) => {
-    const spot = spots?.find(s => s.id.toString() === spot_id);
+    const spot = spots?.find((s: Spot) => s.id.toString() === spot_id);
     trackInteraction(variation, 'spot_click', { spot_id, spot_name: spot?.name });
     if (spot?.slug) {
       navigate(`/spot/${spot.slug}`);
@@ -181,17 +188,8 @@ const DashboardHome = () => {
           isLocationBased: true
         }
       }
-    } else if (featuredSpots && featuredSpots.length > 0) {
-      // Fallback to featured SF Bay Area spot
-      const featuredSpot = featuredSpots[0];
-      // Use default values since Spot type doesn't include wave/wind data, TODO: implemnt after current data is available
-      return {
-        spot: featuredSpot.name,
-        spotId: featuredSpot.id,
-        slug: featuredSpot.slug
-      };
     } else {
-      return null;
+      <LocationPrompt />
     }
   };
 
@@ -361,7 +359,7 @@ const DashboardHome = () => {
           />
           <SearchCard
             label="Find a Spot"
-            items={spots && spots.length > 0 ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
+            items={spots ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
             selectValueKey="id"
             doOnSelect={goToSpotPage}
             type="spot"

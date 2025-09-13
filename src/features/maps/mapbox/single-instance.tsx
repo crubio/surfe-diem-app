@@ -4,7 +4,7 @@ import { MAPBOX_API_KEY } from 'config';
 import { useEffect, useRef, useState } from 'react';
 import { Collapse, IconButton, Box, Typography } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-import { BuoyNearestType } from '@features/locations/types';
+import { BuoyNearestType } from '../../../types';
 import './mapbox.css'
 mapboxgl.accessToken = MAPBOX_API_KEY;
 

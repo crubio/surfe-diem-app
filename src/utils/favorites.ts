@@ -1,4 +1,4 @@
-import { Favorite } from '../types/favorites';
+import { Favorite } from '../types';
 
 const FAVORITES_STORAGE_KEY = 'surfe-diem-favorites';
 

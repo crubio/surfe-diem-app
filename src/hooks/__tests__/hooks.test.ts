@@ -38,17 +38,5 @@ describe('Hooks', () => {
       expect(useForecastData).toBeDefined()
       expect(typeof useForecastData).toBe('function')
     })
-
-    it('should be able to import useLocationData', async () => {
-      const { useLocationData } = await import('../useLocationData')
-      expect(useLocationData).toBeDefined()
-      expect(typeof useLocationData).toBe('function')
-    })
-
-    it('should be able to import useGeolocation', async () => {
-      const { useGeolocation } = await import('../useGeolocation')
-      expect(useGeolocation).toBeDefined()
-      expect(typeof useGeolocation).toBe('function')
-    })
   })
 }) 

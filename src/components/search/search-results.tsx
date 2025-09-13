@@ -5,7 +5,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { useNavigate } from "react-router-dom";
 import { LocationOn, Support } from '@mui/icons-material';
-import { BuoyLocation, Spot } from '@features/locations/types';
+import { BuoyLocation, Spot } from '../../types';
 
 export interface SimpleDialogProps<T> {
   results?: Record<string, T>[];
