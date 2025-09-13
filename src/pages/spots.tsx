@@ -26,7 +26,8 @@ const SpotsPage = () => {
         return sortedData;
     }
 
-    const sortedSpots = sortBySubregion(data || []);
+    const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
+    const sortedSpots = sortBySubregion(spotsArray);
 
     return (
         <>

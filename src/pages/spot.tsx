@@ -11,7 +11,7 @@ import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
 import { formatCoordinates, formatTemperature, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
-import { useSpotData, useTideData, useForecastData, useNearbyBuoys } from "hooks"
+import { useTideData, useForecastData, useSpotData, useNearbyBuoys} from "hooks"
 
 const SpotPage = () => {
   const params = useParams()

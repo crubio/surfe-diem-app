@@ -1,10 +1,4 @@
 /**
- * API response types and related interfaces
- */
-
-import { Spot, Buoy } from './core';
-
-/**
  * Base API response structure
  */
 export interface BaseApiResponse<T> {

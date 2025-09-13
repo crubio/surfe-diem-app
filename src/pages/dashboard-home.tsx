@@ -6,13 +6,7 @@ import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { getGeolocation } from "utils/geolocation";
-import { 
-  ApiResponse, 
-  BatchForecastResponse, 
-  SwellData,
-  BuoyBatchData,
-  SpotBatchData 
-} from "types/api";
+import { ApiResponse } from "types/api";
 import { Spot, Buoy } from "types/core";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";

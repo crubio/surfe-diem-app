@@ -1,15 +1,10 @@
-import { NoData } from "@features/cards/no_data"
-import { DailyForecast, getForecastCurrent, getForecastDaily, getForecastHourly } from "@features/forecasts"
-import { LatestReportedForecast } from "@features/forecasts/components/latest_reported_forecast"
+import { getForecastHourly } from "@features/forecasts"
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
-import { getDailyTides } from "@features/tides"
-import { DailyTide } from "@features/tides/components/daily_tide"
-import { Box, Card, CardContent, Container, Grid, Link, Stack, Typography} from "@mui/material"
+import { Box, Container, Grid, Link, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { FavoriteButton, Item, Loading, SEO, BuoyStructuredData, TemperatureCard } from "components"
-import { isEmpty } from "lodash"
+import { FavoriteButton, Item, SEO, BuoyStructuredData } from "components"
 import { useParams } from "react-router-dom"
-import { formatLatLong, getTodaysDate } from "utils/common"
+import { formatLatLong } from "utils/common"
 import ErrorPage from "./error"
 import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
@@ -32,38 +27,12 @@ const LocationsPage = () => {
 
   const latLong = formatLatLong(locationData?.location || "")
 
-  const {data: tideData, isPending: isTideDataLoading} = useQuery({
-    queryKey: ['latest_tides', params],
-    queryFn: () => getDailyTides({ station: locationData?.station_id}),
-    enabled: !!locationData?.station_id
-  });
-
-  const {data: forecastCurrent, isPending: isCurrentForecastLoading} = useQuery({
-    queryKey: ['forecast_current'],
-    queryFn: () => getForecastCurrent({
-      latitude: latLong[0],
-      longitude: latLong[1],
-    }),
-    enabled: !!locationData?.location_id
-  });
-
   const {data: forecastDataHourly } = useQuery({
     queryKey: ['forecast_hourly', locationData?.location_id],
     queryFn: () => getForecastHourly({
       latitude: latLong[0],
       longitude: latLong[1],
       forecast_days: 1,
-    }),
-    enabled: !!locationData?.location_id
-  });
-
-  const {data: forecastDataDaily, isPending: isForecastLoading } = useQuery({
-    queryKey: ['forecast_daily', locationData?.location_id],
-    queryFn: () => getForecastDaily({
-      latitude: latLong[0],
-      longitude: latLong[1],
-      start_date: getTodaysDate(),
-      end_date: getTodaysDate(5)
     }),
     enabled: !!locationData?.location_id
   });
