@@ -40,7 +40,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
+          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.2rem', fontWeight: "bold" } }}>
             {swellData && swellData.swell_height && `${swellData.swell_height}`}
             {swellData && swellData.period && ` • ${swellData.period}s`}
             {swellData && swellData.direction && ` • ${swellData.direction}`}
@@ -55,7 +55,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
       
       return (
         <Box sx={{ mt: 1 }}>
-          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.4rem' } }}>
+          <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.2rem', fontWeight: "bold" } }}>
             {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
             {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
             {weather.swell.direction && ` • ${getSwellDirectionText(weather.swell.direction)}`}

@@ -79,7 +79,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         </Typography>
 
         {subtitle && (
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 1, fontSize: "1.4rem", fontWeight: "bold"  }}>
             {subtitle}
           </Typography>
         )}
