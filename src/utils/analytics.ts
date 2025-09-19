@@ -12,7 +12,7 @@ export interface ABTestEvent {
 }
 
 // Generate a simple session ID
-const getSessionId = (): string => {
+export const getSessionId = (): string => {
   let sessionId = localStorage.getItem('surfe-diem-session-id');
   if (!sessionId) {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

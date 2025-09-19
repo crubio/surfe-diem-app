@@ -59,6 +59,9 @@ export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({
     });
   };
 
+  // Check if user has already rated (either success or already_rated error)
+  const hasAlreadyRated = isSuccess || (error && (error as any).code === 'ALREADY_RATED');
+
   return (
     <Box className={className}>
       <Card elevation={1} sx={{ backgroundColor: 'background.paper', display: 'inline-block' }}>
@@ -79,7 +82,7 @@ export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({
               </Box>
             )}
 
-            {!isSuccess && !isLoading && (
+            {!hasAlreadyRated && !isLoading && (
               <Stack direction="row" spacing={1}>
                 <Button
                   variant="contained"
@@ -124,6 +127,12 @@ export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({
                 ✓ Thanks for rating!
               </Typography>
             )}
+
+            {error && (error as any).code === 'ALREADY_RATED' && (
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                ✓ Already rated
+              </Typography>
+            )}
           </Stack>
 
           {showThankYou && (
@@ -140,7 +149,7 @@ export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({
             </Fade>
           )}
 
-          {error && (
+          {error && (error as any).code !== 'ALREADY_RATED' && (
             <Alert 
               severity="error" 
               icon={<Cancel />}

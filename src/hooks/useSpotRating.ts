@@ -6,7 +6,7 @@ import {
   ForecastRatingValue 
 } from '@features/locations/api/forecast-rating';
 import { ApiResponse } from '../types/api';
-import { trackInteraction } from 'utils/analytics';
+import { getSessionId, trackInteraction } from 'utils/analytics';
 
 interface UseSpotRatingParams {
   spotId: number;
@@ -28,16 +28,6 @@ export const useSpotRating = ({
   spotName, 
   currentDate 
 }: UseSpotRatingParams) => {
-  
-  // Generate session ID
-  const getSessionId = () => {
-    let sessionId = sessionStorage.getItem('forecast_session_id');
-    if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem('forecast_session_id', sessionId);
-    }
-    return sessionId;
-  };
 
   const submitRatingMutation = useMutation({
     mutationFn: async ({ rating, forecastData }: Pick<SubmitRatingParams, 'rating' | 'forecastData'>) => {
@@ -57,22 +47,29 @@ export const useSpotRating = ({
         forecast_json: forecastData
       };
 
-      return submitForecastRating(spotId, ratingData);
-    },
-    onSuccess: (response, variables, context) => {
-      if (response.status === 'success') {
-        // Track successful submission
-        trackInteraction('forecast-rating', 'rating_success', {
-          spot_id: spotId,
-          spot_slug: spotSlug,
-          spot_name: spotName,
-          rating: variables.rating,
-          date: currentDate,
-          message: response.data?.message
-        });
+      const response = await submitForecastRating(spotId, ratingData);
+      
+      // Check if the response indicates an error and throw to trigger React Query's error handling
+      if (response.status === 'error') {
+        const error = new Error(response.error.message);
+        (error as any).code = response.error.code;
+        throw error;
       }
+      
+      return response;
     },
-    onError: (error: any, variables, context) => {
+    onSuccess: (response, variables) => {
+      // Track successful submission
+      trackInteraction('forecast-rating', 'rating_success', {
+        spot_id: spotId,
+        spot_slug: spotSlug,
+        spot_name: spotName,
+        rating: variables.rating,
+        date: currentDate,
+        message: response.data?.message
+      });
+    },
+    onError: (error: any, variables) => {
       // Track failed submission
       trackInteraction('forecast-rating', 'rating_error', {
         spot_id: spotId,
@@ -80,8 +77,8 @@ export const useSpotRating = ({
         spot_name: spotName,
         rating: variables.rating,
         date: currentDate,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        status_code: error?.response?.status
+        error: error.message || 'Unknown error',
+        error_code: error.code,
       });
     }
   });
