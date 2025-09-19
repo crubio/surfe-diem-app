@@ -9,6 +9,7 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
+import { ForecastRatingComponent } from "@features/locations/components"
 import { formatCoordinates, formatTemperature, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
 import { useTideData, useForecastData, useSpotData, useNearbyBuoys} from "hooks"
@@ -228,6 +229,19 @@ const SpotPage = () => {
                 </Card>
               </Grid>
             </Grid>
+            {spotData && forecastCurrent?.data?.current && (
+                <ForecastRatingComponent
+                  spotId={spotData.id}
+                  spotSlug={spotData.slug}
+                  spotName={spotData.name}
+                  forecastData={{
+                    current: forecastCurrent.data.current,
+                    timestamp: new Date().toISOString(),
+                    spot_id: spotData.id,
+                    spot_name: spotData.name
+                  }}
+                />
+              )}
           </SectionContainer>
           {currentWeather && (
             <SectionContainer 
