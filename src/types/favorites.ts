@@ -1,5 +1,9 @@
 import { Spot, Buoy } from './core';
 
+// Core types for managing favorites
+export type FavoriteType = 'spot' | 'buoy';
+export type FavoriteableId = string | number;
+
 export interface Favorite {
   id: string | number; // Flexible for both numeric and string IDs
   type: 'spot' | 'buoy';
@@ -11,13 +15,8 @@ export interface Favorite {
   addedAt: string; // ISO timestamp
 }
 
-/**
- * Discriminated union for type-safe favorite handling
- */
-export type FavoritableItem = 
-  | { type: 'spot'; data: Spot }
-  | { type: 'buoy'; data: Buoy };
 
+// State management types
 export interface FavoritesState {
   favorites: Favorite[];
   isLoading: boolean;
@@ -29,14 +28,10 @@ export interface FavoritesContextType {
   isLoading: boolean;
   error: string | null;
   addFavorite: (favorite: Omit<Favorite, 'addedAt'>) => void;
-  removeFavorite: (id: string, type: 'spot' | 'buoy') => void;
-  isFavorited: (id: string, type: 'spot' | 'buoy') => boolean;
+  removeFavorite: (id: string | number, type: 'spot' | 'buoy') => void;
+  isFavorited: (id: string | number, type: 'spot' | 'buoy') => boolean;
   getFavoritesByType: (type: 'spot' | 'buoy') => Favorite[];
 }
-
-// ========================================
-// UTILITY TYPES FOR FAVORITES OPERATIONS
-// ========================================
 
 /**
  * Favorite data for creation (without addedAt)

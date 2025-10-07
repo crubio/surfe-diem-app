@@ -1,4 +1,4 @@
-import { Favorite } from '../types';
+import { Favorite, FavoriteableId, FavoriteCreate, FavoriteType } from '../types';
 
 const FAVORITES_STORAGE_KEY = 'surfe-diem-favorites';
 
@@ -46,7 +46,7 @@ export const saveFavoritesToStorage = (favorites: Favorite[]): void => {
 /**
  * Add a favorite to the list
  */
-export const addFavorite = (favorites: Favorite[], newFavorite: Omit<Favorite, 'addedAt'>): Favorite[] => {
+export const addFavorite = (favorites: Favorite[], newFavorite: FavoriteCreate): Favorite[] => {
   const favoriteWithTimestamp: Favorite = {
     ...newFavorite,
     addedAt: new Date().toISOString(),
@@ -64,21 +64,21 @@ export const addFavorite = (favorites: Favorite[], newFavorite: Omit<Favorite, '
 /**
  * Remove a favorite from the list
  */
-export const removeFavorite = (favorites: Favorite[], id: string, type: 'spot' | 'buoy'): Favorite[] => {
+export const removeFavorite = (favorites: Favorite[], id: FavoriteableId, type: FavoriteType): Favorite[] => {
   return favorites.filter(fav => !(fav.id === id && fav.type === type));
 };
 
 /**
  * Check if an item is favorited
  */
-export const isFavorited = (favorites: Favorite[], id: string, type: 'spot' | 'buoy'): boolean => {
+export const isFavorited = (favorites: Favorite[], id: FavoriteableId, type: FavoriteType): boolean => {
   return favorites.some(fav => fav.id === id && fav.type === type);
 };
 
 /**
  * Get favorites filtered by type
  */
-export const getFavoritesByType = (favorites: Favorite[], type: 'spot' | 'buoy'): Favorite[] => {
+export const getFavoritesByType = (favorites: Favorite[], type: FavoriteType): Favorite[] => {
   return favorites.filter(fav => fav.type === type);
 };
 
