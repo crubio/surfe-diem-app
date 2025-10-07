@@ -27,6 +27,7 @@ import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
+import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
 
 
 const DashboardHome = () => {
@@ -38,6 +39,12 @@ const DashboardHome = () => {
   useEffect(() => {
     trackPageView(variation, 'dashboard-home');
   }, [variation]);
+
+  const {location, source, isLoading, error, hasPermission} = useUserLocation();
+
+  useEffect(() => {
+    useGeolocationStore.getState().requestGeolocation();
+  }, []);
   
   // List of all location metadata
   const {data: buoysResponse} = useQuery<ApiResponse<Buoy[]>>({
@@ -52,21 +59,17 @@ const DashboardHome = () => {
     queryKey: ['spots'],
     queryFn: async () => getSurfSpots()
   });
-  console.log(spotsResponse)
   
   const spots = spotsResponse?.status === 'success' ? spotsResponse.data : [];
   
-  // Users geolocation if available
-  const {data: geolocation} = useQuery({
-    queryKey: ['geolocation'],
-    queryFn: async () => getGeolocation()
-  });
+  // Users geolocation from Zustand store
+  const coordinates = location?.coordinates;
 
   // List of closest spots to user's geolocation if available
   const {data: closestSpots, isError: isClosestSpotsError} = useQuery({
-    queryKey: ['closest_spots', geolocation?.latitude, geolocation?.longitude],
-    queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
-    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+    queryKey: ['closest_spots', coordinates?.latitude, coordinates?.longitude],
+    queryFn: () => getSurfSpotClosest(coordinates!.latitude, coordinates!.longitude),
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
@@ -98,12 +101,12 @@ const DashboardHome = () => {
 
   // Get closest tide station to user's location
   const {data: closestTideStation} = useQuery({
-    queryKey: ['closest_tide_station', geolocation?.latitude, geolocation?.longitude],
+    queryKey: ['closest_tide_station', coordinates?.latitude, coordinates?.longitude],
     queryFn: () => getClostestTideStation({
-      lat: geolocation!.latitude,
-      lng: geolocation!.longitude
+      lat: coordinates!.latitude,
+      lng: coordinates!.longitude
     }),
-    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
   })
 
   // Get current tide data for the closest station
@@ -170,7 +173,7 @@ const DashboardHome = () => {
   // Helper function to get closest spot
   const getClosestSpot = () => {
     // If we have geolocation, show closest spot
-    if (geolocation?.latitude && geolocation?.longitude && closestSpots && closestSpots.length > 0) {
+    if (coordinates?.latitude && coordinates?.longitude && closestSpots && closestSpots.length > 0) {
       // Use actual closest spot data
       const closestSpot = closestSpots[0]; // API returns sorted by distance, first is the closest
 
@@ -232,7 +235,7 @@ const DashboardHome = () => {
         <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
         {/* Explore section */}
-        <ExploreActions page="home" geolocation={!!geolocation} />
+        <ExploreActions page="home" geolocation={!!coordinates} />
 
         {/* My Lineup (Favorites) - First row of content */}
         <ContentWrapper margin="LG">
@@ -252,7 +255,7 @@ const DashboardHome = () => {
           showDivider={true}
         >
           {recommendations.map(({ key, title, data }) => (
-            !geolocation ? (
+            !coordinates ? (
               <LocationPrompt key={key} />
             ) : (
               <DashboardCard
@@ -273,7 +276,7 @@ const DashboardHome = () => {
         </DashboardGrid>
 
         {/* Current Conditions Section */}
-        {geolocation && (
+        {coordinates && (
           <DashboardGrid 
             title="Current Conditions"
             showSubtitle={true}
