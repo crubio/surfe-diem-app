@@ -25,7 +25,6 @@ export const submitForecastRating = async (
       data: response.data,
       timestamp: new Date().toISOString()
     };
-    console.log('submitForecastRating success response:', successResponse);
     return successResponse;
   } catch (error: unknown) {
     const isAxiosError = error && typeof error === 'object' && 'response' in error;

@@ -1,3 +1,4 @@
+import { GeocodingResponse, ReverseGeocodingRequest } from "@/features/geocoding";
 
 async function getGeolocation(): Promise<GeolocationCoordinates> {
     return new Promise((resolve, reject) => {
@@ -12,4 +13,19 @@ async function getGeolocation(): Promise<GeolocationCoordinates> {
     });
 }
 
-export { getGeolocation };
+const formatGeolocationAddress = (geoData: GeocodingResponse) => {
+    const features = geoData.features;
+    if (!features || features.length === 0) {
+        return '';
+    }
+    const properties = features[0].properties;
+    
+    if (properties && properties.place_formatted) {
+        return properties.place_formatted;
+    }
+
+    // Fallback to name_preferred if place_formatted is not available
+    return properties.name_preferred || '';
+}
+
+export { getGeolocation, formatGeolocationAddress };

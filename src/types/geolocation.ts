@@ -35,3 +35,8 @@ export interface LocationStore extends UserLocation {
   setError: (error: string | null) => void;
   setPermission: (hasPermission: boolean) => void;
 }
+
+export type LocationInput = {
+  query: string; // e.g., "Santa Cruz, CA"
+  coordinates?: GeolocationCoordinates; // Result after geocoding
+}

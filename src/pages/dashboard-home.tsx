@@ -28,6 +28,7 @@ import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
 import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
+import { getGeoCode } from "@features/geocoding";
 
 
 const DashboardHome = () => {
@@ -45,7 +46,17 @@ const DashboardHome = () => {
   useEffect(() => {
     useGeolocationStore.getState().requestGeolocation();
   }, []);
-  
+
+  const {data: geocodedData, isLoading: isGeocodingLoading} = useQuery({
+    queryKey: ['geocode', location?.coordinates?.latitude, location?.coordinates?.longitude],
+    queryFn: async () => {
+      if (location?.coordinates) {
+        const {latitude, longitude} = location.coordinates;
+        return getGeoCode({query: `santa cruz, ca`});
+      }
+    }
+  })
+
   // List of all location metadata
   const {data: buoysResponse} = useQuery<ApiResponse<Buoy[]>>({
     queryKey: ['locations'],

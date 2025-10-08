@@ -2,7 +2,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { LocationStore, LocationData, LocationSource, GeolocationCoordinates } from '../types/geolocation';
-import { getGeolocation } from '../utils/geolocation';
+import { formatGeolocationAddress, getGeolocation } from '../utils/geolocation';
+import { getReverseGeoCode } from '@features/geocoding/api/geocoding';
 
 const initialState = {
   location: null,
@@ -34,6 +35,8 @@ export const useGeolocationStore = create<LocationStore>()(
         try {
           // Use the existing utility function
           const coords = await getGeolocation();
+          const reverseGeocodedData = await getReverseGeoCode({latitude: coords.latitude, longitude: coords.longitude});
+          const formattedReverseGeocodedData = reverseGeocodedData.data ? formatGeolocationAddress(reverseGeocodedData.data) : '';
 
           const locationData: LocationData = {
             coordinates: {
@@ -41,7 +44,7 @@ export const useGeolocationStore = create<LocationStore>()(
               longitude: coords.longitude,
               accuracy: coords.accuracy,
             },
-            address: '', // Will be filled by reverse geocoding later
+            address: formattedReverseGeocodedData,
             timestamp: new Date().toISOString(),
           };
 
