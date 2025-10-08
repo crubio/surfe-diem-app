@@ -20,6 +20,7 @@ interface GridConfig {
 interface DashboardGridProps {
   title: string;
   subtitle?: string;
+  userLocation?: Record<string, string> | string | undefined;
   children: React.ReactNode;
   columns?: GridConfig;
   spacing?: number;
@@ -43,6 +44,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   marginTop,
   padding = ITEM_PADDING,
   background = 'background.default',
+  userLocation,
 }) => {
   return (
     <Item sx={{ 
@@ -63,9 +65,9 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
         <Typography 
           variant="h6" 
           component="h3" 
-          sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'primary.main' }}
+          sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'text.secondary' }}
         >
-          {subtitle}
+          {subtitle} {userLocation ? `${typeof userLocation === 'string' ? `for ${userLocation}` : userLocation.full_address || ''}` : ''}
         </Typography>
       )}
       

@@ -27,6 +27,7 @@ export interface GeocodingFeature {
     short_code?: string;
     place_formatted?: string;
     name_preferred?: string;
+    full_address?: string;
   };
   text: string;
   place_name: string;

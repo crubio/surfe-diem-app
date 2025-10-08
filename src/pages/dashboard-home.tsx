@@ -42,20 +42,12 @@ const DashboardHome = () => {
   }, [variation]);
 
   const {location, source, isLoading, error, hasPermission} = useUserLocation();
+  const addressObject = location?.address;
+  const address = typeof addressObject === 'string' ? addressObject : addressObject ? addressObject.full_address : undefined;
 
   useEffect(() => {
     useGeolocationStore.getState().requestGeolocation();
   }, []);
-
-  const {data: geocodedData, isLoading: isGeocodingLoading} = useQuery({
-    queryKey: ['geocode', location?.coordinates?.latitude, location?.coordinates?.longitude],
-    queryFn: async () => {
-      if (location?.coordinates) {
-        const {latitude, longitude} = location.coordinates;
-        return getGeoCode({query: `santa cruz, ca`});
-      }
-    }
-  })
 
   // List of all location metadata
   const {data: buoysResponse} = useQuery<ApiResponse<Buoy[]>>({
@@ -260,6 +252,7 @@ const DashboardHome = () => {
         {/* Current Conditions Dashboard */}
         <DashboardGrid 
           title="Current Conditions Dashboard"
+          userLocation={address}
           subtitle="Recommendations"
           showSubtitle={true}
           columns={GRID_CONFIGS.RECOMMENDATIONS}

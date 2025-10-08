@@ -46,31 +46,32 @@ async function getCurrentPosition(options?: PositionOptions): Promise<Geolocatio
  * @param geoData - Mapbox geocoding response
  * @returns Formatted address string or empty string if no data
  */
-const formatGeolocationAddress = (geoData: GeocodingResponse): string => {
+const formatGeolocationAddress = (geoData: GeocodingResponse): Record<string, string> => {
     const features = geoData.features;
     if (!features || features.length === 0) {
-        return '';
+        return {};
     }
     
     const feature = features[0];
     const properties = feature.properties;
+    const result: Record<string, string> = {};
     
     // Try different property names in order of preference
     if (properties?.place_formatted) {
-        return properties.place_formatted;
+        result['place_formatted'] = properties.place_formatted;
     }
     
     if (properties?.name_preferred) {
-        return properties.name_preferred;
+        result['name_preferred'] = properties.name_preferred;
     }
     
     // Fallback to place_name from the feature itself
-    if (feature.place_name) {
-        return feature.place_name;
+    if (properties.full_address) {
+        result['full_address'] = properties.full_address;
     }
     
     // Last fallback to text property
-    return feature.text || '';
+    return result || ''
 }
 
 export { getCurrentPosition, formatGeolocationAddress };

@@ -6,23 +6,23 @@ export interface GeolocationCoordinates {
 
 export interface LocationData {
   coordinates: GeolocationCoordinates
-  address: string;
+  address: Record<string, string> | string; // Formatted address components
   city?: string;
   region?: string;
   country?: string;
-  postalCode?: string;
-  timestamp: string; // ISO string
+  postalCode?: string | undefined;
+  timestamp: string | undefined; // ISO string
 }
 
 export type LocationSource = 'auto' | 'manual' | 'fallback';
 
 export interface UserLocation {
-  location: LocationData | null;
-  source: LocationSource | null;
-  isLoading: boolean;
-  error: string | null;
-  hasPermission: boolean
-  lastUpdated: string | null; // ISO string
+  location: LocationData | undefined;
+  source: LocationSource | undefined;
+  isLoading: boolean | undefined;
+  error: string | undefined;
+  hasPermission: boolean | undefined
+  lastUpdated: string | undefined; // ISO string
 }
 
 export interface LocationStore extends UserLocation {
@@ -32,7 +32,7 @@ export interface LocationStore extends UserLocation {
   setManualLocation: (coordinates: GeolocationCoordinates, address?: string) => void;
   clearLocation: () => void;
   setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setError: (error: string | undefined) => void;
   setPermission: (hasPermission: boolean) => void;
 }
 

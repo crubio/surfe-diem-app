@@ -6,12 +6,12 @@ import { formatGeolocationAddress, getGeolocation } from '../utils/geolocation';
 import { getReverseGeoCode } from '@features/geocoding/api/geocoding';
 
 const initialState = {
-  location: null,
-  source: null,
+  location: undefined,
+  source: undefined,
   isLoading: false,
-  error: null,
+  error: undefined,
   hasPermission: false,
-  lastUpdated: null,
+  lastUpdated: undefined,
 };
 
 export const useGeolocationStore = create<LocationStore>()(
@@ -23,14 +23,14 @@ export const useGeolocationStore = create<LocationStore>()(
         set({
           location,
           source,
-          error: null,
+          error: undefined,
           lastUpdated: new Date().toISOString(),
           isLoading: false,
         });
       },
 
       requestGeolocation: async () => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: undefined });
 
         try {
           // Use the existing utility function
@@ -44,7 +44,7 @@ export const useGeolocationStore = create<LocationStore>()(
               longitude: coords.longitude,
               accuracy: coords.accuracy,
             },
-            address: formattedReverseGeocodedData,
+            address: formattedReverseGeocodedData || {},
             timestamp: new Date().toISOString(),
           };
 
@@ -52,7 +52,7 @@ export const useGeolocationStore = create<LocationStore>()(
             location: locationData,
             source: 'auto',
             hasPermission: true,
-            error: null,
+            error: undefined,
             isLoading: false,
             lastUpdated: new Date().toISOString(),
           });
@@ -81,7 +81,7 @@ export const useGeolocationStore = create<LocationStore>()(
         set({
           location: locationData,
           source: 'manual',
-          error: null,
+          error: undefined,
           isLoading: false,
           lastUpdated: new Date().toISOString(),
         });
@@ -95,7 +95,7 @@ export const useGeolocationStore = create<LocationStore>()(
         set({ isLoading });
       },
 
-      setError: (error: string | null) => {
+      setError: (error: string | undefined) => {
         set({ error, isLoading: false });
       },
 
