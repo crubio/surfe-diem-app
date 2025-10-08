@@ -20,7 +20,6 @@ export const getGeoCode = async (request: GeocodingRequest): Promise<ApiResponse
       q: request.query, // v6 uses 'q' parameter instead of embedding in URL
       access_token: MAPBOX_API_KEY,
       limit: request.limit || 1,
-      ...(request.types && { types: request.types.join(',') })
     }
   }).then((response): ApiResponse<GeocodingResponse> => {
     const successResponse: ApiResponse<GeocodingResponse> = {
@@ -35,7 +34,7 @@ export const getGeoCode = async (request: GeocodingRequest): Promise<ApiResponse
       data: null,
       timestamp: new Date().toISOString(),
       error: {
-        code: 'GEOCODING_ERROR',
+        code: 'FORWARD_GEOCODING_ERROR',
         message: error instanceof Error ? error.message : 'Failed to fetch geocoding data'
       }
     };
@@ -65,7 +64,7 @@ export const getReverseGeoCode = async (request: ReverseGeocodingRequest): Promi
       data: null,
       timestamp: new Date().toISOString(),
       error: {
-        code: 'GEOCODING_ERROR',
+        code: 'REVERSE_GEOCODING_ERROR',
         message: error instanceof Error ? error.message : 'Failed to fetch reverse geocoding data'
       }
     };
