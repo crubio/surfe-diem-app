@@ -21,12 +21,7 @@ export default function SearchAppBar() {
   const theme = useTheme();
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  useEffect(() => {
-    useGeolocationStore.getState();
-  }, []);
-
   const {location} = useUserLocation();
-  console.log(location)
   
   const notify = () => toast("No results found", {});
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
