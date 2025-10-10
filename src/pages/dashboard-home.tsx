@@ -104,6 +104,9 @@ const DashboardHome = () => {
   const bestConditions = batchRecommendations?.bestConditions || null;
   const cleanestConditions = batchRecommendations?.cleanestConditions || null;
   const highestWaves = batchRecommendations?.highestWaves || null;
+  const locationSpotsError = isClosestSpotsError || isBatchError;
+
+  console.log('locationSpotsError', locationSpotsError);
 
   // Get closest tide station to user's location
   const {data: closestTideStation} = useQuery({
@@ -206,8 +209,6 @@ const DashboardHome = () => {
     { key: 'cleanest', title: 'Cleanest Conditions', data: cleanestConditions }
   ];
 
-  console.log(bestConditions, closestSpotData, cleanestConditions);
-
   return (
     <>
       <SEO 
@@ -265,7 +266,7 @@ const DashboardHome = () => {
               <DashboardCard
                 key={key}
                 isLoading={isBatchLoading}
-                isError={isBatchError}
+                isError={locationSpotsError}
                 title={title}
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
@@ -288,7 +289,7 @@ const DashboardHome = () => {
           >
             <DashboardCard
               isLoading={isForecastLoading}
-              isError={isForecastError}
+              isError={isForecastError || isClosestSpotsError}
               title="Current Swell"
               name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
               score={currentSwellData ? {
@@ -303,7 +304,7 @@ const DashboardHome = () => {
             
             <DashboardCard
               isLoading={tidesLoading}
-              isError={tidesError}
+              isError={tidesError || isClosestSpotsError}
               title="Current Tide"
               name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
               score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
@@ -313,26 +314,20 @@ const DashboardHome = () => {
             
             <DashboardCard 
               isLoading={isForecastLoading}
-              isError={isClosestSpotsError}
-              title={"Current Water Temperature"}
+              isError={locationSpotsError || isClosestSpotsError}
+              title={"Current Water Temperature test"}
               name="" // No main name, using card below
             >
-              {currentWaterTempData?.temperature ? (
-                <TemperatureCard 
-                  temperature={currentWaterTempData?.temperature}
+              <TemperatureCard 
+                  temperature={currentWaterTempData?.temperature ?? 0}
                   showFahrenheit={true}
                   showComfortLevel={false}
                 />
-              ) : (
-                <Typography variant="body1" color="text.secondary">
-                  No data available
-                </Typography>
-              )}
             </DashboardCard>
             
             <DashboardCard
               isLoading={isBatchLoading}
-              isError={isBatchError}
+              isError={isBatchError || isClosestSpotsError}
               title="Highest Waves"
               name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
               subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
