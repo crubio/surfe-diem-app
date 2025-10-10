@@ -1,5 +1,3 @@
-import { Spot, Buoy } from './core';
-
 // Core types for managing favorites
 export type FavoriteType = 'spot' | 'buoy';
 export type FavoriteableId = string | number;

@@ -142,8 +142,15 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
     <>
       {isLoading ? (
         <Loading />
-      ) : isError ? (
-        <NoData message="Error loading data" />
+      ) : isError || !name ? (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              {title}
+            </Typography>
+            <NoData message="No data available" />
+          </CardContent>
+        </Card>
       ) : (
         cardContent
       )}

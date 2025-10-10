@@ -4,9 +4,19 @@ export interface GeolocationCoordinates {
   accuracy?: number;
 }
 
+export type GeoAddressType = 'full_name' | 'name_preferred' | 'place_formatted' | 'full_address';
+
+export interface SetGeolocationData extends GeolocationCoordinates {
+  address?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  postalCode?: string | undefined;
+}
+
 export interface LocationData {
   coordinates: GeolocationCoordinates
-  address: Record<string, string> | string; // Formatted address components
+  address: string;
   city?: string;
   region?: string;
   country?: string;
@@ -27,9 +37,10 @@ export interface UserLocation {
 
 export interface LocationStore extends UserLocation {
   // Actions
+  getStorage: () => Storage;
   setLocation: (location: LocationData, source: LocationSource) => void;
   requestGeolocation: () => Promise<void>;
-  setManualLocation: (coordinates: GeolocationCoordinates, address?: string) => void;
+  setManualLocation: (coordinates: SetGeolocationData, address?: string) => void;
   clearLocation: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | undefined) => void;

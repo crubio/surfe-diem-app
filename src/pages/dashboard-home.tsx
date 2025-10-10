@@ -1,17 +1,16 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { getGeolocation } from "utils/geolocation";
 import { ApiResponse } from "types/api";
 import { Spot, Buoy } from "types/core";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
@@ -28,13 +27,16 @@ import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
 import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
-import { getGeoCode } from "@features/geocoding";
+import { ChangeLocationModal } from "@features/geocoding/components/change-location";
 
 
 const DashboardHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   
   // Track page view on mount
   useEffect(() => {
@@ -42,11 +44,12 @@ const DashboardHome = () => {
   }, [variation]);
 
   const {location, source, isLoading, error, hasPermission} = useUserLocation();
-  const addressObject = location?.address;
-  const address = typeof addressObject === 'string' ? addressObject : addressObject ? addressObject.full_address : undefined;
 
   useEffect(() => {
-    useGeolocationStore.getState().requestGeolocation();
+    useGeolocationStore.getState();
+    if (useGeolocationStore.getState().location === undefined && !useGeolocationStore.getState().isLoading) {
+      useGeolocationStore.getState().requestGeolocation();
+    }
   }, []);
 
   // List of all location metadata
@@ -122,11 +125,6 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
-
-  // Get featured spots from existing spots data
-  const featuredSpots = spots ? spots.filter((spot: Spot) => 
-    FEATURED_SPOTS.includes(spot.slug)
-  ) : [];
 
   // Get current tide value and time
   const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
@@ -208,6 +206,8 @@ const DashboardHome = () => {
     { key: 'cleanest', title: 'Cleanest Conditions', data: cleanestConditions }
   ];
 
+  console.log(bestConditions, closestSpotData, cleanestConditions);
+
   return (
     <>
       <SEO 
@@ -233,12 +233,14 @@ const DashboardHome = () => {
         padding="MEDIUM" 
         marginTop={{ xs: 1, sm: 0 }}
       >
-        
+        {/* Modal to change location */}
+        <ChangeLocationModal open={open} onClose={handleClose} />
+
         {/* Hero Section */}
         <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
         {/* Explore section */}
-        <ExploreActions page="home" geolocation={!!coordinates} />
+        <ExploreActions page="home" geolocation={!!coordinates} handleOpen={handleOpen} />
 
         {/* My Lineup (Favorites) - First row of content */}
         <ContentWrapper margin="LG">
@@ -248,11 +250,9 @@ const DashboardHome = () => {
             isLoading={favoritesLoading}
           />
         </ContentWrapper>
-
         {/* Current Conditions Dashboard */}
         <DashboardGrid 
           title="Current Conditions Dashboard"
-          userLocation={address}
           subtitle="Recommendations"
           showSubtitle={true}
           columns={GRID_CONFIGS.RECOMMENDATIONS}

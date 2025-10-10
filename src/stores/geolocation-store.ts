@@ -1,9 +1,9 @@
 // src/stores/geolocationStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { LocationStore, LocationData, LocationSource, GeolocationCoordinates } from '../types/geolocation';
-import { formatGeolocationAddress, getGeolocation } from '../utils/geolocation';
-import { getReverseGeoCode } from '@features/geocoding/api/geocoding';
+import { LocationStore, LocationData, LocationSource, GeolocationCoordinates, SetGeolocationData } from '../types/geolocation';
+import { getGeolocation } from '../utils/geolocation';
+import { getGeoCode, getReverseGeoCode } from '@features/geocoding/api/geocoding';
 
 const initialState = {
   location: undefined,
@@ -19,6 +19,13 @@ export const useGeolocationStore = create<LocationStore>()(
     (set, get) => ({
       ...initialState,
 
+      getStorage: () => {
+        if (typeof localStorage === 'undefined') {
+          throw new Error('Local storage is not available');
+        }
+        return localStorage;
+      },
+
       setLocation: (location: LocationData, source: LocationSource) => {
         set({
           location,
@@ -33,10 +40,8 @@ export const useGeolocationStore = create<LocationStore>()(
         set({ isLoading: true, error: undefined });
 
         try {
-          // Use the existing utility function
           const coords = await getGeolocation();
           const reverseGeocodedData = await getReverseGeoCode({latitude: coords.latitude, longitude: coords.longitude});
-          const formattedReverseGeocodedData = reverseGeocodedData.data ? formatGeolocationAddress(reverseGeocodedData.data) : '';
 
           const locationData: LocationData = {
             coordinates: {
@@ -44,7 +49,7 @@ export const useGeolocationStore = create<LocationStore>()(
               longitude: coords.longitude,
               accuracy: coords.accuracy,
             },
-            address: formattedReverseGeocodedData || {},
+            address: reverseGeocodedData.data?.features?.[0]?.properties?.full_address || '',
             timestamp: new Date().toISOString(),
           };
 
@@ -57,11 +62,11 @@ export const useGeolocationStore = create<LocationStore>()(
             lastUpdated: new Date().toISOString(),
           });
         } catch (error) {
-          const errorMessage = error instanceof GeolocationPositionError
-            ? getGeolocationErrorMessage(error.code)
-            : error instanceof Error 
-            ? error.message
-            : 'Failed to get location';
+          const errAny = error as any;
+          const isGeoErr = typeof errAny?.code === 'number';
+          const errorMessage = isGeoErr 
+            ? getGeolocationErrorMessage(errAny.code)
+            : error instanceof Error ? error.message : 'Failed to get location';
 
           set({
             error: errorMessage,
@@ -71,10 +76,14 @@ export const useGeolocationStore = create<LocationStore>()(
         }
       },
 
-      setManualLocation: (coordinates: GeolocationCoordinates, address = '') => {
+      setManualLocation: (coordinates: SetGeolocationData, address?: string) => {
         const locationData: LocationData = {
-          coordinates,
-          address,
+          coordinates: {
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude,
+            accuracy: coordinates.accuracy,
+          },
+          address: address || '',
           timestamp: new Date().toISOString(),
         };
 
@@ -106,7 +115,6 @@ export const useGeolocationStore = create<LocationStore>()(
     {
       name: 'surfe-diem-geolocation',
       storage: createJSONStorage(() => localStorage),
-      // Only persist certain fields (not loading states)
       partialize: (state) => ({
         location: state.location,
         source: state.source,
@@ -132,7 +140,15 @@ const getGeolocationErrorMessage = (code: number): string => {
 };
 
 // Helper hook for easy consumption
-export const useUserLocation = () => {
+export const useUserLocation = (): {
+  location: LocationData | undefined;
+  source: LocationSource | undefined;
+  isLoading: boolean | undefined;
+  error: string | undefined;
+  hasPermission: boolean | undefined;
+  coordinates?: GeolocationCoordinates;
+  address?: string;
+} => {
   const { location, source, isLoading, error, hasPermission } = useGeolocationStore();
   
   return {

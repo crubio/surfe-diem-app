@@ -10,6 +10,7 @@ import {
   SUBSECTION_TITLE_MB,
   DASHBOARD_CARD_SECTION_MB,
 } from 'utils/layout-constants';
+import { useGeolocationStore } from '../../stores/geolocation-store';
 
 interface GridConfig {
   xs: number;
@@ -44,8 +45,8 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   marginTop,
   padding = ITEM_PADDING,
   background = 'background.default',
-  userLocation,
 }) => {
+  const { location } = useGeolocationStore.getState();
   return (
     <Item sx={{ 
       bgcolor: background, 
@@ -63,11 +64,12 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       
       {showSubtitle && subtitle && (
         <Typography 
-          variant="h6" 
+          variant="body1" 
           component="h3" 
-          sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: TITLE_FONT_WEIGHT, color: 'text.secondary' }}
+          sx={{ mb: SUBSECTION_TITLE_MB, fontWeight: 'normal', color: 'text.secondary' }}
         >
-          {subtitle} {userLocation ? `${typeof userLocation === 'string' ? `for ${userLocation}` : userLocation.full_address || ''}` : ''}
+          {subtitle}
+          {location && location.address ? ` - ${location.address}` : ` near you`}
         </Typography>
       )}
       
