@@ -34,7 +34,7 @@ export const AppProvider = () => {
             <CssBaseline />
             <FavoritesProvider>
               <RouterProvider router={router} />
-              <ABTestingDebug />
+              {/* <ABTestingDebug /> */}
             </FavoritesProvider>
           </ThemeProvider>
         </QueryClientProvider>

@@ -5,7 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import { IconButton, Link, Menu, MenuItem, useTheme, useMediaQuery } from '@mui/material';
+import { IconButton, Link, Menu, MenuItem, useTheme, useMediaQuery, Icon } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getSearchResults } from '../locations/api/locations';
 import { useEffect, useState } from 'react';
@@ -14,10 +14,14 @@ import { LinkRouter, SearchResultsDialog } from 'components';
 import { random } from 'lodash';
 import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
+import { useGeolocationStore, useUserLocation } from '../../stores/geolocation-store';
+import { LocationCityOutlined } from "@mui/icons-material"
 
 export default function SearchAppBar() {
   const theme = useTheme();
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const {location} = useUserLocation();
   
   const notify = () => toast("No results found", {});
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -27,7 +31,7 @@ export default function SearchAppBar() {
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
   const pages: (keyof typeof pageMap)[] = ['Map', 'Surf Spots', 'About'];
   const pageMap = {
-    Map: '/map',
+    'Map': '/map',
     'Surf Spots': '/spots',
     'About': '/about'
   }
@@ -222,7 +226,7 @@ export default function SearchAppBar() {
             flexGrow: { xs: 1, md: 0 },
             maxWidth: { xs: '100%', sm: '300px', md: '250px' },
             mx: { xs: 0.5, sm: 2 },
-            order: { xs: 1, md: 2 }
+            // order: { xs: 1, md: 2 }
           }}>
             <Search sx={{ 
               width: '100%',
@@ -255,7 +259,7 @@ export default function SearchAppBar() {
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             gap: 1,
-            order: { xs: 2, md: 1 },
+            // order: { xs: 2, md: 1 },
             ml: { md: 2 }
           }}>
             {renderNavLinks(pageMap).map((page, index) => (
@@ -263,6 +267,27 @@ export default function SearchAppBar() {
                 {page}
               </div>
             ))}
+          </Box>
+          {/* location display */}
+          <Box sx={{
+            justifyContent: 'flex-end',
+            marginLeft: 'auto',
+            flexGrow: 0,
+            display: { xs: 'none', md: 'flex' },
+            alignItems: 'center',
+            gap: 1,
+            // order: { xs: 3, md: 3 },
+            ml: { md: 2 }
+          }}>
+            {location ? (
+              <Typography variant="body1" color="text.primary" sx={{verticalAlign: 'middle', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5}}>
+                <LocationCityOutlined />{location.address}
+              </Typography>
+            ) : (
+              <Typography variant="body1" color="text.secondary">
+                Detecting location...
+              </Typography>
+            )}
           </Box>
         </Toolbar>
       </AppBar>

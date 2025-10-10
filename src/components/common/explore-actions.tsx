@@ -6,6 +6,7 @@ import { trackInteraction } from "utils/analytics";
 interface ExploreActionsProps {
   page: string; // e.g., 'home', 'spot', 'location'
   geolocation?: boolean; // whether geolocation is available
+  handleOpen: () => void;
 }
 
 type ExploreAction = 'map' | 'spots' | 'near_me';
@@ -45,7 +46,7 @@ const ExploreActions = (props: ExploreActionsProps) => {
           onClick={() => handleExploreAction(props.page, 'map')}
           sx={buttonStyles}
         >
-          View Map
+          View map
         </Button>
         <Button 
           variant="outlined" 
@@ -53,7 +54,7 @@ const ExploreActions = (props: ExploreActionsProps) => {
           onClick={() => handleExploreAction(props.page, 'spots')}
           sx={buttonStyles}
         >
-          Browse All Spots
+          Browse spots
         </Button>
         {props.geolocation && (
           <Button 
@@ -65,6 +66,14 @@ const ExploreActions = (props: ExploreActionsProps) => {
             Spots Near Me
           </Button>
         )}
+        <Button
+          variant="outlined" 
+          size="large"
+          onClick={props.handleOpen}
+          sx={buttonStyles}
+        >
+          Change location
+        </Button>
       </Stack>
     </Item>
   )

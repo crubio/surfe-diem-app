@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Favorite, FavoritesState, FavoritesContextType } from '../types';
+import { Favorite, FavoritesState, FavoritesContextType, FavoriteCreate, FavoriteableId, FavoriteType } from '../types';
 import {
   loadFavoritesFromStorage,
   saveFavoritesToStorage,
@@ -21,8 +21,8 @@ type FavoritesAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_FAVORITES'; payload: Favorite[] }
-  | { type: 'ADD_FAVORITE'; payload: Omit<Favorite, 'addedAt'> }
-  | { type: 'REMOVE_FAVORITE'; payload: { id: string; type: 'spot' | 'buoy' } };
+  | { type: 'ADD_FAVORITE'; payload: FavoriteCreate }
+  | { type: 'REMOVE_FAVORITE'; payload: { id: FavoriteableId; type: FavoriteType }; };
 
 // Reducer
 const favoritesReducer = (state: FavoritesState, action: FavoritesAction): FavoritesState => {
@@ -38,7 +38,7 @@ const favoritesReducer = (state: FavoritesState, action: FavoritesAction): Favor
       return { ...state, favorites: newFavorites };
     }
     case 'REMOVE_FAVORITE': {
-      const newFavorites = removeFavoriteUtil(state.favorites, action.payload.id, action.payload.type);
+      const newFavorites = removeFavoriteUtil(state.favorites, String(action.payload.id), action.payload.type);
       return { ...state, favorites: newFavorites };
     }
     default:
@@ -65,7 +65,8 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
         const favorites = loadFavoritesFromStorage();
         dispatch({ type: 'SET_FAVORITES', payload: favorites });
       } catch (error) {
-        dispatch({ type: 'SET_ERROR', payload: 'Failed to load favorites' });
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load favorites';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
@@ -81,19 +82,19 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
   }, [state.favorites, state.isLoading]);
 
   // Context methods
-  const addFavorite = (favorite: Omit<Favorite, 'addedAt'>) => {
+  const addFavorite = (favorite: FavoriteCreate) => {
     dispatch({ type: 'ADD_FAVORITE', payload: favorite });
   };
 
-  const removeFavorite = (id: string, type: 'spot' | 'buoy') => {
+  const removeFavorite = (id: FavoriteableId, type: FavoriteType) => {
     dispatch({ type: 'REMOVE_FAVORITE', payload: { id, type } });
   };
 
-  const isFavorited = (id: string, type: 'spot' | 'buoy'): boolean => {
-    return isFavoritedUtil(state.favorites, id, type);
+  const isFavorited = (id: FavoriteableId, type: FavoriteType): boolean => {
+    return isFavoritedUtil(state.favorites, String(id), type);
   };
 
-  const getFavoritesByType = (type: 'spot' | 'buoy'): Favorite[] => {
+  const getFavoritesByType = (type: FavoriteType): Favorite[] => {
     return getFavoritesByTypeUtil(state.favorites, type);
   };
 
@@ -117,7 +118,7 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
 // Custom hook to use favorites context
 export const useFavorites = (): FavoritesContextType => {
   const context = useContext(FavoritesContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useFavorites must be used within a FavoritesProvider');
   }
   return context;

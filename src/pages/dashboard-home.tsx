@@ -1,17 +1,16 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
 import { SEO, LocationPrompt, PageContainer, ContentWrapper } from "components";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { getGeolocation } from "utils/geolocation";
 import { ApiResponse } from "types/api";
 import { Spot, Buoy } from "types/core";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
@@ -27,18 +26,32 @@ import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
+import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
+import { ChangeLocationModal } from "@features/geocoding/components/change-location";
 
 
 const DashboardHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   
   // Track page view on mount
   useEffect(() => {
     trackPageView(variation, 'dashboard-home');
   }, [variation]);
-  
+
+  const {location, source, isLoading, error, hasPermission} = useUserLocation();
+
+  useEffect(() => {
+    useGeolocationStore.getState();
+    if (useGeolocationStore.getState().location === undefined && !useGeolocationStore.getState().isLoading) {
+      useGeolocationStore.getState().requestGeolocation();
+    }
+  }, []);
+
   // List of all location metadata
   const {data: buoysResponse} = useQuery<ApiResponse<Buoy[]>>({
     queryKey: ['locations'],
@@ -52,21 +65,17 @@ const DashboardHome = () => {
     queryKey: ['spots'],
     queryFn: async () => getSurfSpots()
   });
-  console.log(spotsResponse)
   
   const spots = spotsResponse?.status === 'success' ? spotsResponse.data : [];
   
-  // Users geolocation if available
-  const {data: geolocation} = useQuery({
-    queryKey: ['geolocation'],
-    queryFn: async () => getGeolocation()
-  });
+  // Users geolocation from Zustand store
+  const coordinates = location?.coordinates;
 
   // List of closest spots to user's geolocation if available
   const {data: closestSpots, isError: isClosestSpotsError} = useQuery({
-    queryKey: ['closest_spots', geolocation?.latitude, geolocation?.longitude],
-    queryFn: () => getSurfSpotClosest(geolocation!.latitude, geolocation!.longitude),
-    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+    queryKey: ['closest_spots', coordinates?.latitude, coordinates?.longitude],
+    queryFn: () => getSurfSpotClosest(coordinates!.latitude, coordinates!.longitude),
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
@@ -95,15 +104,18 @@ const DashboardHome = () => {
   const bestConditions = batchRecommendations?.bestConditions || null;
   const cleanestConditions = batchRecommendations?.cleanestConditions || null;
   const highestWaves = batchRecommendations?.highestWaves || null;
+  const locationSpotsError = isClosestSpotsError || isBatchError;
+
+  console.log('locationSpotsError', locationSpotsError);
 
   // Get closest tide station to user's location
   const {data: closestTideStation} = useQuery({
-    queryKey: ['closest_tide_station', geolocation?.latitude, geolocation?.longitude],
+    queryKey: ['closest_tide_station', coordinates?.latitude, coordinates?.longitude],
     queryFn: () => getClostestTideStation({
-      lat: geolocation!.latitude,
-      lng: geolocation!.longitude
+      lat: coordinates!.latitude,
+      lng: coordinates!.longitude
     }),
-    enabled: !!geolocation?.latitude && !!geolocation?.longitude,
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
   })
 
   // Get current tide data for the closest station
@@ -116,11 +128,6 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes (more frequent updates for current data)
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
-
-  // Get featured spots from existing spots data
-  const featuredSpots = spots ? spots.filter((spot: Spot) => 
-    FEATURED_SPOTS.includes(spot.slug)
-  ) : [];
 
   // Get current tide value and time
   const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
@@ -170,7 +177,7 @@ const DashboardHome = () => {
   // Helper function to get closest spot
   const getClosestSpot = () => {
     // If we have geolocation, show closest spot
-    if (geolocation?.latitude && geolocation?.longitude && closestSpots && closestSpots.length > 0) {
+    if (coordinates?.latitude && coordinates?.longitude && closestSpots && closestSpots.length > 0) {
       // Use actual closest spot data
       const closestSpot = closestSpots[0]; // API returns sorted by distance, first is the closest
 
@@ -227,12 +234,14 @@ const DashboardHome = () => {
         padding="MEDIUM" 
         marginTop={{ xs: 1, sm: 0 }}
       >
-        
+        {/* Modal to change location */}
+        <ChangeLocationModal open={open} onClose={handleClose} />
+
         {/* Hero Section */}
         <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
         {/* Explore section */}
-        <ExploreActions page="home" geolocation={!!geolocation} />
+        <ExploreActions page="home" geolocation={!!coordinates} handleOpen={handleOpen} />
 
         {/* My Lineup (Favorites) - First row of content */}
         <ContentWrapper margin="LG">
@@ -242,7 +251,6 @@ const DashboardHome = () => {
             isLoading={favoritesLoading}
           />
         </ContentWrapper>
-
         {/* Current Conditions Dashboard */}
         <DashboardGrid 
           title="Current Conditions Dashboard"
@@ -252,13 +260,13 @@ const DashboardHome = () => {
           showDivider={true}
         >
           {recommendations.map(({ key, title, data }) => (
-            !geolocation ? (
+            !coordinates ? (
               <LocationPrompt key={key} />
             ) : (
               <DashboardCard
                 key={key}
                 isLoading={isBatchLoading}
-                isError={isBatchError}
+                isError={locationSpotsError}
                 title={title}
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
@@ -273,7 +281,7 @@ const DashboardHome = () => {
         </DashboardGrid>
 
         {/* Current Conditions Section */}
-        {geolocation && (
+        {coordinates && (
           <DashboardGrid 
             title="Current Conditions"
             showSubtitle={true}
@@ -281,7 +289,7 @@ const DashboardHome = () => {
           >
             <DashboardCard
               isLoading={isForecastLoading}
-              isError={isForecastError}
+              isError={isForecastError || isClosestSpotsError}
               title="Current Swell"
               name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
               score={currentSwellData ? {
@@ -296,7 +304,7 @@ const DashboardHome = () => {
             
             <DashboardCard
               isLoading={tidesLoading}
-              isError={tidesError}
+              isError={tidesError || isClosestSpotsError}
               title="Current Tide"
               name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
               score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
@@ -306,26 +314,20 @@ const DashboardHome = () => {
             
             <DashboardCard 
               isLoading={isForecastLoading}
-              isError={isClosestSpotsError}
-              title={"Current Water Temperature"}
+              isError={locationSpotsError || isClosestSpotsError}
+              title={"Current Water Temperature test"}
               name="" // No main name, using card below
             >
-              {currentWaterTempData?.temperature ? (
-                <TemperatureCard 
-                  temperature={currentWaterTempData?.temperature}
+              <TemperatureCard 
+                  temperature={currentWaterTempData?.temperature ?? 0}
                   showFahrenheit={true}
                   showComfortLevel={false}
                 />
-              ) : (
-                <Typography variant="body1" color="text.secondary">
-                  No data available
-                </Typography>
-              )}
             </DashboardCard>
             
             <DashboardCard
               isLoading={isBatchLoading}
-              isError={isBatchError}
+              isError={isBatchError || isClosestSpotsError}
               title="Highest Waves"
               name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
               subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
