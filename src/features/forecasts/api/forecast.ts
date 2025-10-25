@@ -1,4 +1,4 @@
-import { ForecastDataCurrent, ForecastDataDaily, ForecastDataHourly } from '..';
+import { ForecastDataCurrent, ForecastDataDaily, ForecastDataHourly, ForecastDataHourlyResponse } from '..';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
 
@@ -47,7 +47,7 @@ const dailyParams = Object.values(ForecastTypesDaily).join(",")
 
 const currentParams = Object.values(ForecastTypesCurrent).join(",")
 
-export const getForecastHourly = (params: ForecastQueryParams): Promise<ForecastDataHourly> => {
+export const getForecastHourly = (params: ForecastQueryParams): Promise<ForecastDataHourlyResponse> => {
   params['hourly'] = hourlyParams
   return axios.get(API_ROUTES.FORECAST_URL, {
     params: params

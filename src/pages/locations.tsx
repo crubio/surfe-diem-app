@@ -1,4 +1,3 @@
-import { getForecastHourly } from "@features/forecasts"
 import { getLatestObservation, getLocation } from "@features/locations/api/locations"
 import { Box, Container, Grid, Link, Stack } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
@@ -6,7 +5,6 @@ import { FavoriteButton, Item, SEO, BuoyStructuredData } from "components"
 import { useParams } from "react-router-dom"
 import { formatLatLong } from "utils/common"
 import ErrorPage from "./error"
-import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import ValueCardSmall from "components/common/value-card-small"
 
@@ -26,16 +24,6 @@ const LocationsPage = () => {
   });
 
   const latLong = formatLatLong(locationData?.location || "")
-
-  const {data: forecastDataHourly } = useQuery({
-    queryKey: ['forecast_hourly', locationData?.location_id],
-    queryFn: () => getForecastHourly({
-      latitude: latLong[0],
-      longitude: latLong[1],
-      forecast_days: 1,
-    }),
-    enabled: !!locationData?.location_id
-  });
 
   const latestWave = (latestObservationData ?? [])[0] || [];
   const latestSwell = (latestObservationData ?? [])[1] || [];
@@ -127,11 +115,6 @@ const LocationsPage = () => {
               </Grid>
             </>
           )}
-        {forecastDataHourly?.hourly &&
-          <Box sx={{marginTop: "20px"}}>
-            <WaveChart waveHeightData={forecastDataHourly?.hourly.swell_wave_height} wavePeriodData={forecastDataHourly?.hourly.swell_wave_period} timeData={forecastDataHourly?.hourly.time} />
-          </Box>
-        }
       </Container>
       )}
       </div>
