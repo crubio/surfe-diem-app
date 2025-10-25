@@ -106,8 +106,6 @@ const DashboardHome = () => {
   const highestWaves = batchRecommendations?.highestWaves || null;
   const locationSpotsError = isClosestSpotsError || isBatchError;
 
-  console.log('locationSpotsError', locationSpotsError);
-
   // Get closest tide station to user's location
   const {data: closestTideStation} = useQuery({
     queryKey: ['closest_tide_station', coordinates?.latitude, coordinates?.longitude],

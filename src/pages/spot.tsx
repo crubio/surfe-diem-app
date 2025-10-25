@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
 import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData, PageContainer, SectionContainer } from "components"
 import { isEmpty } from "lodash"
-import WaveChart from "@features/charts/wave-height"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
@@ -13,6 +12,8 @@ import { ForecastRatingComponent } from "@features/locations/components"
 import { formatCoordinates, formatTemperature, formatDirection } from "utils/formatting"
 import { getCurrentTideValue } from "utils/tides"
 import { useTideData, useForecastData, useSpotData, useNearbyBuoys} from "hooks"
+import { getForecastHourly } from "@features/forecasts"
+import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 
 const SpotPage = () => {
   const params = useParams()
@@ -25,7 +26,13 @@ const SpotPage = () => {
 
   const {dailyTides, currentTides, isLoading: isTideDataLoading} = useTideData(spotData?.latitude, spotData?.longitude)
 
-  const {hourly: forecastDataHourly, current: forecastCurrent, isLoading: isWeatherLoading} = useForecastData(spotData?.latitude, spotData?.longitude)
+  const {current: forecastCurrent, isLoading: isWeatherLoading} = useForecastData(spotData?.latitude, spotData?.longitude)
+
+  const {data: forecastProjected, isLoading: isForecastLoading} = useQuery({
+    queryKey: ['forecast_projected', spotData?.id],
+    queryFn: () => getForecastHourly({latitude: spotData!.latitude, longitude: spotData!.longitude}),
+    enabled: !!spotData?.id
+  })
   
   // TODO: create hook for current weather if thats needed in the future.
   const {data: currentWeather} = useQuery({
@@ -35,6 +42,7 @@ const SpotPage = () => {
   });
 
   const {data: nearbyBuoys} = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
+  console.log(forecastProjected)
 
   return (
     <>
@@ -271,19 +279,10 @@ const SpotPage = () => {
                             Today's Range
                           </Typography>
                           <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                              High: {Math.max(...dailyTides.data.predictions.filter((p: any) => p.type === 'H').map((p: any) => parseFloat(p.v))).toFixed(1)}ft at {new Date(dailyTides.data.predictions.find((p: any) => p.type === 'H' && parseFloat(p.v) === Math.max(...dailyTides.data.predictions.filter((p: any) => p.type === 'H').map((p: any) => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
-                                hour: 'numeric', 
-                                minute: '2-digit',
-                                hour12: true 
-                              })}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Low: {Math.min(...dailyTides.data.predictions.filter((p: any) => p.type === 'L').map((p: any) => parseFloat(p.v))).toFixed(1)}ft at {new Date(dailyTides.data.predictions.find((p: any) => p.type === 'L' && parseFloat(p.v) === Math.min(...dailyTides.data.predictions.filter((p: any) => p.type === 'L').map((p: any) => parseFloat(p.v))))?.t || '').toLocaleTimeString('en-US', { 
-                                hour: 'numeric', 
-                                minute: '2-digit',
-                                hour12: true 
-                              })}
+                            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '1.25rem', mb: 0.5 }}>
+                              { dailyTides.data.predictions.map((p: any) => {
+                                return <><span key={p.t}>{parseFloat(p.v).toFixed(1)}ft at {new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span><br /></>
+                              } )}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -298,7 +297,6 @@ const SpotPage = () => {
           )}
           { !isEmpty(spotData) && (
             <SectionContainer 
-              title="Location Map"
               background="PAPER"
               spacing="NORMAL"
               marginBottom="NORMAL"
@@ -315,23 +313,9 @@ const SpotPage = () => {
               </Grid>
             </SectionContainer>
           )}
-
-
-          {forecastDataHourly?.data?.hourly && (
-            <SectionContainer 
-              title="Wave & Tide Forecast"
-              background="PAPER"
-              spacing="NORMAL"
-              marginBottom="NORMAL"
-            >
-              <WaveChart 
-                waveHeightData={forecastDataHourly?.data.hourly.swell_wave_height} 
-                wavePeriodData={forecastDataHourly?.data.hourly.swell_wave_period} 
-                timeData={forecastDataHourly?.data.hourly.time}
-                tideData={dailyTides?.data}
-              />
-            </SectionContainer>
-          )}
+          <SectionContainer>
+            <SurfScoreWaveChart data={forecastProjected ?? null} isLoading={isForecastLoading} />
+          </SectionContainer>
         </PageContainer>
       ): null}
     </>

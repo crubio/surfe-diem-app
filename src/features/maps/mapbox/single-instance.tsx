@@ -139,7 +139,7 @@ const MapBoxSingle = (props: MapProps) => {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
-          Location Map
+          Explore
         </Typography>
         <IconButton 
           onClick={() => setIsExpanded(!isExpanded)}

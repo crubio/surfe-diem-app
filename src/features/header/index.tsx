@@ -14,7 +14,7 @@ import { LinkRouter, SearchResultsDialog } from 'components';
 import { random } from 'lodash';
 import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
-import { useGeolocationStore, useUserLocation } from '../../stores/geolocation-store';
+import { useUserLocation } from '../../stores/geolocation-store';
 import { LocationCityOutlined } from "@mui/icons-material"
 
 export default function SearchAppBar() {
@@ -29,9 +29,9 @@ export default function SearchAppBar() {
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   // Used to make sure the query is unique if the same params are used
   const [queryId, setQueryId] = useState<number>(random(1, 1000))
-  const pages: (keyof typeof pageMap)[] = ['Map', 'Surf Spots', 'About'];
+  const pages: (keyof typeof pageMap)[] = ['Explore', 'Surf Spots', 'About'];
   const pageMap = {
-    'Map': '/map',
+    'Explore': '/map',
     'Surf Spots': '/spots',
     'About': '/about'
   }
@@ -177,6 +177,7 @@ export default function SearchAppBar() {
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
+                zIndex: 1300,
                 display: { xs: 'block', md: 'none' },
                 '& .MuiPaper-root': {
                   minWidth: '200px',
@@ -206,7 +207,8 @@ export default function SearchAppBar() {
                     }}
                   >
                     <Typography 
-                      textAlign="center" 
+                      textAlign="center"
+                      component="span"
                       sx={{ 
                         fontSize: '16px',
                         fontWeight: 500,
