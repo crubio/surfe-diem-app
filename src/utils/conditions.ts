@@ -2,7 +2,9 @@
  * Surf condition utilities for color coding and scoring
  */
 
-import { formatDirection } from "./formatting";
+import { formatDirection, kilometersPerHourToMph } from "./formatting";
+import { ParsedNWSCurrent } from "./nws-parser";
+import { AxiosResponse } from "@/types/api";
 
 /**
  * Interface for surf conditions data
@@ -68,8 +70,8 @@ export interface SpotBatchData {
       direction: number;
       period: number;
     } | null;
-    wind: any;
-    current: any;
+    wind: Record<string, unknown>;
+    current: Record<string, unknown>;
   };
 }
 
@@ -151,18 +153,21 @@ export function getWaveHeightScore(height: number): number {
  * Calculate weighted overall score from individual factor scores
  */
 export function calculateOverallScore(scores: {
-  swellPeriod: number;
+  periodQuality: number;
   windQuality: number;
   waveHeight: number;
 }): number {
-  const { swellPeriod, windQuality, waveHeight } = scores;
+  const { periodQuality, windQuality, waveHeight } = scores;
   
   // Weighted average based on importance
+  // periodQuality = average of wave_period and primary_swell_period
+  // Represents the overall quality of wave period from both main waves and dominant swell
   const weightedScore = (
-    (swellPeriod * 0.40) +    // 40% weight - most critical for wave quality
+    (periodQuality * 0.40) +  // 40% weight - period quality (most critical)
     (windQuality * 0.35) +    // 35% weight - surface conditions
     (waveHeight * 0.25)       // 25% weight - surfability
   );
+  // Total: 100%
   
   return Math.round(weightedScore);
 }
@@ -171,6 +176,7 @@ export function calculateOverallScore(scores: {
  * Enhanced condition score using the new scoring system
  */
 export function getEnhancedConditionScore(conditions: {
+  wavePeriod?: number;
   swellPeriod?: number;
   windSpeed?: number;
   waveHeight?: number;
@@ -178,13 +184,18 @@ export function getEnhancedConditionScore(conditions: {
   const { swellPeriod, windSpeed = 0, waveHeight = 0 } = conditions;
   
   // Calculate individual scores
+  const wavePeriodScore = getSwellPeriodScore(conditions.wavePeriod || 0);
   const swellPeriodScore = getSwellPeriodScore(swellPeriod || 0);
   const windQualityScore = getWindQualityScore(windSpeed || 0);
   const waveHeightScore = getWaveHeightScore(waveHeight || 0);
   
+  // Average the two period scores (wave_period and primary_swell_period)
+  // Both represent different period metrics - combine for overall period quality assessment
+  const periodQualityScore = (wavePeriodScore + swellPeriodScore) / 2;
+  
   // Calculate overall score
   const overallScore = calculateOverallScore({
-    swellPeriod: swellPeriodScore,
+    periodQuality: periodQualityScore,
     windQuality: windQualityScore,
     waveHeight: waveHeightScore
   });
@@ -262,7 +273,75 @@ export function getConditionDescription(conditions: SurfConditions): string {
   return 'Small waves or challenging wind';
 }
 
- 
+/**
+ * Transform NWS current forecast data to ConditionResult format for scoring
+ * @param current ParsedNWSCurrent data from NWS API
+ * @param spot Spot data with location and metadata
+ * @returns ConditionResult ready for scoring and display
+ */
+export function transformNWSToConditionResult(
+  current: ParsedNWSCurrent,
+  spot: { id: number; name: string; slug: string; distance?: string }
+): ConditionResult {
+  // Extract main wave metrics (these should always be available from NWS)
+  const waveHeight = current?.wave_height || 0;
+  const wavePeriod = current?.wave_period || 0;
+  const swellPeriod = current?.primary_swell_period || 0;
+  const windSpeedKmh = current?.wind_speed || 0;  // Wind speed from NWS in km/h
+  const windSpeedMph = Math.floor(kilometersPerHourToMph(windSpeedKmh)); // Convert to mph for scoring and display
+  const windWaveHeight = current?.wind_wave_height || 0;
+  
+  // For direction: prefer wave_direction if available, otherwise use primary swell direction
+  const waveDirection = current?.wave_direction && current.wave_direction > 0 
+    ? current.wave_direction 
+    : current?.primary_swell_direction || 0;
+  
+  // Get condition score for display using main wave metrics and actual wind speed (mph)
+  const conditionScore = getEnhancedConditionScore({
+    wavePeriod: wavePeriod,
+    swellPeriod: swellPeriod,
+    windSpeed: windSpeedMph,
+    waveHeight: waveHeight
+  });
+  
+  // Format wave height for display
+  const waveHeightDisplay = waveHeight > 0 
+    ? `${waveHeight.toFixed(1)}-${(waveHeight + 1).toFixed(1)}ft`
+    : '0-1ft';
+  
+  // Determine conditions description based on wind wave height (chop indicator)
+  let conditionsDescription = 'Current conditions';
+  if (windWaveHeight < 0.5) {
+    conditionsDescription = 'Glassy';
+  } else if (windWaveHeight < 1.0) {
+    conditionsDescription = 'Clean';
+  } else if (windWaveHeight < 2.0) {
+    conditionsDescription = 'Slight chop';
+  } else {
+    conditionsDescription = 'Choppy';
+  }
+  
+  const waveDirectionDisplay = formatDirection(waveDirection);
+  
+  const result: ConditionResult = {
+    spot: spot.name,
+    spotId: spot.id,
+    slug: spot.slug,
+    waveHeight: waveHeightDisplay,
+    waveHeightValue: waveHeight,
+    windSpeedValue: windSpeedMph,
+    conditions: conditionsDescription,
+    direction: waveDirectionDisplay,
+    distance: spot.distance,
+    score: conditionScore,
+    swellPeriod: wavePeriod,
+    swellHeight: waveHeight,
+    windWaveHeight,
+    swellDirection: waveDirection
+  };
+  
+  return result;
+}
 
 /**
  * Transform API forecast response to ConditionResult format for scoring
@@ -271,7 +350,7 @@ export function getConditionDescription(conditions: SurfConditions): string {
  * @returns ConditionResult ready for scoring and display
  */
 export function transformForecastToConditionResult(
-  forecast: any, 
+  forecast: any,
   spot: { id: number; name: string; slug: string; distance?: string }
 ): ConditionResult {
   const { current } = forecast;
@@ -561,7 +640,7 @@ export async function getHighestWavesFromAPI(closestSpots: { id: number; name: s
  * @param closestSpots Array of closest spots
  * @returns Promise with processed data for all recommendation cards
  */
-export async function getBatchRecommendationsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude: number; longitude: number; distance?: string }[]): Promise<{
+export async function getBatchRecommendationsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude?: number; longitude?: number; distance?: string }[]): Promise<{
   bestConditions: ConditionResult | null;
   cleanestConditions: ConditionResult | null;
   highestWaves: ConditionResult | null;
@@ -577,28 +656,36 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
   try {
     const spotsToCheck = closestSpots.slice(0, 10);
     
-    const { getForecastCurrent } = await import('@features/forecasts');
+    const { getNWSForecast } = await import('@features/forecasts');
+    const { buildCurrentForecast } = await import('./nws-parser');
     
-    // Single batch of forecast calls for all spots
+    // Single batch of NWS forecast calls for all spots
     const forecastPromises = spotsToCheck.map(async (spot) => {
       try {
-        const forecast = await getForecastCurrent({
-          latitude: spot.latitude,
-          longitude: spot.longitude,
+        const response = await getNWSForecast({ spot_id: spot.id });
+        
+        if (!response.data) {
+          console.warn(`No NWS forecast data for ${spot.name}`, response.status);
+          return null;
+        }
+        
+        const nwsData = response.data;
+        const current = buildCurrentForecast(nwsData.wave_data, nwsData.timezone);
+        
+        // Transform NWS data to condition result
+        const conditionResult = transformNWSToConditionResult(current, {
+          id: spot.id,
+          name: spot.name,
+          slug: spot.slug,
+          distance: spot.distance
         });
         
         return {
           spot,
-          forecast,
-          conditionResult: transformForecastToConditionResult(forecast, {
-            id: spot.id,
-            name: spot.name,
-            slug: spot.slug,
-            distance: spot.distance
-          })
+          current,
+          conditionResult
         };
       } catch (error) {
-        console.warn(`Failed to get forecast for ${spot.name}:`, error);
         return null;
       }
     });
@@ -607,12 +694,15 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
     const validResults = results.filter(result => result !== null);
     
     if (validResults.length === 0) {
+      console.warn('No valid results from NWS forecast batch');
       return {
         bestConditions: null,
         cleanestConditions: null,
         highestWaves: null
       };
     }
+    
+    console.debug('Batch recommendations - Valid results:', validResults.length, validResults);
     
     // Process best conditions (highest overall score)
     let bestResult = validResults[0];
@@ -662,11 +752,14 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
       }
     });
     
-    return {
+    const result = {
       bestConditions: bestResult ? bestResult.conditionResult : null,
       cleanestConditions: bestCleanlinessScore >= 40 ? cleanestResult.conditionResult : null,
       highestWaves: highestWaveHeight >= 1 ? highestResult.conditionResult : null
     };
+    
+    console.debug('Batch recommendations final result:', result);
+    return result;
     
   } catch (error) {
     console.error('Error getting batch recommendations from API:', error);

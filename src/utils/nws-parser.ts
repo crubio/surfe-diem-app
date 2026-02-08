@@ -173,54 +173,7 @@ export const groupNWSDataByHour = (
   return result;
 };
 
-/**
- * Calculates combined swell height from primary + secondary swells
- * NWS provides both separately; users typically care about total
- * 
- * @param primaryHeight - Primary swell height value (meters)
- * @param secondaryHeight - Secondary swell height value (meters)
- * @returns Combined swell height in feet
- * 
- * @example
- * const totalSwell = calculateTotalSwell(0.6096, 0.3048);
- * console.log(totalSwell); // 3.0 (feet)
- */
-export const calculateTotalSwell = (
-  primaryHeight: number | null | undefined,
-  secondaryHeight: number | null | undefined
-): number => {
-  const primary = primaryHeight ?? 0;
-  const secondary = secondaryHeight ?? 0;
-  return metersToFeet(primary + secondary);
-};
 
-/**
- * Determines dominant swell direction when both primary and secondary exist
- * Weighted by height (taller swell gets priority)
- * 
- * @param primaryDir - Primary swell direction (degrees 0-360)
- * @param primaryHeight - Primary swell height (any units)
- * @param secondaryDir - Secondary swell direction (degrees 0-360)
- * @param secondaryHeight - Secondary swell height (any units)
- * @returns Dominant direction (degrees)
- * 
- * @example
- * const dir = getDominantSwellDirection(280, 0.5, 200, 0.3);
- * console.log(dir); // 280 (primary is taller)
- */
-export const getDominantSwellDirection = (
-  primaryDir: number | null | undefined,
-  primaryHeight: number | null | undefined,
-  secondaryDir: number | null | undefined,
-  secondaryHeight: number | null | undefined
-): number | null => {
-  const primary = primaryHeight ?? 0;
-  const secondary = secondaryHeight ?? 0;
-
-  if (primary === 0 && secondary === 0) return null;
-  if (primary >= secondary) return primaryDir ?? null;
-  return secondaryDir ?? null;
-};
 
 /**
  * Type for parsed "current" forecast data
@@ -228,18 +181,24 @@ export const getDominantSwellDirection = (
  */
 export interface ParsedNWSCurrent {
   timestamp: DateTime;
-  swell_wave_height: number; // feet
-  swell_wave_period: number; // seconds
-  swell_wave_direction: number; // degrees
-  primary_swell_height: number; // feet
-  secondary_swell_height: number; // feet
-  wind_wave_height: number; // feet
-  wind_wave_period?: number; // seconds
+  wave_height: number; // feet - from nwsData.wave_height (significant wave height)
+  wave_period: number; // seconds - from nwsData.wave_period
+  wave_direction: number; // degrees - from nwsData.wave_direction (may be 0 if unavailable)
+  primary_swell_height: number; // feet - from nwsData.primary_swell_height
+  primary_swell_direction: number; // degrees - from nwsData.primary_swell_direction
+  primary_swell_period: number; // seconds - from nwsData.primary_swell_period
+  secondary_swell_height: number; // feet - from nwsData.secondary_swell_height
+  wind_wave_height: number; // feet - from nwsData.wind_wave_height (chop indicator)
+  wind_speed: number; // km/h - from nwsData.wind_speed (actual wind speed for quality assessment)
 }
 
 /**
  * Converts NWS raw data to a "current" forecast object
  * Finds the current values for all metrics and converts units
+ * 
+ * Uses waveHeight (significant wave height) as the primary metric.
+ * Primary/secondary swell heights are provided for reference/breakdown.
+ * Primary swell direction and period define the dominant wave characteristics.
  * 
  * @param nwsData - Raw NWSWaveData object from API
  * @param timezone - Target timezone
@@ -256,28 +215,37 @@ export const buildCurrentForecast = (
     secondary_swell_height?: NWSDataPoint[];
     secondary_swell_direction?: NWSDataPoint[];
     wind_wave_height?: NWSDataPoint[];
+    wind_speed?: NWSDataPoint[];
   },
   timezone: string
 ): ParsedNWSCurrent => {
-  const primaryHeight = findCurrentDataPoint(nwsData.primary_swell_height || [], timezone)?.value;
-  const secondaryHeight = findCurrentDataPoint(nwsData.secondary_swell_height || [], timezone)?.value;
-  const primaryDir = findCurrentDataPoint(nwsData.primary_swell_direction || [], timezone)?.value;
-  const secondaryDir = findCurrentDataPoint(nwsData.secondary_swell_direction || [], timezone)?.value;
-  const primaryPeriod = findCurrentDataPoint(nwsData.primary_swell_period || [], timezone)?.value;
+  // Main wave metrics
+  const waveHeight = findCurrentDataPoint(nwsData.wave_height || [], timezone)?.value;
+  const wavePeriod = findCurrentDataPoint(nwsData.wave_period || [], timezone)?.value;
+  const waveDirection = findCurrentDataPoint(nwsData.wave_direction || [], timezone)?.value;
+  
+  // Primary swell
+  const primarySwellHeight = findCurrentDataPoint(nwsData.primary_swell_height || [], timezone)?.value;
+  const primarySwellDirection = findCurrentDataPoint(nwsData.primary_swell_direction || [], timezone)?.value;
+  const primarySwellPeriod = findCurrentDataPoint(nwsData.primary_swell_period || [], timezone)?.value;
+  
+  // Secondary swell
+  const secondarySwellHeight = findCurrentDataPoint(nwsData.secondary_swell_height || [], timezone)?.value;
+  
+  // Wind data - actual wind speed (km/h) and wind-generated waves (chop indicator)
   const windHeight = findCurrentDataPoint(nwsData.wind_wave_height || [], timezone)?.value;
-
+  const windSpeedKmh = findCurrentDataPoint(nwsData.wind_speed || [], timezone)?.value;
+  
   return {
     timestamp: DateTime.now().setZone(timezone),
-    swell_wave_height: calculateTotalSwell(primaryHeight, secondaryHeight),
-    swell_wave_period: primaryPeriod ?? 0,
-    swell_wave_direction: getDominantSwellDirection(
-      primaryDir,
-      primaryHeight,
-      secondaryDir,
-      secondaryHeight
-    ) ?? 0,
-    primary_swell_height: metersToFeet(primaryHeight ?? 0),
-    secondary_swell_height: metersToFeet(secondaryHeight ?? 0),
+    wave_height: metersToFeet(waveHeight ?? 0),
+    wave_period: wavePeriod ?? 0,
+    wave_direction: waveDirection ?? 0,
+    primary_swell_height: metersToFeet(primarySwellHeight ?? 0),
+    primary_swell_direction: primarySwellDirection ?? 0,
+    primary_swell_period: primarySwellPeriod ?? 0,
+    secondary_swell_height: metersToFeet(secondarySwellHeight ?? 0),
     wind_wave_height: metersToFeet(windHeight ?? 0),
+    wind_speed: windSpeedKmh ?? 0,
   };
 };
