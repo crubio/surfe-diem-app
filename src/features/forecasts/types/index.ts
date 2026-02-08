@@ -78,3 +78,52 @@ export interface ForecastDataCurrent {
     [key: string]: string;
   };
 }
+
+export interface NWSForecastParams {
+  spot_id?: number;
+  spot_slug?: string;
+}
+
+// Individual data point in NWS time series
+export interface NWSDataPoint {
+  validTime: string;  // ISO 8601 time interval: "<start-time>/<duration>" (e.g., "2025-11-03T15:00:00+00:00/PT21H")
+                       // Duration format: P = period, T = time separator, followed by duration units
+                       // PT21H = 21 hours, P1D = 1 day, P1DT6H = 1 day + 6 hours
+  value: number | null;  // Measurement value, null if no data available
+}
+
+// Complete wave data structure from NWS API
+export interface NWSWaveData {
+  wave_height: NWSDataPoint[];
+  wave_period: NWSDataPoint[];
+  wave_direction: NWSDataPoint[];  // Can be empty array
+  primary_swell_height: NWSDataPoint[];
+  primary_swell_direction: NWSDataPoint[];
+  primary_swell_period: NWSDataPoint[];
+  secondary_swell_height: NWSDataPoint[];
+  secondary_swell_direction: NWSDataPoint[];
+  wind_wave_height: NWSDataPoint[];
+}
+
+// Units returned by the API
+export interface NWSUnits {
+  wave_height: string;  // e.g., "meters"
+  wave_period: string;  // e.g., "seconds"
+  swell_direction: string;  // e.g., "degrees"
+}
+
+export interface NWSForecastResponse {
+  spot_id: number;
+  latitude: number;
+  longitude: number;
+  grid_id: string;
+  grid_x: number;
+  grid_y: number;
+  wave_data: NWSWaveData;
+  source: "nws" | "cache";  // Literal union type
+  updated_at: string;  // ISO 8601 datetime
+  timezone: string;  // e.g., "America/Los_Angeles"
+  units: NWSUnits;
+  cached_at: string | null;
+  expires_at: string | null;
+}

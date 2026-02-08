@@ -18,6 +18,7 @@ export const API_ROUTES = {
   SEARCH: `${API_PREFIX}/search`,
   WEATHER: `${API_PREFIX}/weather`,
   BATCH_FORECAST: `${API_PREFIX}/batch-forecast`,
+  NWS_FORECAST: `${API_PREFIX}/nws/forecast`,
 }
 
 

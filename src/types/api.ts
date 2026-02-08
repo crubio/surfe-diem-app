@@ -1,5 +1,15 @@
 /**
- * Base API response structure
+ * Axios response wrapper structure
+ */
+export interface AxiosResponse<T> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+}
+
+/**
+ * Wrapped API response structure with custom status indicator
  */
 export interface BaseApiResponse<T> {
   data: T;
@@ -11,7 +21,9 @@ export interface BaseApiResponse<T> {
  * Success API response
  */
 export type SuccessResponse<T> = BaseApiResponse<T> & {
-  status: 'success';
+  status: 'success' | 200;
+  statusText?: string;
+  statusCode?: number;
 };
 
 /**
@@ -19,6 +31,8 @@ export type SuccessResponse<T> = BaseApiResponse<T> & {
  */
 export type ErrorResponse = BaseApiResponse<null> & {
   status: 'error';
+  statusText?: string;
+  statusCode?: number;
   error: {
     code: string;
     message: string;

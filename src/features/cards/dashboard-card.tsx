@@ -41,7 +41,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   isError,
 }) => {
   const getSwellHeightColor = (heightValue !== undefined ? getWaveHeightColor(heightValue) : undefined);
-
+  
   const cardContent = (
     <Card
       sx={{
@@ -109,7 +109,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           <Box sx={{ mt: 1.5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
               <Typography variant="caption" color="text.secondary">Wind Speed</Typography>
-              <Typography variant="caption" color="text.secondary">{speedValue.toFixed(1)}mph</Typography>
+              <Typography variant="caption" color="text.secondary">{speedValue}mph</Typography>
             </Box>
             <LinearProgress
               variant="determinate"

@@ -2,6 +2,15 @@
  * Formatting utilities for consistent display across the site
  */
 
+/**
+ * Convert wind speed from km/h to mph
+ * @param kilometersPerHour Wind speed in kilometers per hour
+ * @returns Wind speed in miles per hour
+ */
+export const kilometersPerHourToMph = (kilometersPerHour: number): number => {
+  return kilometersPerHour * 0.621371;
+};
+
 // Helper function to get wave height percentage for progress bar
 export const getWaveHeightPercentage = (waveHeight: number) => {
   // Scale 0-15ft to 0-100%

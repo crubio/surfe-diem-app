@@ -20,7 +20,6 @@ import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirec
 import { extractWaterTempFromForecast } from "utils/water-temp";
 import { TemperatureCard } from "components";
 import { FEATURED_SPOTS } from "utils/constants";
-import { getForecastCurrent } from "@features/forecasts";
 import HeroSection from "components/common/hero";
 import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
@@ -28,6 +27,8 @@ import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
 import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
 import { ChangeLocationModal } from "@features/geocoding/components/change-location";
+import { useNWSForecast } from "../hooks/useNWSForecast";
+import { kilometersPerHourToMph } from "utils/formatting";
 
 
 const DashboardHome = () => {
@@ -79,14 +80,11 @@ const DashboardHome = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  const {data: closestSpotsForecast, isLoading: isForecastLoading, isError: isForecastError} = useQuery({
-    queryKey: ['closest_spot_forecast', closestSpots?.[0]?.latitude, closestSpots?.[0]?.longitude],
-    queryFn: () => getForecastCurrent({
-      latitude: Number(closestSpots![0].latitude),
-      longitude: Number(closestSpots![0].longitude),
-    }),
-    enabled: !!closestSpots && closestSpots.length > 0
-  })
+  // Fetch NWS forecast for the closest spot (replaces old getForecastCurrent)
+  const {data: nwsForecastData, isLoading: isForecastLoading, isError: isForecastError} = useNWSForecast(
+    closestSpots?.[0]?.id,
+    { enabled: !!closestSpots && closestSpots.length > 0 }
+  );
 
   // Get batch recommendations from nearby spots (optimized - single API call for all 3 cards)
   const {data: batchRecommendations, isLoading: isBatchLoading, isError: isBatchError} = useQuery({
@@ -131,11 +129,17 @@ const DashboardHome = () => {
   const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
   const currentTideTime = currentTides ? getCurrentTideTime(currentTides) : null;
   
-  // Extract swell data from closest spot forecast
-  const currentSwellData = closestSpotsForecast ? extractSwellDataFromForecast(closestSpotsForecast) : null;
-  
-  // Extract water temperature data from closest spot forecast
-  const currentWaterTempData = closestSpotsForecast ? extractWaterTempFromForecast(closestSpotsForecast) : null;
+  // Extract NWS swell data from closest spot forecast with defensive checks
+  const nwsCurrent = nwsForecastData?.current;
+  const currentSwellData = nwsCurrent ? {
+    waveHeight: nwsCurrent.wave_height ?? 0,
+    wavePeriod: nwsCurrent.wave_period ?? 0,
+    waveDirection: nwsCurrent.wave_direction ?? 0,
+    primarySwellHeight: nwsCurrent.primary_swell_height ?? 0,
+    primarySwellDirection: nwsCurrent.primary_swell_direction ?? 0,
+    primarySwellPeriod: nwsCurrent.primary_swell_period ?? 0,
+    secondarySwellHeight: nwsCurrent.secondary_swell_height ?? 0,
+  } : null;
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
   const {data: favoritesData, isPending: favoritesLoading} = useQuery({
@@ -179,17 +183,26 @@ const DashboardHome = () => {
       // Use actual closest spot data
       const closestSpot = closestSpots[0]; // API returns sorted by distance, first is the closest
 
-      if (closestSpotsForecast?.current) {
-        // Return the tranformed spot data for use with the dashboard "closest" card
+      if (nwsCurrent) {
+        // Convert wind speed from km/h to mph for display
+        const windSpeedMph = Math.floor(kilometersPerHourToMph(nwsCurrent.wind_speed || 0));
+        
+        // Return the transformed spot data for use with the dashboard "closest" card
         return {
           spot: closestSpot.name,
           spotId: closestSpot.id,
           slug: closestSpot.slug,
           distance: closestSpot.distance,
-          waveHeight: `${closestSpotsForecast.current.swell_wave_height.toFixed(1)}-${(closestSpotsForecast.current.swell_wave_height + 1).toFixed(1)}ft`,
-          windSpeedValue: closestSpotsForecast.current.wind_wave_height,
-          score: getEnhancedConditionScore({waveHeight: closestSpotsForecast.current.swell_wave_height, windSpeed: closestSpotsForecast.current.wind_wave_height}),
-          waveHeightValue: closestSpotsForecast.current.swell_wave_height,
+          waveHeight: `${nwsCurrent.wave_height.toFixed(1)}-${(nwsCurrent.wave_height + 1).toFixed(1)}ft`,
+          wavePeriod: `${nwsCurrent.wave_period.toFixed(1)}-${(nwsCurrent.wave_period + 1).toFixed(1)}s`,
+          waveDirection: `${nwsCurrent.wave_direction.toFixed(1)}-${(nwsCurrent.wave_direction + 1).toFixed(1)}°`,
+          primarySwellHeight: `${nwsCurrent.primary_swell_height.toFixed(1)}-${(nwsCurrent.primary_swell_height + 1).toFixed(1)}ft`,
+          primarySwellDirection: `${nwsCurrent.primary_swell_direction.toFixed(1)}-${(nwsCurrent.primary_swell_direction + 1).toFixed(1)}°`,
+          primarySwellPeriod: `${nwsCurrent.primary_swell_period.toFixed(1)}-${(nwsCurrent.primary_swell_period + 1).toFixed(1)}s`,
+          secondarySwellHeight: `${nwsCurrent.secondary_swell_height.toFixed(1)}-${(nwsCurrent.secondary_swell_height + 1).toFixed(1)}ft`,
+          score: getEnhancedConditionScore({waveHeight: nwsCurrent.wave_height, windSpeed: windSpeedMph}),
+          waveHeightValue: nwsCurrent.wave_height,
+          windSpeedValue: windSpeedMph,
           isLocationBased: true
         }
       }
@@ -200,6 +213,13 @@ const DashboardHome = () => {
 
   // Move getClosestSpot call out of JSX
   const closestSpotData = getClosestSpot();
+
+  // Map loading/error states to recommendation keys for granular control
+  const recommendationStates = {
+    best: { isLoading: isBatchLoading, isError: isBatchError },
+    closest: { isLoading: isForecastLoading, isError: isForecastError || isClosestSpotsError },
+    cleanest: { isLoading: isBatchLoading, isError: isBatchError }
+  };
 
   const recommendations = [
     { key: 'best', title: 'Best Right Now', data: bestConditions },
@@ -263,8 +283,8 @@ const DashboardHome = () => {
             ) : (
               <DashboardCard
                 key={key}
-                isLoading={isBatchLoading}
-                isError={locationSpotsError}
+                isLoading={recommendationStates[key as keyof typeof recommendationStates].isLoading}
+                isError={recommendationStates[key as keyof typeof recommendationStates].isError}
                 title={title}
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
@@ -288,16 +308,29 @@ const DashboardHome = () => {
             <DashboardCard
               isLoading={isForecastLoading}
               isError={isForecastError || isClosestSpotsError}
-              title="Current Swell"
-              name={currentSwellData ? formatSwellHeight(currentSwellData.height) : ''}
+              title="Primary Swell"
+              name={currentSwellData ? `${currentSwellData.primarySwellHeight.toFixed(1)}ft` : ''}
               score={currentSwellData ? {
-                label: getSwellQualityDescription(currentSwellData.period),
-                color: getSwellHeightColor(currentSwellData.height),
-                description: `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}`
+                label: getSwellQualityDescription(currentSwellData.primarySwellHeight),
+                color: getSwellHeightColor(currentSwellData.primarySwellHeight),
+                description: `${formatSwellPeriod(currentSwellData.primarySwellPeriod)} period from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}`
               } : undefined}
-              subtitle={currentSwellData ? `${formatSwellPeriod(currentSwellData.period)} • ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
-              heightValue={currentSwellData?.height}
-              description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.direction)}` : undefined}
+              subtitle={currentSwellData ? `Period: ${formatSwellPeriod(currentSwellData.primarySwellPeriod)} • Dir: ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : undefined}
+              heightValue={currentSwellData?.primarySwellHeight}
+              description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : 'Data loading...'}
+            />
+            
+            <DashboardCard
+              isLoading={isForecastLoading}
+              isError={isForecastError || isClosestSpotsError}
+              title="Secondary Swell"
+              name={currentSwellData ? `${currentSwellData.secondarySwellHeight.toFixed(1)}ft` : ''}
+              score={currentSwellData ? {
+                label: currentSwellData.secondarySwellHeight > 0 ? 'Active' : 'Minimal',
+                color: currentSwellData.secondarySwellHeight > 0 ? 'info' : 'success',
+                description: 'Secondary component'
+              } : undefined}
+              heightValue={currentSwellData?.secondarySwellHeight}
             />
             
             <DashboardCard
@@ -305,23 +338,25 @@ const DashboardHome = () => {
               isError={tidesError || isClosestSpotsError}
               title="Current Tide"
               name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
-              score={{ label: currentTideTime!, color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
+              score={{ label: currentTideTime || 'Loading...', color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
               description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
               heightValue={currentTideValue !== null ? currentTideValue : undefined}
             />
             
-            <DashboardCard 
+            {/* Water Temperature card - TODO: Add water temp extraction to NWS parser
+            <DashboardCard
               isLoading={isForecastLoading}
-              isError={locationSpotsError || isClosestSpotsError}
-              title={"Current Water Temperature test"}
-              name="" // No main name, using card below
-            >
-              <TemperatureCard 
-                  temperature={currentWaterTempData?.temperature ?? 0}
-                  showFahrenheit={true}
-                  showComfortLevel={false}
-                />
-            </DashboardCard>
+              isError={isForecastError || isClosestSpotsError}
+              title="Water Temperature"
+              name={waterTemp ? `${waterTemp}°F` : 'N/A'}
+              score={waterTemp ? {
+                label: waterTemp >= 70 ? 'Warm' : waterTemp >= 60 ? 'Moderate' : 'Cold',
+                color: waterTemp >= 70 ? 'error' : waterTemp >= 60 ? 'warning' : 'info',
+                description: `Water temperature`
+              } : undefined}
+              description={waterTemp ? `Current water temp: ${waterTemp}°F` : 'Temperature data pending'}
+            />
+            */}
             
             <DashboardCard
               isLoading={isBatchLoading}
