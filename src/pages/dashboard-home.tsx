@@ -196,6 +196,8 @@ const DashboardHome = () => {
           waveHeight: `${nwsCurrent.wave_height.toFixed(1)}-${(nwsCurrent.wave_height + 1).toFixed(1)}ft`,
           wavePeriod: `${nwsCurrent.wave_period.toFixed(1)}-${(nwsCurrent.wave_period + 1).toFixed(1)}s`,
           waveDirection: `${nwsCurrent.wave_direction.toFixed(1)}-${(nwsCurrent.wave_direction + 1).toFixed(1)}°`,
+          wavePeriodFormatted: `${nwsCurrent.wave_period.toFixed(1)}s`,
+          waveDirectionFormatted: `${nwsCurrent.wave_direction.toFixed(1)}°`,
           primarySwellHeight: `${nwsCurrent.primary_swell_height.toFixed(1)}-${(nwsCurrent.primary_swell_height + 1).toFixed(1)}ft`,
           primarySwellDirection: `${nwsCurrent.primary_swell_direction.toFixed(1)}-${(nwsCurrent.primary_swell_direction + 1).toFixed(1)}°`,
           primarySwellPeriod: `${nwsCurrent.primary_swell_period.toFixed(1)}-${(nwsCurrent.primary_swell_period + 1).toFixed(1)}s`,
@@ -284,13 +286,15 @@ const DashboardHome = () => {
               <DashboardCard
                 key={key}
                 isLoading={recommendationStates[key as keyof typeof recommendationStates].isLoading}
-                isError={recommendationStates[key as keyof typeof recommendationStates].isError}
+                isError={recommendationStates[key as keyof typeof recommendationStates].isError || data === null}
                 title={title}
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
                 score={data?.score}
                 heightValue={data?.waveHeightValue}
                 speedValue={data?.windSpeedValue}
+                waveDirection={data?.waveDirectionFormatted || undefined}
+                wavePeriod={data?.wavePeriodFormatted || undefined}
                 description={data?.score?.description}
                 onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
               />
@@ -301,9 +305,9 @@ const DashboardHome = () => {
         {/* Current Conditions Section */}
         {coordinates && (
           <DashboardGrid 
-            title="Current Conditions"
+            title="Near your location"
             showSubtitle={true}
-            columns={GRID_CONFIGS.CURRENT_CONDITIONS}
+            columns={GRID_CONFIGS.CURRENT_CONDITIONS_NEARBY}
           >
             <DashboardCard
               isLoading={isForecastLoading}
@@ -317,20 +321,9 @@ const DashboardHome = () => {
               } : undefined}
               subtitle={currentSwellData ? `Period: ${formatSwellPeriod(currentSwellData.primarySwellPeriod)} • Dir: ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : undefined}
               heightValue={currentSwellData?.primarySwellHeight}
+              waveDirection={currentSwellData ? getSwellDirectionText(currentSwellData.primarySwellDirection) : undefined}
+              wavePeriod={currentSwellData ? formatSwellPeriod(currentSwellData.primarySwellPeriod) : undefined}
               description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : 'Data loading...'}
-            />
-            
-            <DashboardCard
-              isLoading={isForecastLoading}
-              isError={isForecastError || isClosestSpotsError}
-              title="Secondary Swell"
-              name={currentSwellData ? `${currentSwellData.secondarySwellHeight.toFixed(1)}ft` : ''}
-              score={currentSwellData ? {
-                label: currentSwellData.secondarySwellHeight > 0 ? 'Active' : 'Minimal',
-                color: currentSwellData.secondarySwellHeight > 0 ? 'info' : 'success',
-                description: 'Secondary component'
-              } : undefined}
-              heightValue={currentSwellData?.secondarySwellHeight}
             />
             
             <DashboardCard

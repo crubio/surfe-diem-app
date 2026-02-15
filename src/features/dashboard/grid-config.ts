@@ -14,6 +14,8 @@ export const GRID_CONFIGS = {
   
   // Current conditions: 4 cards per row on desktop
   CURRENT_CONDITIONS: { xs: 12, sm: 6, md: 3 } as GridConfig,
+
+  CURRENT_CONDITIONS_NEARBY: { xs: 12, sm: 6, md: 4 } as GridConfig,
   
   // Search section: 2 cards per row on desktop
   SEARCH: { xs: 12, md: 6 } as GridConfig,
