@@ -15,7 +15,7 @@ interface Score {
 interface DashboardCardProps {
   name: string;
   title: string;
-  subtitle?: string;
+  subtitle?: string | number;
   score?: Score;
   heightValue?: number;
   speedValue?: number;
@@ -172,7 +172,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
             <Typography variant="h6" color="text.secondary" gutterBottom>
               {title}
             </Typography>
-            <NoData message="No data available for this location" />
+            <NoData message="No data available" />
           </CardContent>
         </Card>
       ) : (

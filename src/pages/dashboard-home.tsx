@@ -309,21 +309,21 @@ const DashboardHome = () => {
             showSubtitle={true}
             columns={GRID_CONFIGS.CURRENT_CONDITIONS_NEARBY}
           >
+            {/* TODO: Refactor this card or make a new one */}
             <DashboardCard
               isLoading={isForecastLoading}
               isError={isForecastError || isClosestSpotsError}
               title="Primary Swell"
-              name={currentSwellData ? `${currentSwellData.primarySwellHeight.toFixed(1)}ft` : ''}
+              name={''}
               score={currentSwellData ? {
                 label: getSwellQualityDescription(currentSwellData.primarySwellHeight),
                 color: getSwellHeightColor(currentSwellData.primarySwellHeight),
                 description: `${formatSwellPeriod(currentSwellData.primarySwellPeriod)} period from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}`
               } : undefined}
-              subtitle={currentSwellData ? `Period: ${formatSwellPeriod(currentSwellData.primarySwellPeriod)} • Dir: ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : undefined}
+              subtitle={currentSwellData ? formatSwellHeight(currentSwellData.primarySwellHeight)  : undefined}
               heightValue={currentSwellData?.primarySwellHeight}
               waveDirection={currentSwellData ? getSwellDirectionText(currentSwellData.primarySwellDirection) : undefined}
               wavePeriod={currentSwellData ? formatSwellPeriod(currentSwellData.primarySwellPeriod) : undefined}
-              description={currentSwellData ? `Swell from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}` : 'Data loading...'}
             />
             
             <DashboardCard
