@@ -42,7 +42,6 @@ const SpotPage = () => {
   });
 
   const {data: nearbyBuoys} = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
-  console.log(forecastProjected)
 
   return (
     <>

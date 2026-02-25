@@ -47,6 +47,8 @@ export interface ConditionResult {
   conditions?: string;
   direction?: string;
   distance?: string;
+  waveDirectionFormatted?: string;
+  wavePeriodFormatted?: string;
   score: ConditionScore;
   isLocationBased?: boolean;
   // Additional data from API for potential future use
@@ -333,6 +335,8 @@ export function transformNWSToConditionResult(
     conditions: conditionsDescription,
     direction: waveDirectionDisplay,
     distance: spot.distance,
+    waveDirectionFormatted: waveDirectionDisplay,
+    wavePeriodFormatted: `${wavePeriod.toFixed(1)}s`,
     score: conditionScore,
     swellPeriod: wavePeriod,
     swellHeight: waveHeight,
