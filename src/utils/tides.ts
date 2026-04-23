@@ -166,8 +166,6 @@ export function getCurrentTideTime(currentTideData: TidesDataCurrent): string | 
     return null;
   }
   
-  console.log('Parsing tide time:', latestReading.t)
-  
   try {
     // Parse GMT time and convert to local timezone
     const gmtTime = new Date(latestReading.t);
