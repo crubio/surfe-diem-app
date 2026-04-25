@@ -1,4 +1,4 @@
-import { Box, Grid, Stack, Typography, Card, CardContent } from "@mui/material"
+import { Box, Card, CardContent, Grid, Stack, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
@@ -8,9 +8,8 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
-import { ForecastRatingComponent } from "@features/locations/components"
-import { formatCoordinates, formatDirection } from "utils/formatting"
-import { getCurrentTideValue } from "utils/tides"
+import { ForecastRatingComponent, SpotMetricBar } from "@features/locations/components"
+import { formatCoordinates } from "utils/formatting"
 import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast} from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 
@@ -25,9 +24,9 @@ const SpotPage = () => {
 
   const {dailyTides, currentTides, isLoading: isTideDataLoading} = useTideData(spotData?.latitude, spotData?.longitude)
 
-  // NSW fetch
+  // NWS fetch
   const {data: nwsForecastData, isLoading: isNWSLoading} = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
-  
+
   // TODO: create hook for current weather if thats needed in the future.
   const {data: currentWeather} = useQuery({
     queryKey: ['current_weather', spotData?.id],
@@ -41,7 +40,7 @@ const SpotPage = () => {
     <>
       {spotData && (
         <>
-          <SEO 
+          <SEO
             title={`${spotData.name} Surf Spot - Surfe Diem`}
             description={`Get current surf conditions, forecasts, and tide information for ${spotData.name} in ${spotData.subregion_name}. Real-time surf data and weather.`}
             keywords={`${spotData.name} surf spot, ${spotData.subregion_name} surf, ${spotData.name} surf conditions, ${spotData.name} surf forecast, ${spotData.subregion_name} surf spots`}
@@ -61,23 +60,22 @@ const SpotPage = () => {
       {isError && <ErrorPage error={error} />}
       {spotData ? (
         <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
-          {/* Hero Section */}
-          <SectionContainer 
+
+          {/* Hero: name, location, metrics, rating */}
+          <SectionContainer
             background="DEFAULT"
             spacing="NORMAL"
-            marginBottom="LARGE"
+            marginBottom="NORMAL"
           >
-            {/* Header with spot name and favorite button */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
                 {spotData.name}
               </Typography>
-              <Box sx={{ ml: 2.5 }}> {/* 20px margin left */}
+              <Box sx={{ ml: 2.5 }}>
                 <FavoriteButton showTooltip={true} id={spotData.id} type="spot" name={spotData.name} subregion_name={spotData.subregion_name} latitude={spotData.latitude} longitude={spotData.longitude} />
               </Box>
             </Box>
 
-            {/* Location info */}
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
               <Item>
                 <Typography variant="body2" color="text.secondary">
@@ -96,123 +94,41 @@ const SpotPage = () => {
               </Item>
             </Stack>
 
-            {/* Key Metrics Grid */}
-            <Grid container spacing={2}>
-              {/* Wave Height */}
-              <Grid item xs={6} sm={4} md={2}>
-              <Card sx={{ height: '100%', textAlign: 'center' }}>
-                <CardContent sx={{ py: 2 }}>
-                  {isNWSLoading ? (
-                    <Loading />
-                  ) : nwsForecastData?.current?.primary_swell_height ? (
-                    <>
-                      <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                        {`${nwsForecastData?.current?.primary_swell_height.toFixed(1)}ft`}
-                      </Typography>
-                    </>
-                  ) : (
-                    <NoData />
-                  )}
-                </CardContent>
-              </Card>
-              </Grid>
+            <SpotMetricBar
+              current={nwsForecastData?.current}
+              currentTides={currentTides.data}
+              isNWSLoading={isNWSLoading}
+              isTideLoading={isTideDataLoading}
+            />
 
-              {/* Period */}
-              <Grid item xs={6} sm={4} md={2}>
-                <Card sx={{ height: '100%', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2 }}>
-                    {isNWSLoading ? (
-                      <Loading />
-                    ) : nwsForecastData?.current?.primary_swell_period ? (
-                      <>
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {`${nwsForecastData?.current?.primary_swell_period}s`}
-                        </Typography>
-                      </>
-                    ) : (
-                      <NoData />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Direction */}
-              <Grid item xs={6} sm={4} md={2}>
-                <Card sx={{ height: '100%', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2 }}>
-                    {isNWSLoading ? (
-                      <Loading />
-                    ) : nwsForecastData?.current?.primary_swell_direction ? (
-                      <>
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {formatDirection(nwsForecastData?.current?.primary_swell_direction)}
-                        </Typography>
-                      </>
-                    ) : (
-                      <NoData />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Water Temp TODO: NWS forecast does not have water temp. Add it from another fetch or remove entirely. */}
-              
-
-              {/* Wind */}
-              <Grid item xs={6} sm={4} md={2}>
-                <Card sx={{ height: '100%', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2 }}>
-                    {isNWSLoading ? (
-                      <Loading />
-                    ) : nwsForecastData?.current?.wind_speed ? (
-                      <>
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {`${Math.round(nwsForecastData?.current?.wind_speed)}km/h`}
-                        </Typography>
-                      </>
-                    ) : (
-                      <NoData />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Current Tide */}
-              <Grid item xs={6} sm={4} md={2}>
-                <Card sx={{ height: '100%', textAlign: 'center' }}>
-                  <CardContent sx={{ py: 2 }}>
-                    {isTideDataLoading ? (
-                      <Loading />
-                    ) : currentTides?.data ? (
-                      <>
-                        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem' }}>
-                          {getCurrentTideValue(currentTides.data) ? `${getCurrentTideValue(currentTides.data)?.toFixed(1)}ft`: <NoData/>}
-                        </Typography>
-                      </>
-                    ) : (
-                      <NoData />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-            {spotData && nwsForecastData?.current && (
-                <ForecastRatingComponent
-                  spotId={spotData.id}
-                  spotSlug={spotData.slug}
-                  spotName={spotData.name}
-                  forecastData={{
-                    current: nwsForecastData?.current,
-                    timestamp: new Date().toISOString(),
-                    spot_id: spotData.id,
-                    spot_name: spotData.name
-                  }}
-                />
-              )}
+            {nwsForecastData?.current && (
+              <ForecastRatingComponent
+                spotId={spotData.id}
+                spotSlug={spotData.slug}
+                spotName={spotData.name}
+                forecastData={{
+                  current: nwsForecastData.current,
+                  timestamp: new Date().toISOString(),
+                  spot_id: spotData.id,
+                  spot_name: spotData.name
+                }}
+              />
+            )}
           </SectionContainer>
+
+          {/* Swell forecast chart */}
+          <SectionContainer
+            background="PAPER"
+            spacing="NORMAL"
+            marginBottom="NORMAL"
+          >
+            <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} height={250} />
+          </SectionContainer>
+
+          {/* Weather & Tide */}
           {currentWeather && (
-            <SectionContainer 
-              title="Weather & Tide Status"
+            <SectionContainer
+              title="Weather & Tide"
               background="PAPER"
               spacing="NORMAL"
               marginBottom="NORMAL"
@@ -239,9 +155,9 @@ const SpotPage = () => {
                           </Typography>
                           <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
                             <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '1.25rem', mb: 0.5 }}>
-                              { dailyTides.data.predictions.map((p: any) => {
-                                return <><span key={p.t}>{parseFloat(p.v).toFixed(1)}ft at {new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span><br /></>
-                              } )}
+                              {dailyTides.data.predictions.map((p: any) => (
+                                <><span key={p.t}>{parseFloat(p.v).toFixed(1)}ft at {new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span><br /></>
+                              ))}
                             </Typography>
                           </Box>
                         </CardContent>
@@ -254,27 +170,27 @@ const SpotPage = () => {
               </Grid>
             </SectionContainer>
           )}
-          { !isEmpty(spotData) && (
-            <SectionContainer 
+
+          {/* Map */}
+          {!isEmpty(spotData) && (
+            <SectionContainer
               background="PAPER"
               spacing="NORMAL"
               marginBottom="NORMAL"
             >
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12} md={6} lg={6}>
-                  <MapBoxSingle 
-                    lat={spotData.latitude} 
-                    lng={spotData.longitude} 
-                    zoom={8} 
+                  <MapBoxSingle
+                    lat={spotData.latitude}
+                    lng={spotData.longitude}
+                    zoom={8}
                     nearbyBuoys={nearbyBuoys || []}
                   />
                 </Grid>
               </Grid>
             </SectionContainer>
           )}
-          <SectionContainer>
-            <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} />
-          </SectionContainer>
+
         </PageContainer>
       ): null}
     </>

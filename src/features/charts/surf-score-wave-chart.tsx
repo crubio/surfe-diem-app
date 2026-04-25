@@ -19,11 +19,13 @@ import { getEnhancedConditionScore } from '../../utils/conditions';
 interface SurfScoreTimelineProps {
   data: TransformedNWSForecast | null;
   isLoading?: boolean;
+  height?: number;
 }
 
 export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   data,
-  isLoading
+  isLoading,
+  height = 400,
 }) => {
   const chartData = React.useMemo(() => {
     if (!data?.hourly) return [];
@@ -59,7 +61,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
     if (chartData.length === 0) return 10;
     const maxPrimary = Math.max(...chartData.map(d => d.primarySwellHeightFt ?? 0));
     const maxSecondary = Math.max(...chartData.map(d => d.secondarySwellHeightFt ?? 0));
-    return Math.ceil(Math.max(maxPrimary, maxSecondary) * 1.1);
+    return parseFloat((Math.max(maxPrimary, maxSecondary) * 1.1).toFixed(1));
   }, [chartData]);
 
   const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
@@ -122,7 +124,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   }
 
   return (
-    <Box sx={{ width: '100%', height: 400 }}>
+    <Box sx={{ width: '100%', height }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
         Swell Height Forecast
       </Typography>
@@ -148,8 +150,10 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
           <YAxis
             yAxisId="left"
             domain={[0, maxHeight]}
+            allowDecimals={true}
+            tickCount={6}
             tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `${value}ft`}
+            tickFormatter={(value) => `${parseFloat(value).toFixed(1)}ft`}
           />
           <Tooltip content={CustomTooltip} />
           <Legend />
@@ -159,7 +163,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
 
           <Area
             yAxisId="left"
-            type="monotone"
+            type="basis"
             dataKey="primarySwellHeightFt"
             name="Primary Swell (ft)"
             stroke="#2196f3"
@@ -169,7 +173,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
           />
           <Line
             yAxisId="left"
-            type="monotone"
+            type="basis"
             dataKey="secondarySwellHeightFt"
             name="Secondary Swell (ft)"
             stroke="#4caf50"

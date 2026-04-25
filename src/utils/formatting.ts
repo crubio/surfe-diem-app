@@ -8,7 +8,7 @@
  * @returns Wind speed in miles per hour
  */
 export const kilometersPerHourToMph = (kilometersPerHour: number): number => {
-  return kilometersPerHour * 0.621371;
+  return parseFloat((kilometersPerHour * 0.621371).toFixed(0));
 };
 
 // Helper function to get wave height percentage for progress bar
