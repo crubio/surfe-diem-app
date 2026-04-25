@@ -3,7 +3,8 @@ import { getNWSForecast } from '@features/forecasts';
 import { QUERY_KEYS } from '../config/query-config';
 import {
   buildCurrentForecast,
-  groupNWSDataByHour,
+  buildHourlyForecast,
+  type NWSHourlyPoint,
   type ParsedNWSCurrent,
 } from '../utils/nws-parser';
 import type { NWSForecastResponse } from '@/types';
@@ -13,7 +14,7 @@ import type { NWSForecastResponse } from '@/types';
  */
 export interface TransformedNWSForecast {
   current: ParsedNWSCurrent | null;
-  hourly: Array<{ hour: number; validTime: string | null; value: number | null }>;
+  hourly: NWSHourlyPoint[];
   raw: NWSForecastResponse;
 }
 
@@ -55,11 +56,7 @@ export const useNWSForecast = (
 
       // Transform raw NWS data to UI format
       const current = buildCurrentForecast(nwsData.wave_data, nwsData.timezone);
-      const hourly = groupNWSDataByHour(
-        nwsData.wave_data.wave_height || [],
-        nwsData.timezone,
-        hourlyForecastHours
-      );
+      const hourly = buildHourlyForecast(nwsData.wave_data, nwsData.timezone, hourlyForecastHours);
 
       return {
         current,
@@ -104,11 +101,7 @@ export const useNWSForecastBySlug = (
       const nwsData = response.data;
 
       const current = buildCurrentForecast(nwsData.wave_data, nwsData.timezone);
-      const hourly = groupNWSDataByHour(
-        nwsData.wave_data.wave_height || [],
-        nwsData.timezone,
-        hourlyForecastHours
-      );
+      const hourly = buildHourlyForecast(nwsData.wave_data, nwsData.timezone, hourlyForecastHours);
 
       return {
         current,

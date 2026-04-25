@@ -176,6 +176,63 @@ export const groupNWSDataByHour = (
 
 
 /**
+ * A single hour's worth of multi-metric NWS forecast data, with unit conversions applied.
+ * Primary swell is the authoritative surf metric; secondary swell and wave are supplemental.
+ */
+export interface NWSHourlyPoint {
+  hour: number;
+  validTime: string;
+  // Primary swell — drives visuals and scoring
+  primarySwellHeightFt: number | null;
+  primarySwellPeriod: number | null;    // seconds
+  primarySwellDirection: number | null; // degrees
+  // Secondary swell — supplemental
+  secondarySwellHeightFt: number | null;
+  // Wind
+  windSpeed: number | null;             // km/h
+}
+
+/**
+ * Builds a multi-metric hourly forecast from raw NWS wave data.
+ * Calls groupNWSDataByHour once per metric and zips the results.
+ * Heights are converted from meters to feet.
+ *
+ * @param waveData - Raw NWS wave_data object from the API
+ * @param timezone - Target timezone (e.g., "America/Los_Angeles")
+ * @param hours - Number of hours to generate (default 168 = 7 days)
+ * @returns Array of NWSHourlyPoint, one entry per hour
+ */
+export const buildHourlyForecast = (
+  waveData: {
+    primary_swell_height?: NWSDataPoint[];
+    primary_swell_direction?: NWSDataPoint[];
+    primary_swell_period?: NWSDataPoint[];
+    secondary_swell_height?: NWSDataPoint[];
+    wind_speed?: NWSDataPoint[];
+  },
+  timezone: string,
+  hours: number = 168
+): NWSHourlyPoint[] => {
+  const primarySwellHeights = groupNWSDataByHour(waveData.primary_swell_height || [], timezone, hours);
+  const primarySwellPeriods = groupNWSDataByHour(waveData.primary_swell_period || [], timezone, hours);
+  const primarySwellDirections = groupNWSDataByHour(waveData.primary_swell_direction || [], timezone, hours);
+  const secondarySwellHeights = groupNWSDataByHour(waveData.secondary_swell_height || [], timezone, hours);
+  const windSpeeds = groupNWSDataByHour(waveData.wind_speed || [], timezone, hours);
+
+  return primarySwellHeights.map((slot, i) => ({
+    hour: slot.hour,
+    validTime: slot.validTime ?? '',
+    primarySwellHeightFt: slot.value !== null ? metersToFeet(slot.value) : null,
+    primarySwellPeriod: primarySwellPeriods[i]?.value ?? null,
+    primarySwellDirection: primarySwellDirections[i]?.value ?? null,
+    secondarySwellHeightFt: secondarySwellHeights[i]?.value !== null && secondarySwellHeights[i]?.value !== undefined
+      ? metersToFeet(secondarySwellHeights[i].value as number)
+      : null,
+    windSpeed: windSpeeds[i]?.value ?? null,
+  }));
+};
+
+/**
  * Type for parsed "current" forecast data
  * Converts NWS data to the format your components expect
  */

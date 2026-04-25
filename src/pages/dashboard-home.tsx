@@ -1,4 +1,3 @@
-import { Button, Typography } from "@mui/material";
 import sharks from "assets/sharks1.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getLocations, getSurfSpots, getBatchForecast, getSurfSpotClosest } from "@features/locations/api/locations";
@@ -16,10 +15,7 @@ import { getHomePageVariation } from "utils/ab-testing";
 import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
 import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
 import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
-import { extractSwellDataFromForecast, getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
-import { extractWaterTempFromForecast } from "utils/water-temp";
-import { TemperatureCard } from "components";
-import { FEATURED_SPOTS } from "utils/constants";
+import { getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
 import HeroSection from "components/common/hero";
 import ExploreActions from "components/common/explore-actions";
 import DashboardCard from "@features/cards/dashboard-card";
