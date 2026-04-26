@@ -8,9 +8,9 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
-import { ForecastRatingComponent, SpotMetricBar } from "@features/locations/components"
+import { ForecastRatingComponent, SpotMetricBar, MLForecastCard } from "@features/locations/components"
 import { formatCoordinates } from "utils/formatting"
-import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast} from "hooks"
+import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast} from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 
 const SpotPage = () => {
@@ -26,6 +26,9 @@ const SpotPage = () => {
 
   // NWS fetch
   const {data: nwsForecastData, isLoading: isNWSLoading} = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
+
+  // Surfe diem model forecast fetch
+  const {data: mlForecastData} = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
 
   // TODO: create hook for current weather if thats needed in the future.
   const {data: currentWeather} = useQuery({
@@ -93,6 +96,12 @@ const SpotPage = () => {
                 </Typography>
               </Item>
             </Stack>
+
+            {mlForecastData && (
+              <Box sx={{ display: 'flex', mb: 2 }}>
+                <MLForecastCard data={mlForecastData} />
+              </Box>
+            )}
 
             <SpotMetricBar
               current={nwsForecastData?.current}

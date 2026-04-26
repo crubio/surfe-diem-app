@@ -127,3 +127,45 @@ export interface NWSForecastResponse {
   cached_at: string | null;
   expires_at: string | null;
 }
+
+// ========================================
+// ML FORECAST TYPES (surfe-diem model)
+// ========================================
+
+export interface MLForecastParams {
+  spot_id: number;
+}
+
+export interface MLPredictedWaveHeight {
+  valid_time: string;       // ISO 8601 datetime
+  value_m: number;          // meters
+  value_ft: number;         // feet — already converted by API
+  horizon_hours: number;    // hours ahead this prediction covers
+}
+
+export interface MLObservedWaveHeight {
+  observed_time: string;    // ISO 8601 datetime
+  value_m: number;          // meters
+  value_ft: number;         // feet — already converted by API
+}
+
+export interface MLWaveData {
+  predicted_wave_height: MLPredictedWaveHeight[];
+  observed_wave_height: MLObservedWaveHeight[];
+}
+
+export interface MLForecastResponse {
+  station_id: string;
+  spot_id: number;
+  latitude: number;
+  longitude: number;
+  wave_data: MLWaveData;
+  source: string;
+  updated_at: string;
+  units: {
+    wave_height: string;
+    wave_height_imperial: string;
+  };
+  cached_at: string | null;
+  expires_at: string | null;
+}
