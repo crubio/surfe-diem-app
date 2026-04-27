@@ -82,14 +82,19 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
   ];
 
   return (
-    <Paper variant="outlined" sx={{ display: 'flex', alignItems: 'stretch' }}>
+    <Paper variant="outlined" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch' }}>
       {metrics.map((metric, i) => (
-        <Box key={metric.label} sx={{ display: 'flex', flex: 1 }}>
-          <Metric {...metric} />
+        <>
+          <Box key={metric.label} sx={{ flex: 1 }}>
+            <Metric {...metric} />
+          </Box>
           {i < metrics.length - 1 && (
-            <Divider orientation="vertical" flexItem />
+            <>
+              <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+              <Divider sx={{ display: { xs: 'block', sm: 'none' } }} />
+            </>
           )}
-        </Box>
+        </>
       ))}
     </Paper>
   );

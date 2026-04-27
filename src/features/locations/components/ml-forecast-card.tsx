@@ -16,7 +16,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
   return (
     <Paper
       variant="outlined"
-      sx={{ display: 'inline-flex', alignItems: 'center', px: 3, py: 2, gap: 2, flexWrap: 'wrap' }}
+      sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, px: 3, py: 2, gap: 2 }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
@@ -32,7 +32,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
         </Tooltip>
       </Box>
 
-      <Divider orientation="vertical" flexItem />
+      <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
 
       <Tooltip
         title="Significant wave height is approximately equal to the average of the highest one-third of the waves, as measured from the trough to the crest of the waves."
@@ -44,10 +44,10 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
         </Typography>
       </Tooltip>
 
-      <Divider orientation="vertical" flexItem />
+      <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
 
       {observed && (
-        <Box sx={{ textAlign: 'center' }}>
+        <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
           <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
             {observed.value_ft.toFixed(1)}ft
           </Typography>
@@ -58,11 +58,11 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
       )}
 
       {observed && predicted && (
-        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem' }} />
+        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem', display: { xs: 'none', sm: 'block' } }} />
       )}
 
       {predicted && (
-        <Box sx={{ textAlign: 'center' }}>
+        <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
           <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
             {predicted.value_ft.toFixed(1)}ft
           </Typography>
