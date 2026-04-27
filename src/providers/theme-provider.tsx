@@ -22,7 +22,7 @@ export const useColorMode = () => useContext(ColorModeContext);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<ColorMode>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === 'light' || saved === 'dark' ? saved : 'dark';
+    return saved === 'light' || saved === 'dark' ? saved : 'light';
   });
 
   const toggleColorMode = () => {

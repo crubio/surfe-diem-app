@@ -32,18 +32,8 @@ const AboutPage = () => {
                 lineHeight: 1.6
               }}
             >
-              Surfe Diem is dedicated to helping surfers catch waves by providing real-time 
-              surf conditions, forecasts, and spot information. Always free to the community - no ads, no signup, no login.
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                fontStyle: 'italic',
-                fontSize: { xs: '0.9rem', sm: '1rem' },
-                color: 'text.secondary'
-              }}
-            >
-              "Carpe Diem" - seize the day, and with Surfe Diem, seize the waves.
+              Surfe Diem is dedicated to providing real-time surf conditions, forecasts, and spot information.
+              Always free to the community - no ads, no signup, no login.
             </Typography>
           </SectionContainer>
 
@@ -61,8 +51,8 @@ const AboutPage = () => {
                 lineHeight: 1.6
               }}
             >
-              We focus on providing clean, reliable data without the clutter. Our interface is designed for surfers who want 
-              quick access to the information that matters most - swell conditions, forecasts, and spot details.
+              We focus on providing clean, reliable data without clutter. Our interface is designed for surfers who want 
+              quick access to swell conditions, forecasts, tides & well known surf spot specific info.
             </Typography>
             
             <Stack spacing={{ xs: 1.5, sm: 2 }}>
@@ -77,12 +67,38 @@ const AboutPage = () => {
                 >
                   🌊 Real-Time Conditions
                 </Typography>
-                <Typography 
-                  variant="body2" 
+                <Typography
+                  variant="body2"
                   color="text.secondary"
                   sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
                 >
                   Live swell data, wind conditions, and tide information from NOAA buoys and weather stations.
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: { xs: 0.5, sm: 1 },
+                    fontSize: { xs: '1rem', sm: '1.125rem' },
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  🤖 Surfe Diem Predictive Model
+                  <Chip label="BETA" size="small" color="primary" variant="outlined" sx={{ height: 18, fontSize: '0.65rem' }} />
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+                >
+                  At select spots, we layer in our own machine learning model trained on historical NDBC buoy observations
+                  to provide short-range wave height forecasts. The model predicts significant wave height (WVHT) — the
+                  average of the highest one-third of waves — alongside the latest buoy-observed reading. This feature is in beta and coverage
+                  is expanding.
                 </Typography>
               </Box>
               <Box>
@@ -101,7 +117,7 @@ const AboutPage = () => {
                   color="text.secondary"
                   sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
                 >
-                  Hourly and daily surf forecasts to help you plan your sessions.
+                  Hourly forecasts & predictions for well known spots.
                 </Typography>
               </Box>
               <Box>
@@ -139,7 +155,7 @@ const AboutPage = () => {
                   color="text.secondary"
                   sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
                 >
-                  Save your favorite spots and buoys for quick access to current conditions.
+                  Save your favorite spots and buoys for quick access.
                 </Typography>
               </Box>
             </Stack>
@@ -167,7 +183,7 @@ const AboutPage = () => {
                 </Typography>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                   <Chip label="Share on Instagram" variant="outlined" />
-                  <Chip label="Tell your surf buddies" variant="outlined" />
+                  <Chip label="Tell your friends" variant="outlined" />
                   <Chip label="Post on surf forums" variant="outlined" />
                 </Stack>
               </Box>
@@ -217,16 +233,46 @@ const AboutPage = () => {
                 color="text.secondary"
                 sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
               >
-                • <Link href="https://open-meteo.com/" target="_blank" rel="noopener" sx={{ color: 'inherit' }}>Open-Meteo</Link> - Weather data and forecasts
-              </Typography>
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
-              >
                 • Community-contributed spot data
               </Typography>
             </Stack>
+          </SectionContainer>
+
+          {/* Open Models & Datasets */}
+          <SectionContainer
+            title="Open Models & Datasets"
+            background="PAPER"
+            spacing="NORMAL"
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                lineHeight: 1.6
+              }}
+            >
+              We believe in open science. The machine learning model powering our wave height forecasts — along with
+              the datasets used to train it — are publicly available on Hugging Face under the Surfe Diem organization.
+              The training data is derived entirely from public NDBC buoy observations.
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 2, fontSize: { xs: '0.85rem', sm: '0.875rem' } }}
+            >
+              Whether you're a researcher, developer, or curious surfer, you're welcome to explore, use, or build on
+              what we've published.
+            </Typography>
+            <Link
+              href="https://huggingface.co/surfe-diem"
+              target="_blank"
+              rel="noopener"
+              underline="hover"
+              sx={{ fontWeight: 500 }}
+            >
+              huggingface.co/surfe-diem →
+            </Link>
           </SectionContainer>
 
           {/* Contact Section */}
@@ -256,15 +302,10 @@ const AboutPage = () => {
             spacing="NORMAL"
           >
             <Typography variant="body1" sx={{ mb: 2 }}>
-              Surfing is more than just an activity - it's a way of life that connects us deeply to the ocean. 
-              As surfers, we have a unique responsibility to protect and preserve the marine environment that gives us so much.
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              We're committed to ocean stewardship and environmental awareness. Every wave we catch reminds us 
-              of our duty to care for the ocean, reduce our impact, and advocate for marine conservation.
+              Surfing connects us deeply to the ocean. As surfers, we have a unique responsibility to protect and preserve the marine environment that gives us so much.
             </Typography>
             <Typography variant="body1">
-              Remember: Respect the oceans, respect each other, pack your trash, and always prioritize safety.
+              Respect the oceans, respect each other, & pack your trash.
             </Typography>
           </SectionContainer>
 
