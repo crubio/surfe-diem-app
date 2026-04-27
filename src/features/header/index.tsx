@@ -5,7 +5,9 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import { IconButton, Link, Menu, MenuItem, useTheme, useMediaQuery, Icon } from '@mui/material';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import { IconButton, Link, Menu, MenuItem, useTheme, useMediaQuery, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getSearchResults } from '../locations/api/locations';
 import { useEffect, useState } from 'react';
@@ -16,10 +18,12 @@ import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
 import { useUserLocation } from '../../stores/geolocation-store';
 import { LocationCityOutlined } from "@mui/icons-material"
+import { useColorMode } from '../../providers/theme-provider';
 
 export default function SearchAppBar() {
   const theme = useTheme();
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { mode, toggleColorMode } = useColorMode();
 
   const {location} = useUserLocation();
   
@@ -119,7 +123,7 @@ export default function SearchAppBar() {
     <>
     <SearchResultsDialog open={searchOpen} onClose={handleClose} searchTerm={searchQuery.q} results={searchResultData} />
     <Box sx={{ flexGrow: 1 }} id={'search-bar-header'} data-testid={'search-bar-header'}>
-      <AppBar position="static" sx={{backgroundColor: 'primary.dark'}}>
+      <AppBar position="static" elevation={0} sx={{ backgroundColor: 'primary.dark', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <Toolbar 
           disableGutters 
           sx={{ 
@@ -278,19 +282,25 @@ export default function SearchAppBar() {
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
             gap: 1,
-            // order: { xs: 3, md: 3 },
             ml: { md: 2 }
           }}>
             {location ? (
-              <Typography variant="body1" color="text.primary" sx={{verticalAlign: 'middle', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5}}>
+              <Typography variant="body1" sx={{ color: 'white', verticalAlign: 'middle', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <LocationCityOutlined />{location.address}
               </Typography>
             ) : (
-              <Typography variant="body1" color="text.secondary">
+              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.6)' }}>
                 Detecting location...
               </Typography>
             )}
           </Box>
+
+          {/* Light/dark toggle */}
+          <Tooltip title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+            <IconButton onClick={toggleColorMode} color="inherit" sx={{ ml: 1 }}>
+              {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
     </Box>

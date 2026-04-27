@@ -27,10 +27,10 @@ const HeroSection = (props: HeroSectionProps) => {
     >
       <Container maxWidth="lg">
       <Box sx={{ position: "relative", zIndex: 2 }}>
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
+        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: 'white' }}>
           {props.headline}
         </Typography>
-        <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
+        <Typography variant="h5" sx={{ mb: 3, color: 'rgba(255,255,255,0.9)' }}>
           {props.body}
         </Typography>
         </Box>

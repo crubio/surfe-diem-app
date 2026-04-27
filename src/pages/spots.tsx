@@ -41,10 +41,9 @@ const SpotsPage = () => {
         
         {/* Hero Section */}
         <Box sx={{
-          backgroundColor: "#1ed6e6", 
-          backgroundImage: `url(${surfImage})`, 
-          backgroundRepeat: "no-repeat", 
-          backgroundSize: "cover", 
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${surfImage})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
           height: { xs: "200px", sm: "240px", md: "290px" },
           backgroundPosition: "center",
           display: "flex",
@@ -53,10 +52,10 @@ const SpotsPage = () => {
           alignItems: "center",
           textAlign: "center"
         }}>
-          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2 }}>
+          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: 'white' }}>
             Surf spots
           </Typography>
-          <Typography variant="h5" sx={{ mb: 3, opacity: 0.9 }}>
+          <Typography variant="h5" sx={{ mb: 3, color: 'rgba(255,255,255,0.9)' }}>
             Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
           </Typography>
         </Box>
