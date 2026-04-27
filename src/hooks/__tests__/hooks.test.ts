@@ -9,12 +9,6 @@ vi.mock('@features/locations/api/locations', () => ({
   getLocationBuoyNearby: vi.fn()
 }))
 
-vi.mock('@features/forecasts', () => ({
-  getForecastCurrent: vi.fn(),
-  getForecastHourly: vi.fn(),
-  getForecastDaily: vi.fn()
-}))
-
 describe('Hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -33,10 +27,5 @@ describe('Hooks', () => {
       expect(typeof useTideData).toBe('function')
     })
 
-    it('should be able to import useForecastData', async () => {
-      const { useForecastData } = await import('../useForecastData')
-      expect(useForecastData).toBeDefined()
-      expect(typeof useForecastData).toBe('function')
-    })
   })
 }) 
