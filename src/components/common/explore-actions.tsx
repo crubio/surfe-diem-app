@@ -13,8 +13,7 @@ type ExploreAction = 'map' | 'spots' | 'near_me';
 
 const actionRoutes: Record<string, string> = {
   map: '/map',
-  spots: '/spots',
-  near_me: '/nearby-spots',
+  spots: '/spots'
 };
 
 const buttonStyles = {
@@ -56,16 +55,6 @@ const ExploreActions = (props: ExploreActionsProps) => {
         >
           Browse spots
         </Button>
-        {props.geolocation && (
-          <Button 
-            variant="outlined" 
-            size="large"
-            onClick={() => handleExploreAction(props.page, 'near_me')}
-            sx={buttonStyles}
-          >
-            Spots Near Me
-          </Button>
-        )}
         <Button
           variant="outlined" 
           size="large"

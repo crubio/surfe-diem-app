@@ -1,3 +1,4 @@
+// This page is DEPRECATED and will be removed in a future release.
 import { Box, Container, Grid, Typography, Card, CardContent, Button, LinearProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
