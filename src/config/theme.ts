@@ -24,6 +24,10 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             secondary: '#8b949e',
           },
           divider: 'rgba(255,255,255,0.08)',
+          success: { main: '#4caf50' },
+          warning: { main: '#ff9800' },
+          error: { main: '#f44336' },
+          info: { main: '#2196f3' },
         }
       : {
           background: {
@@ -45,10 +49,15 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             secondary: '#57606a',
           },
           divider: 'rgba(0,0,0,0.1)',
+          success: { main: '#4caf50' },
+          warning: { main: '#ff9800' },
+          error: { main: '#f44336' },
+          info: { main: '#2196f3' },
         }),
   },
   typography: {
     fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+    h2: { fontWeight: 700 },
     h3: { fontWeight: 700 },
     h4: { fontWeight: 700 },
     h5: { fontWeight: 600 },

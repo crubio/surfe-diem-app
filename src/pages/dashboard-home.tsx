@@ -245,16 +245,16 @@ const DashboardHome = () => {
         </script>
       </Helmet>
       
-      <PageContainer 
-        maxWidth="XL" 
-        padding="MEDIUM" 
+      {/* Hero Section */}
+      <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
+
+      <PageContainer
+        maxWidth="XL"
+        padding="MEDIUM"
         marginTop={{ xs: 1, sm: 0 }}
       >
         {/* Modal to change location */}
         <ChangeLocationModal open={open} onClose={handleClose} />
-
-        {/* Hero Section */}
-        <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
 
         {/* Explore section */}
         <ExploreActions page="home" geolocation={!!coordinates} handleOpen={handleOpen} />

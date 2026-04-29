@@ -37,28 +37,28 @@ const SpotsPage = () => {
               keywords="surf spots, surf locations, surf regions, surf spot directory, surf spot finder, surf spot guide"
               url="https://surfe-diem.com/spots"
           />
+      {/* Hero Section */}
+      <Box sx={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${surfImage})`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        height: { xs: "200px", sm: "240px", md: "290px" },
+        backgroundPosition: "center",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center"
+      }}>
+        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: 'white' }}>
+          Surf spots
+        </Typography>
+        <Typography variant="h5" sx={{ mb: 3, color: 'rgba(255,255,255,0.9)' }}>
+          Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
+        </Typography>
+      </Box>
+
       <PageContainer maxWidth="XL" padding="MEDIUM" marginTop={{ xs: 1, sm: 0 }}>
-        
-        {/* Hero Section */}
-        <Box sx={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${surfImage})`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-          height: { xs: "200px", sm: "240px", md: "290px" },
-          backgroundPosition: "center",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          textAlign: "center"
-        }}>
-          <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: 'white' }}>
-            Surf spots
-          </Typography>
-          <Typography variant="h5" sx={{ mb: 3, color: 'rgba(255,255,255,0.9)' }}>
-            Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
-          </Typography>
-        </Box>
         {/* Content Section */}
         <ContentWrapper margin="LG">
           <SectionContainer 
