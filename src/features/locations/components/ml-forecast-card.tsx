@@ -8,8 +8,8 @@ interface MLForecastCardProps {
 }
 
 export const MLForecastCard = ({ data }: MLForecastCardProps) => {
-  const observed = data.wave_data.observed_wave_height[0];
-  const predicted = data.wave_data.predicted_wave_height[0];
+  const observed = data.observed_wave_height;
+  const predicted = data.forecast[0];
 
   if (!observed && !predicted) return null;
 
