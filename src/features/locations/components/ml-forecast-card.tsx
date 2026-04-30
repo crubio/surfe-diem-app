@@ -9,7 +9,7 @@ interface MLForecastCardProps {
 
 export const MLForecastCard = ({ data }: MLForecastCardProps) => {
   const observed = data.observed_wave_height;
-  const predicted = data.forecast[0];
+  const predicted = data.forecast;
 
   if (!observed && !predicted) return null;
 
@@ -58,19 +58,22 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
       )}
 
       {observed && predicted && (
-        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem', display: { xs: 'none', sm: 'block' } }} />
+        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem', alignSelf: 'center', display: { xs: 'none', sm: 'block' } }} />
       )}
 
-      {predicted && (
-        <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
-          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-            {predicted.value_ft.toFixed(1)}ft
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {predicted.horizon_hours}hr forecast
-          </Typography>
+      {predicted && predicted.map((row, idx) => (
+        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+          <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
+            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
+              {row.value_ft.toFixed(1)}ft
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {row.horizon_hours}hr forecast
+            </Typography>
+          </Box>
         </Box>
-      )}
+      ))}
     </Paper>
   );
 };
