@@ -82,6 +82,10 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
   ];
 
   return (
+    <Box>
+      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+        NWS Forecast
+      </Typography>
     <Paper variant="outlined" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch' }}>
       {metrics.map((metric, i) => (
         <>
@@ -97,5 +101,6 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
         </>
       ))}
     </Paper>
+    </Box>
   );
 };

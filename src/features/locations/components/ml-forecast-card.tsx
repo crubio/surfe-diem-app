@@ -46,7 +46,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
 
       <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
 
-      {observed && (
+      {observed && observed.value_ft != null && (
         <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
           <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
             {observed.value_ft.toFixed(1)}ft
@@ -57,7 +57,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
         </Box>
       )}
 
-      {observed && predicted && (
+      {observed && observed.value_ft != null && predicted && (
         <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem', alignSelf: 'center', display: { xs: 'none', sm: 'block' } }} />
       )}
 
@@ -66,7 +66,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
           <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
           <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
             <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-              {row.value_ft.toFixed(1)}ft
+              {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}ft
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {row.horizon_hours}hr forecast
