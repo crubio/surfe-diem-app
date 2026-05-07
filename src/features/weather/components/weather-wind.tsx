@@ -32,7 +32,7 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
 
   return (
     <Box>
-      <Typography variant="h4" component="h2" sx={{ fontWeight: 'bold', mb: 3 }}>
+      <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 3 }}>
         Current Weather
       </Typography>
       <Card sx={{ textAlign: 'center' }}>

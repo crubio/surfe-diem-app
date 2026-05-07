@@ -12,6 +12,7 @@ import { ForecastRatingComponent, SpotMetricBar, MLForecastCard } from "@feature
 import { formatCoordinates } from "utils/formatting"
 import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast} from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
+import { TideSparklineCard } from "@features/tides"
 
 const SpotPage = () => {
   const params = useParams()
@@ -154,23 +155,7 @@ const SpotPage = () => {
                     {isTideDataLoading ? (
                       <Loading />
                     ) : dailyTides?.data && currentTides?.data ? (
-                      <Card sx={{ textAlign: 'center' }}>
-                        <CardContent sx={{ py: 1, px: 2 }}>
-                          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
-                            {Math.min(...dailyTides.data.predictions.map((p: any) => parseFloat(p.v))).toFixed(1)}-{Math.max(...dailyTides.data.predictions.map((p: any) => parseFloat(p.v))).toFixed(1)}ft
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
-                            Today's Range
-                          </Typography>
-                          <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-                            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '1.25rem', mb: 0.5 }}>
-                              {dailyTides.data.predictions.map((p: any) => (
-                                <><span key={p.t}>{parseFloat(p.v).toFixed(1)}ft at {new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</span><br /></>
-                              ))}
-                            </Typography>
-                          </Box>
-                        </CardContent>
-                      </Card>
+                      <TideSparklineCard predictions={dailyTides.data.predictions} />
                     ) : (
                       <NoData />
                     )}
