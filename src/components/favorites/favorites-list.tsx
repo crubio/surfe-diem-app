@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Favorite, BuoyBatchData, SpotBatchData } from '../../types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
-import { Stack, Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
+import { Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { getSwellDirectionText } from 'utils/swell';
@@ -121,36 +121,35 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
   );
 };
 
-const FavoriteSection: React.FC<{
-  title: string;
-  favorites: Favorite[];
-  currentData?: BuoyBatchData[] | SpotBatchData[];
-  type: 'spot' | 'buoy';
-  itemsPerRow?: number;
-}> = ({ title, favorites, currentData, type, itemsPerRow = 5 }) => {
-  const [expanded, setExpanded] = useState(false);
-  
-  if (favorites.length === 0) return null;
-  
-  const hasMoreThanFirstRow = favorites.length > itemsPerRow;
-  const firstRowItems = favorites.slice(0, itemsPerRow);
-  const remainingItems = favorites.slice(itemsPerRow);
-  
-  const renderFavoriteItems = (items: Favorite[]) => (
+const ITEMS_PER_ROW = 5;
+
+export const FavoritesList: React.FC<FavoritesListProps> = ({
+  favorites,
+  currentData,
+  isLoading
+}) => {
+  const [expanded, setExpanded] = useState(true);
+  const [showMore, setShowMore] = useState(false);
+
+  const firstRowItems = favorites.slice(0, ITEMS_PER_ROW);
+  const remainingItems = favorites.slice(ITEMS_PER_ROW);
+  const hasMore = favorites.length > ITEMS_PER_ROW;
+
+  const resolveData = (favorite: Favorite) => {
+    if (favorite.type === 'spot') {
+      return currentData?.spots?.find((s) => s.id.toString() === favorite.id);
+    }
+    return currentData?.buoys?.find((b) => b.id.toString() === favorite.id);
+  };
+
+  const renderItems = (items: Favorite[]) => (
     <Grid container spacing={{ xs: 1, sm: 2 }}>
       {items.map((favorite) => (
-        <Grid item xs={12} sm={6} md={2.4} key={`${type}-${favorite.id}`}>
+        <Grid item xs={12} sm={6} md={2.4} key={`${favorite.type}-${favorite.id}`}>
           <FavoriteItem
             favorite={favorite}
-            currentData={(() => {
-              if (!currentData) return undefined;
-              return (currentData as any[]).find((item: any) => 
-                type === 'spot' 
-                  ? item.id.toString() === favorite.id
-                  : item.id.toString() === favorite.id
-              );
-            })()}
-            type={type}
+            currentData={resolveData(favorite)}
+            type={favorite.type as 'spot' | 'buoy'}
           />
         </Grid>
       ))}
@@ -158,68 +157,11 @@ const FavoriteSection: React.FC<{
   );
 
   return (
-    <Box sx={{ mb: 3 }}>
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        mb: 2 
-      }}>
-        <Typography 
-          variant="h6" 
-          component="h3" 
-          sx={{ 
-            fontSize: { xs: '1.125rem', sm: '1.25rem' },
-            fontWeight: 600
-          }}
-        >
-          {title} ({favorites.length})
-        </Typography>
-        {hasMoreThanFirstRow && (
-          <IconButton
-            onClick={() => setExpanded(!expanded)}
-            size="small"
-            sx={{ 
-              color: 'primary.main',
-              '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
-            }}
-          >
-            {expanded ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
-        )}
-      </Box>
-      
-      {/* First row - always visible */}
-      {renderFavoriteItems(firstRowItems)}
-      
-      {/* Remaining items - collapsible */}
-      {hasMoreThanFirstRow && (
-        <Collapse in={expanded} timeout="auto">
-          <Box sx={{ mt: 2 }}>
-            {renderFavoriteItems(remainingItems)}
-          </Box>
-        </Collapse>
-      )}
-    </Box>
-  );
-};
-
-export const FavoritesList: React.FC<FavoritesListProps> = ({ 
-  favorites, 
-  currentData, 
-  isLoading 
-}) => {
-  const [expanded, setExpanded] = useState(true);
-  // Separate favorites by type
-  const spotFavorites = favorites.filter(f => f.type === 'spot');
-  const buoyFavorites = favorites.filter(f => f.type === 'buoy');
-
-  return (
     <Box sx={{ mt: 3 }}>
-      <Typography 
-        variant="h4" 
-        component="h2" 
-        sx={{ 
+      <Typography
+        variant="h4"
+        component="h2"
+        sx={{
           mb: 2,
           fontSize: { xs: '1.5rem', sm: '2rem' },
           fontWeight: 700
@@ -229,7 +171,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         <IconButton
           onClick={() => setExpanded(!expanded)}
           size="small"
-          sx={{ 
+          sx={{
             color: 'primary.main',
             '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
           }}
@@ -239,10 +181,10 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
       </Typography>
 
       {favorites.length === 0 && (
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
             mb: 2,
             fontSize: { xs: '0.875rem', sm: '1rem' }
           }}
@@ -250,26 +192,30 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
           No favorites in your quiver yet. Add some to get quick surf conditions for your favorite spots and buoys.
         </Typography>
       )}
-      
+
       <Collapse in={expanded} timeout="auto">
-      
-      <Stack spacing={3}>
-        <FavoriteSection
-          title="Surf Spots"
-          favorites={spotFavorites}
-          currentData={currentData?.spots}
-          type="spot"
-          itemsPerRow={5}
-        />
-        
-        <FavoriteSection
-          title="Buoys"
-          favorites={buoyFavorites}
-          currentData={currentData?.buoys}
-          type="buoy"
-          itemsPerRow={5}
-        />
-      </Stack>
+        {renderItems(firstRowItems)}
+        {hasMore && (
+          <>
+            <Collapse in={showMore} timeout="auto">
+              <Box sx={{ mt: 2 }}>
+                {renderItems(remainingItems)}
+              </Box>
+            </Collapse>
+            <Box sx={{ mt: 1, textAlign: 'right' }}>
+              <IconButton
+                onClick={() => setShowMore(!showMore)}
+                size="small"
+                sx={{
+                  color: 'primary.main',
+                  '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
+                }}
+              >
+                {showMore ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
+            </Box>
+          </>
+        )}
       </Collapse>
     </Box>
   );
