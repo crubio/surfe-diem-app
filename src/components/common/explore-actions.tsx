@@ -34,7 +34,7 @@ const ExploreActions = (props: ExploreActionsProps) => {
   };
     
   return (
-    <Item sx={{ bgcolor: 'background.default', marginBottom: "20px", p: 3 }}>
+    <Item sx={{ bgcolor: 'background.default', p: 3 }}>
       <Typography variant="h5" component="h2" sx={{ mb: 2, fontWeight: 600 }}>
         Explore
       </Typography>

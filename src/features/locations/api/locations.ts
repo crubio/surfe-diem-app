@@ -35,7 +35,7 @@ type LatestObservationItem = {
   [key: string]: string
 }
 
-export const getSearchResults = async <T>(params: SearchParams): Promise<ApiResponse<T>> => {
+export const getSearchResults = async <T = Record<string, unknown>>(params: SearchParams): Promise<T[]> => {
   return axios.get(API_ROUTES.SEARCH, {
     params: params
   }).then((response) => {

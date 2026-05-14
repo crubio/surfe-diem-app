@@ -260,7 +260,7 @@ const DashboardHome = () => {
         <ExploreActions page="home" geolocation={!!coordinates} handleOpen={handleOpen} />
 
         {/* My Lineup (Favorites) - First row of content */}
-        <ContentWrapper margin="LG">
+        <ContentWrapper>
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}

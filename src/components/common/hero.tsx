@@ -21,8 +21,7 @@ const HeroSection = (props: HeroSectionProps) => {
         justifyContent: 'center',
         color: 'white',
         textAlign: 'center',
-        position: 'relative',
-        marginBottom: '20px',
+        position: 'relative'
       }}
     >
       <Container maxWidth="lg">

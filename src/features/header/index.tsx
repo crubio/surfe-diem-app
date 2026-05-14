@@ -1,4 +1,5 @@
 import React from 'react';
+import SdBanner from '../../assets/sd_banner.svg?react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -40,7 +41,7 @@ export default function SearchAppBar() {
     'About': '/about'
   }
   
-  const {data: searchResultData, isSuccess} = useQuery({
+  const {data: searchResultData, isSuccess} = useQuery<Record<string, unknown>[]>({
     queryKey: ['search', queryId ,searchQuery],
     queryFn: () => getSearchResults(searchQuery),
     enabled: !!searchQuery && searchQuery.q.length > 2,
@@ -133,20 +134,17 @@ export default function SearchAppBar() {
           }}
         >
           {/* Logo - Responsive sizing */}
-          <Link href="/" underline="none" color="inherit" sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography
-              variant={isSmallMobile ? "h6" : "h5"}
-              noWrap
-              component="div"
-              sx={{ 
-                display: { xs: 'block', sm: 'block' }, 
-                marginRight: { xs: '8px', sm: '24px', md: '40px' }, 
-                marginLeft: { xs: '4px', sm: '16px', md: '20px' },
-                fontWeight: 'bold'
+          <Link href="/" underline="none" color="inherit" sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <SdBanner
+              style={{
+                height: 36,
+                width: 'auto',
+                maxWidth: isSmallMobile ? 120 : 180,
+                color: mode === 'light' ? '#6aebf5' : '#127794',
+                marginLeft: 8,
+                marginRight: 16,
               }}
-            >
-              surfe diem
-            </Typography>
+            />
           </Link>
 
           {/* Mobile Menu Button - Improved touch target */}
