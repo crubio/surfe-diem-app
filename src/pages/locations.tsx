@@ -32,12 +32,7 @@ const LocationsPage = () => {
     <>
       {locationData && (
         <>
-          <SEO 
-            title={`${locationData.name} Buoy - Surfe Diem`}
-            description={`Get real-time surf conditions and weather data from ${locationData.name} buoy. Current wave height, wind, and tide information.`}
-            keywords={`${locationData.name} buoy, ${locationData.name} surf conditions, ${locationData.name} wave data, surf buoy data, real-time surf conditions`}
-            url={`https://surfe-diem.com/location/${locationData.location_id}`}
-          />
+          <SEO title={`${locationData.name} - Surfe Diem`} />
           <BuoyStructuredData
             name={locationData.name}
             description={locationData.description || `Weather buoy providing real-time surf conditions`}

@@ -44,12 +44,7 @@ const SpotPage = () => {
     <>
       {spotData && (
         <>
-          <SEO
-            title={`${spotData.name} Surf Spot - Surfe Diem`}
-            description={`Get current surf conditions, forecasts, and tide information for ${spotData.name} in ${spotData.subregion_name}. Real-time surf data and weather.`}
-            keywords={`${spotData.name} surf spot, ${spotData.subregion_name} surf, ${spotData.name} surf conditions, ${spotData.name} surf forecast, ${spotData.subregion_name} surf spots`}
-            url={`https://surfe-diem.com/spot/${spotData.slug}`}
-          />
+          <SEO title={`${spotData.name} Surf Spot - Surfe Diem`} />
           <SurfSpotStructuredData
             name={spotData.name}
             description={`Surf spot in ${spotData.subregion_name} with current conditions and forecasts`}

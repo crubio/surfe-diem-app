@@ -6,12 +6,7 @@ import { SEO, PageContainer, SectionContainer, ContentWrapper, HeroSection } fro
 const AboutPage = () => {
   return (
     <>
-      <SEO 
-        title="About Surfe Diem - Free Surf Conditions for the Community"
-        description="Learn about Surfe Diem's mission to provide free surf conditions and forecasts. Ocean stewardship and community-driven surf intelligence."
-        keywords="about surfe diem, surf community, ocean stewardship, free surf data, surf culture, surf forecast community"
-        url="https://surfe-diem.com/about"
-      />
+      <SEO title="About Surfe Diem - Free Surf Conditions for the Community" />
       {/* Hero Section */}
       <HeroSection image={heroImageWebp} headline="About Surfe Diem" body="Free surf conditions for the community"/>
 
