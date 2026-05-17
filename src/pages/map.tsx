@@ -46,12 +46,7 @@ const MapPage = () => {
 
   return (
     <>
-      <SEO 
-        title="Surf Map - Surfe Diem"
-        description="Interactive map showing surf spots and buoys. Find surf locations near you and get real-time conditions."
-        keywords="surf map, interactive surf map, surf spots map, surf buoys map, find surf spots, surf location map"
-        url="https://surfe-diem.com/map"
-      />
+      <SEO title="Explore - Surfe Diem" />
       <PageContainer >
         <h1>Buoys and spots</h1>
         {geoJson && !isEmpty(locationsGeoJson) && isLocationsFetched && (

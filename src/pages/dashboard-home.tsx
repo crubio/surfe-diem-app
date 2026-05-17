@@ -227,12 +227,7 @@ const DashboardHome = () => {
 
   return (
     <>
-      <SEO 
-        title="Surfe Diem - What's the surf like now?"
-        description="Get real-time surf conditions and current forecasts. Find the best waves right now."
-        keywords="surf conditions, current surf, wave height, surf forecast, real-time surf data"
-        url="https://surfe-diem.com"
-      />
+      <SEO title="Surfe Diem - What's the surf like now?" />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({

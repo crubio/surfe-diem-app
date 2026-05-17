@@ -31,12 +31,7 @@ const SpotsPage = () => {
 
     return (
         <>
-          <SEO 
-              title="Surf Spots - Surfe Diem"
-              description="Browse surf spots by region. Get detailed information about surf locations, conditions, and forecasts."
-              keywords="surf spots, surf locations, surf regions, surf spot directory, surf spot finder, surf spot guide"
-              url="https://surfe-diem.com/spots"
-          />
+          <SEO title="Surf Spots - Surfe Diem" />
       {/* Hero Section */}
       <Box sx={{
         backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${surfImage})`,

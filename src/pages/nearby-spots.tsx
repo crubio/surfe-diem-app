@@ -63,12 +63,7 @@ const NearbySpotsPage = () => {
 
   return (
     <>
-      <SEO 
-        title="Nearby Surf Spots - Surfe Diem"
-        description="Discover the closest surf spots to your location with current conditions and forecasts."
-        keywords="nearby surf spots, local surf spots, surf spots near me, surf conditions"
-        url="https://surfe-diem.com/nearby-spots"
-      />
+      <SEO title="Nearby Surf Spots - Surfe Diem" />
       
       {/* Hero Section */}
       <HeroSection image={heroImageJpeg} headline="Nearby Surf Spots" body="Discover the closest surf spots to your location with current conditions and forecasts"/>
