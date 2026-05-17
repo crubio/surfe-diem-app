@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: surfe-diem-app
+    env: static
+    buildCommand: vite build && node prerender.js
+    staticPublishPath: ./dist
+    notFoundPage: /index.html
