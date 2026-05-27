@@ -1,13 +1,20 @@
 import { ThemeOptions } from '@mui/material';
 
+// Shadow scale
+export const shadows = {
+  sm: '0 4px 12px -4px rgba(8,40,52,0.12)',
+  md: '0 8px 24px -8px rgba(8,40,52,0.18)',
+  lg: '0 24px 60px -20px rgba(8,40,52,0.22)',
+};
+
 export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
     mode,
     ...(mode === 'dark'
       ? {
           background: {
-            default: '#0d1117',
-            paper: '#161b22',
+            default: '#06161d',
+            paper: '#102733',
           },
           primary: {
             main: '#1ed6e6',
@@ -31,7 +38,7 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
         }
       : {
           background: {
-            default: '#f0f6fc',
+            default: '#eef7fb',
             paper: '#ffffff',
           },
           primary: {
@@ -45,10 +52,10 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
             light: '#ff7d47',
           },
           text: {
-            primary: '#1c1e21',
-            secondary: '#57606a',
+            primary: '#082834',
+            secondary: '#496e7c',
           },
-          divider: 'rgba(0,0,0,0.1)',
+          divider: 'rgba(0,90,110,0.08)',
           success: { main: '#4caf50' },
           warning: { main: '#ff9800' },
           error: { main: '#f44336' },
@@ -64,7 +71,7 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     h6: { fontWeight: 600 },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 16,
   },
   components: {
     MuiCard: {
@@ -89,3 +96,21 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     },
   },
 });
+
+// Semantic color tokens (use directly in sx props where MUI palette doesn't reach)
+export const colorTokens = {
+  light: {
+    bgSoft: '#dff0f6',
+    textTertiary: '#7a98a4',
+    rule: 'rgba(0,90,110,0.08)',
+    ruleHi: 'rgba(0,90,110,0.18)',
+    accentDark: '#006978',
+  },
+  dark: {
+    bgSoft: '#0a1d27',
+    textTertiary: '#4a6a7a',
+    rule: 'rgba(255,255,255,0.08)',
+    ruleHi: 'rgba(255,255,255,0.14)',
+    accentDark: '#1ed6e6',
+  },
+};

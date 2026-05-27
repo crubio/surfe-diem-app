@@ -18,8 +18,8 @@ import { random } from 'lodash';
 import { SearchQueryParams } from '../locations/types';
 import { toast } from 'react-toastify';
 import { useUserLocation } from '../../stores/geolocation-store';
-import { LocationCityOutlined } from "@mui/icons-material"
 import { useColorMode } from '../../providers/theme-provider';
+import { ChangeLocationModal } from '@features/geocoding/components/change-location';
 
 export default function SearchAppBar() {
   const theme = useTheme();
@@ -27,6 +27,7 @@ export default function SearchAppBar() {
   const { mode, toggleColorMode } = useColorMode();
 
   const {location} = useUserLocation();
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
   
   const notify = () => toast("No results found", {});
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -279,17 +280,69 @@ export default function SearchAppBar() {
             flexGrow: 0,
             display: { xs: 'none', md: 'flex' },
             alignItems: 'center',
-            gap: 1,
             ml: { md: 2 }
           }}>
+            <ChangeLocationModal open={locationModalOpen} onClose={() => setLocationModalOpen(false)} />
             {location ? (
-              <Typography variant="body1" sx={{ color: 'white', verticalAlign: 'middle', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <LocationCityOutlined />{location.address}
-              </Typography>
+              <Box
+                onClick={() => setLocationModalOpen(true)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 1.5,
+                  py: 0.75,
+                  borderRadius: '999px',
+                  backgroundColor: 'rgba(255,255,255,0.10)',
+                  border: '1px solid rgba(255,255,255,0.14)',
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.16)' },
+                }}>
+                {/* Status dot with faded outer ring */}
+                <Box sx={{ position: 'relative', width: 10, height: 10, flexShrink: 0 }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    inset: -3,
+                    borderRadius: '50%',
+                    backgroundColor: 'primary.light',
+                    opacity: 0.25,
+                  }} />
+                  <Box sx={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    backgroundColor: 'primary.light',
+                  }} />
+                </Box>
+                <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, lineHeight: 1 }}>
+                  {location.address}
+                </Typography>
+              </Box>
             ) : (
-              <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                Detecting location...
-              </Typography>
+              <Box
+                onClick={() => setLocationModalOpen(true)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 1.5,
+                  py: 0.75,
+                  borderRadius: '999px',
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.10)' },
+                }}>
+                <Box sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(255,255,255,0.3)',
+                }} />
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500, lineHeight: 1 }}>
+                  Detecting location...
+                </Typography>
+              </Box>
             )}
           </Box>
 

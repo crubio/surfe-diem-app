@@ -1,113 +1,56 @@
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import { Box, Stack } from "@mui/material";
+import { Box, Container, Link, Typography } from "@mui/material";
 import { LinkRouter } from "components";
+import SdBanner from '../../assets/sd_banner.svg?react';
+import { useColorMode } from '../../providers/theme-provider';
+import { colorTokens } from '../../config/theme';
 
 export default function Footer() {
+  const { mode } = useColorMode();
+  const tokens = colorTokens[mode];
+
   return (
     <Box
-      sx={{
-        backgroundColor: (theme) =>
-          theme.palette.mode === "light"
-            ? theme.palette.grey[200]
-            : theme.palette.grey[800],
-        py: 3,
-        mt: 'auto'
-      }}
       component="footer"
+      sx={{
+        backgroundColor: tokens.bgSoft,
+        borderTop: `1px solid ${tokens.rule}`,
+        mt: 'auto',
+      }}
     >
-      <Container maxWidth="lg">
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'center', sm: 'center' }}
-          spacing={{ xs: 2, sm: 0 }}
-        >
-          {/* Copyright */}
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-          >
-            © {new Date().getFullYear()} Surfe Diem
-          </Typography>
+      <Container
+        maxWidth="xl"
+        sx={{
+          py: 2.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        {/* Logo */}
+        <SdBanner
+          style={{
+            height: 24,
+            width: 'auto',
+            color: mode === 'light' ? '#0097a7' : '#1ed6e6',
+            display: 'block',
+          }}
+        />
 
-          {/* Quick Links */}
-          <Stack 
-            direction="row" 
-            spacing={{ xs: 2, sm: 3 }}
-            sx={{ 
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: { xs: 1.5, sm: 2 }
-            }}
-          >
-            <LinkRouter 
-              to="/about" 
-              sx={{ 
-                color: 'text.secondary',
-                textDecoration: 'none',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                '&:hover': {
-                  color: 'primary.main',
-                  textDecoration: 'underline'
-                }
-              }}
-            >
-              About
-            </LinkRouter>
-            <LinkRouter 
-              to="/spots" 
-              sx={{ 
-                color: 'text.secondary',
-                textDecoration: 'none',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                '&:hover': {
-                  color: 'primary.main',
-                  textDecoration: 'underline'
-                }
-              }}
-            >
-              Spots
-            </LinkRouter>
-            <LinkRouter 
-              to="/map" 
-              sx={{ 
-                color: 'text.secondary',
-                textDecoration: 'none',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                '&:hover': {
-                  color: 'primary.main',
-                  textDecoration: 'underline'
-                }
-              }}
-            >
-              Map
-            </LinkRouter>
-          </Stack>
+        {/* Nav links */}
+        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+          <LinkRouter to="/" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Dashboard</LinkRouter>
+          <LinkRouter to="/spots" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Spots</LinkRouter>
+          <LinkRouter to="/map" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Map</LinkRouter>
+          <LinkRouter to="/about" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>About</LinkRouter>
+          <Link href="mailto:contact@surfe-diem.com" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Contact</Link>
+        </Box>
 
-          {/* Contact */}
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-          >
-            <Link 
-              href="mailto:contact@surfe-diem.com"
-              sx={{ 
-                color: 'inherit',
-                textDecoration: 'none',
-                '&:hover': {
-                  color: 'primary.main',
-                  textDecoration: 'underline'
-                }
-              }}
-            >
-              Contact
-            </Link>
-          </Typography>
-        </Stack>
+        {/* Copyright */}
+        <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>
+          © {new Date().getFullYear()} Surfe Diem
+        </Typography>
       </Container>
     </Box>
   );

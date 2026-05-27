@@ -17,12 +17,11 @@ import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tid
 import { getCurrentTideValue, getCurrentTideTime } from "utils/tides";
 import { getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
 import HeroSection from "components/common/hero";
-import ExploreActions from "components/common/explore-actions";
+import HeroWidget from "components/common/hero-widget";
 import DashboardCard from "@features/cards/dashboard-card";
 import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
 import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
-import { ChangeLocationModal } from "@features/geocoding/components/change-location";
 import { useNWSForecast } from "../hooks/useNWSForecast";
 import { kilometersPerHourToMph } from "utils/formatting";
 
@@ -31,10 +30,6 @@ const DashboardHome = () => {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
   const variation = getHomePageVariation();
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  
   // Track page view on mount
   useEffect(() => {
     trackPageView(variation, 'dashboard-home');
@@ -241,19 +236,45 @@ const DashboardHome = () => {
       </Helmet>
       
       {/* Hero Section */}
-      <HeroSection image={sharks} headline="What's the surf like now?" body="Real-time conditions and current forecasts"/>
+      <HeroSection
+        image={sharks}
+        widget={
+          bestConditions && cleanestConditions && closestSpotData && currentTideValue != null ? (
+          <HeroWidget
+            rows={[
+              {
+                label: 'Best right now',
+                spot: bestConditions?.spot,
+                value: bestConditions?.waveHeight ?? '—',
+                score: bestConditions?.score,
+              },
+              {
+                label: 'Cleanest',
+                spot: cleanestConditions?.spot,
+                value: cleanestConditions?.waveHeight ?? '—',
+                score: cleanestConditions?.score,
+              },
+              {
+                label: 'Closest to you',
+                spot: closestSpotData?.spot,
+                value: closestSpotData?.waveHeight ?? '—',
+                score: closestSpotData?.score,
+              },
+              {
+                label: 'Current tide',
+                value: currentTideValue != null ? `${currentTideValue.toFixed(1)}ft` : '—',
+              },
+            ]}
+          />
+          ) : null
+        }
+      />
 
       <PageContainer
         maxWidth="XL"
         padding="MEDIUM"
         marginTop={{ xs: 1, sm: 0 }}
       >
-        {/* Modal to change location */}
-        <ChangeLocationModal open={open} onClose={handleClose} />
-
-        {/* Explore section */}
-        <ExploreActions page="home" geolocation={!!coordinates} handleOpen={handleOpen} />
-
         {/* My Lineup (Favorites) - First row of content */}
         <ContentWrapper>
           <FavoritesList 
@@ -264,7 +285,7 @@ const DashboardHome = () => {
         </ContentWrapper>
         {/* Current Conditions Dashboard */}
         <DashboardGrid 
-          title="Current Conditions Dashboard"
+          title="Today's picks"
           subtitle="Recommendations"
           showSubtitle={true}
           columns={GRID_CONFIGS.RECOMMENDATIONS}
@@ -287,6 +308,7 @@ const DashboardHome = () => {
                 waveDirection={data?.waveDirectionFormatted || undefined}
                 wavePeriod={data?.wavePeriodFormatted || undefined}
                 description={data?.score?.description}
+                inverted={key === 'best'}
                 onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
               />
             )
@@ -321,7 +343,7 @@ const DashboardHome = () => {
               isLoading={tidesLoading}
               isError={tidesError || isClosestSpotsError}
               title="Current Tide"
-              name={currentTideValue !== null && currentTideValue !== undefined ? `${currentTideValue.toFixed(1)}ft` : ''}
+              name={currentTideValue != null ? `${currentTideValue.toFixed(1)}ft` : ''}
               score={{ label: currentTideTime || 'Loading...', color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
               description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
               heightValue={currentTideValue !== null ? currentTideValue : undefined}

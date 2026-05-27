@@ -8,7 +8,15 @@ const AboutPage = () => {
     <>
       <SEO title="About Surfe Diem - Free Surf Conditions for the Community" />
       {/* Hero Section */}
-      <HeroSection image={heroImageWebp} headline="About Surfe Diem" body="Free surf conditions for the community"/>
+      <HeroSection
+        image={heroImageWebp}
+        heading="About Surfe Diem"
+        body="Free surf conditions for the community — no ads, no signup, no login."
+        ctas={[
+          { label: 'Surf spots', href: '/spots', variant: 'contained' },
+          { label: 'Explore', href: '/map', variant: 'outlined' },
+        ]}
+      />
 
       <PageContainer maxWidth="MD" padding="MEDIUM">
         
