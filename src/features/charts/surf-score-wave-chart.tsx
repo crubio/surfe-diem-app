@@ -1,20 +1,20 @@
 import React from 'react';
 import {
-  ComposedChart,
+  AreaChart,
   Area,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  Legend,
+  ReferenceDot,
   TooltipContentProps,
 } from 'recharts';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Paper, Typography, useTheme } from '@mui/material';
+import { useColorMode } from 'providers/theme-provider';
+import { colorTokens } from 'config/theme';
 import { TransformedNWSForecast } from 'hooks/useNWSForecast';
-import { getEnhancedConditionScore } from '../../utils/conditions';
 
 interface SurfScoreTimelineProps {
   data: TransformedNWSForecast | null;
@@ -22,166 +22,196 @@ interface SurfScoreTimelineProps {
   height?: number;
 }
 
+const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
+  const theme = useTheme();
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <Paper sx={{ p: 1.5, border: `1px solid ${theme.palette.divider}` }}>
+      <Typography variant="caption" fontWeight={700} display="block">
+        {new Date(d.timestamp).toLocaleString('en-US', {
+          weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric',
+        })}
+      </Typography>
+      <Typography variant="caption" sx={{ color: theme.palette.primary.light, fontWeight: 700 }}>
+        Primary: {d.primary?.toFixed(1)}ft
+      </Typography>
+      {d.secondary > 0 && (
+        <Typography variant="caption" display="block" sx={{ color: '#7ed992', fontWeight: 700 }}>
+          Secondary: {d.secondary?.toFixed(1)}ft
+        </Typography>
+      )}
+    </Paper>
+  );
+};
+
 export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   data,
   isLoading,
-  height = 400,
+  height = 280,
 }) => {
+  const theme = useTheme();
+  const { mode } = useColorMode();
+  const tokens = colorTokens[mode];
+
   const chartData = React.useMemo(() => {
     if (!data?.hourly) return [];
-
-    return data.hourly.map((point) => {
-      const conditionScore = getEnhancedConditionScore({
-        swellPeriod: point.primarySwellPeriod ?? undefined,
-        waveHeight: point.primarySwellHeightFt ?? undefined,
-      });
-
-      const scoreMatch = conditionScore.description.match(/\((\d+)\/100\)/);
-      const score = scoreMatch ? parseInt(scoreMatch[1]) : 50;
-
-      return {
-        time: new Date(point.validTime).toLocaleString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-        }),
-        timestamp: point.validTime,
-        score,
-        level: conditionScore.level,
-        label: conditionScore.label,
-        primarySwellHeightFt: point.primarySwellHeightFt,
-        primarySwellPeriod: point.primarySwellPeriod,
-        primarySwellDirection: point.primarySwellDirection,
-        secondarySwellHeightFt: point.secondarySwellHeightFt,
-      };
-    });
+    return data.hourly.slice(0, 72).map((point, i) => ({
+      i,
+      time: new Date(point.validTime).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        hour12: true,
+      }),
+      timestamp: point.validTime,
+      primary: point.primarySwellHeightFt ?? 0,
+      secondary: point.secondarySwellHeightFt ?? 0,
+    }));
   }, [data]);
 
-  const maxHeight = React.useMemo(() => {
-    if (chartData.length === 0) return 10;
-    const maxPrimary = Math.max(...chartData.map(d => d.primarySwellHeightFt ?? 0));
-    const maxSecondary = Math.max(...chartData.map(d => d.secondarySwellHeightFt ?? 0));
-    return parseFloat((Math.max(maxPrimary, maxSecondary) * 1.1).toFixed(1));
-  }, [chartData]);
-
-  const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
-    if (active && payload && payload.length) {
-      const d = payload[0].payload;
-
-      return (
-        <Paper sx={{ p: 1.5, border: '1px solid #ccc' }}>
-          <Typography variant="body2" fontWeight="bold">
-            {new Date(d.timestamp).toLocaleString('en-US', {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              hour: 'numeric',
-            })}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#2196f3', fontWeight: 'bold', mt: 0.5 }}>
-            Primary Swell: {d.primarySwellHeightFt?.toFixed(1)}ft
-          </Typography>
-          {d.secondarySwellHeightFt != null && (
-            <Typography variant="body2" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
-              Secondary Swell: {d.secondarySwellHeightFt.toFixed(1)}ft
-            </Typography>
-          )}
-          <Box sx={{ mt: 1, fontSize: '0.75rem', color: 'text.secondary' }}>
-            <div>Period: {d.primarySwellPeriod?.toFixed(1)}s</div>
-            <div>Direction: {d.primarySwellDirection?.toFixed(0)}°</div>
-            <div
-              style={{
-                color: d.level === 'excellent' ? '#4caf50' :
-                       d.level === 'good' ? '#8bc34a' :
-                       d.level === 'fair' ? '#ff9800' : '#f44336',
-                fontWeight: 'bold',
-                marginTop: '4px',
-              }}
-            >
-              Conditions: {d.label} ({d.score}/100)
-            </div>
-          </Box>
-        </Paper>
-      );
-    }
-    return null;
-  };
+  const nowDot = chartData[0];
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Loading forecast...</Typography>
-      </Box>
+      <Paper sx={{ p: 3.5 }}>
+        <Typography color="text.secondary">Loading forecast...</Typography>
+      </Paper>
     );
   }
 
   if (!data?.hourly || chartData.length === 0) {
     return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>No forecast data available</Typography>
-      </Box>
+      <Paper sx={{ p: 3.5 }}>
+        <Typography color="text.secondary">No forecast data available</Typography>
+      </Paper>
     );
   }
 
   return (
-    <Box sx={{ width: '100%', height }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Swell Height Forecast
-      </Typography>
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart
-          data={chartData}
-          margin={{ top: 10, right: 30, left: 0, bottom: 60 }}
-        >
-          <defs>
-            <linearGradient id="colorPrimarySwell" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#2196f3" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#2196f3" stopOpacity={0.1} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-          <XAxis
-            dataKey="time"
-            tick={{ fontSize: 12 }}
-            angle={-45}
-            textAnchor="end"
-            height={80}
-          />
-          <YAxis
-            yAxisId="left"
-            domain={[0, maxHeight]}
-            allowDecimals={true}
-            tickCount={6}
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `${parseFloat(value).toFixed(1)}ft`}
-          />
-          <Tooltip content={CustomTooltip} />
-          <Legend />
+    <Paper sx={{ p: 3.5 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <Box>
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: tokens.textTertiary,
+              mb: 0.5,
+            }}
+          >
+            Forecast
+          </Typography>
+          <Typography
+            sx={{
+              fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+              fontWeight: 700,
+              fontSize: 22,
+              letterSpacing: '-0.025em',
+              color: theme.palette.text.primary,
+            }}
+          >
+            Swell Height — next 72 hours
+          </Typography>
+        </Box>
 
-          <ReferenceLine yAxisId="left" y={3} stroke="#4caf50" strokeDasharray="3 3" opacity={0.3} />
-          <ReferenceLine yAxisId="left" y={6} stroke="#ff9800" strokeDasharray="3 3" opacity={0.3} />
+        {/* Legend */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: theme.palette.primary.light }} />
+            <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Primary swell</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: '#7ed992' }} />
+            <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Secondary swell</Typography>
+          </Box>
+        </Box>
+      </Box>
 
-          <Area
-            yAxisId="left"
-            type="basis"
-            dataKey="primarySwellHeightFt"
-            name="Primary Swell (ft)"
-            stroke="#2196f3"
-            strokeWidth={2}
-            fillOpacity={1}
-            fill="url(#colorPrimarySwell)"
-          />
-          <Line
-            yAxisId="left"
-            type="basis"
-            dataKey="secondarySwellHeightFt"
-            name="Secondary Swell (ft)"
-            stroke="#4caf50"
-            strokeWidth={2}
-            dot={false}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </Box>
+      {/* Chart */}
+      <Box sx={{ width: '100%', height }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="chartGradientPrimary" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={theme.palette.primary.light} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={theme.palette.primary.light} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="chartGradientSecondary" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#7ed992" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#7ed992" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid
+              strokeDasharray="4 4"
+              vertical={false}
+              stroke={mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,90,110,0.08)'}
+            />
+
+            <XAxis
+              dataKey="time"
+              tick={{ fontSize: 11, fill: tokens.textTertiary }}
+              tickLine={false}
+              axisLine={false}
+              interval={11}
+            />
+
+            <YAxis
+              ticks={[0, 2, 4, 6]}
+              tick={{ fontSize: 11, fill: tokens.textTertiary }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v) => `${v}ft`}
+              width={36}
+            />
+
+            <Tooltip content={<CustomTooltip />} />
+
+            <ReferenceLine
+              x={0}
+              stroke={tokens.textTertiary}
+              strokeDasharray="4 4"
+              label={{ value: 'NOW', position: 'top', fontSize: 10, fill: tokens.textTertiary }}
+            />
+
+            <Area
+              type="basis"
+              dataKey="primary"
+              stroke={theme.palette.primary.light}
+              strokeWidth={2.5}
+              fill="url(#chartGradientPrimary)"
+              dot={false}
+              isAnimationActive={false}
+            />
+
+            <Area
+              type="basis"
+              dataKey="secondary"
+              stroke="#7ed992"
+              strokeWidth={2}
+              strokeOpacity={0.8}
+              fill="url(#chartGradientSecondary)"
+              dot={false}
+              isAnimationActive={false}
+            />
+
+            {nowDot && (
+              <ReferenceDot
+                x={nowDot.i}
+                y={nowDot.primary}
+                r={5}
+                fill={theme.palette.primary.light}
+                stroke={theme.palette.background.paper}
+                strokeWidth={2}
+              />
+            )}
+          </AreaChart>
+        </ResponsiveContainer>
+      </Box>
+    </Paper>
   );
 };

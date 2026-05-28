@@ -1,16 +1,14 @@
-import { Box, Card, CardContent, Grid, Stack, Typography } from "@mui/material"
+import { Box, Button, Grid, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { FavoriteButton, Item, Loading, SEO, SurfSpotStructuredData, PageContainer, SectionContainer } from "components"
-import { isEmpty } from "lodash"
+import { Loading, SEO, SurfSpotStructuredData, PageContainer, SectionContainer } from "components"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
-import { ForecastRatingComponent, SpotMetricBar, MLForecastCard } from "@features/locations/components"
-import { formatCoordinates } from "utils/formatting"
-import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast} from "hooks"
+import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero } from "@features/locations/components"
+import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast } from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 import { TideSparklineCard } from "@features/tides"
 
@@ -18,27 +16,21 @@ const SpotPage = () => {
   const params = useParams()
   const { spotId } = params
 
-  // Determine if spotId is a slug (non-numeric) or ID (numeric)
   const isSlug = spotId ? isNaN(Number(spotId)) : false
 
-  const {data: spotData, isError, error} = useSpotData(spotId, isSlug)
-
-  const {dailyTides, currentTides, isLoading: isTideDataLoading} = useTideData(spotData?.latitude, spotData?.longitude)
-
-  // NWS fetch
-  const {data: nwsForecastData, isLoading: isNWSLoading} = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
-
-  // Surfe diem model forecast fetch
-  const {data: mlForecastData} = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
+  const { data: spotData, isError, error } = useSpotData(spotId, isSlug)
+  const { station, dailyTides, currentTides, isLoading: isTideDataLoading } = useTideData(spotData?.latitude, spotData?.longitude)
+  const { data: nwsForecastData, isLoading: isNWSLoading } = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
+  const { data: mlForecastData } = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
 
   // TODO: create hook for current weather if thats needed in the future.
-  const {data: currentWeather} = useQuery({
+  const { data: currentWeather } = useQuery({
     queryKey: ['current_weather', spotData?.id],
-    queryFn: () => getCurrentWeather({lat: spotData!.latitude, lng: spotData!.longitude}),
+    queryFn: () => getCurrentWeather({ lat: spotData!.latitude, lng: spotData!.longitude }),
     enabled: !!spotData?.name
-  });
+  })
 
-  const {data: nearbyBuoys} = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
+  const { data: nearbyBuoys } = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
 
   return (
     <>
@@ -58,130 +50,134 @@ const SpotPage = () => {
       )}
       {isError && <ErrorPage error={error} />}
       {spotData ? (
-        <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
+        <>
+          <SpotHero
+            spotId={spotData.id}
+            spotName={spotData.name}
+            subregionName={spotData.subregion_name}
+            latitude={spotData.latitude}
+            longitude={spotData.longitude}
+            timezone={spotData.timezone}
+            current={nwsForecastData?.current ?? null}
+            hourly={nwsForecastData?.hourly ?? []}
+          />
 
-          {/* Hero: name, location, metrics, rating */}
-          <SectionContainer
-            background="DEFAULT"
-            spacing="NORMAL"
-            marginBottom="NORMAL"
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold' }}>
-                {spotData.name}
-              </Typography>
-              <Box sx={{ ml: 2.5 }}>
-                <FavoriteButton showTooltip={true} id={spotData.id} type="spot" name={spotData.name} subregion_name={spotData.subregion_name} latitude={spotData.latitude} longitude={spotData.longitude} />
-              </Box>
-            </Box>
+          <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
 
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
-              <Item>
-                <Typography variant="body2" color="text.secondary">
-                  {formatCoordinates(spotData.latitude, spotData.longitude)}
-                </Typography>
-              </Item>
-              <Item>
-                <Typography variant="body2" color="text.secondary">
-                  {spotData.subregion_name}
-                </Typography>
-              </Item>
-              <Item>
-                <Typography variant="body2" color="text.secondary">
-                  {spotData.timezone}
-                </Typography>
-              </Item>
-            </Stack>
-
+            {/* ML model */}
             {mlForecastData && (
-              <Box sx={{ display: 'flex', mb: 2 }}>
+              <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
                 <MLForecastCard data={mlForecastData} />
-              </Box>
+              </SectionContainer>
             )}
 
-            <SpotMetricBar
-              current={nwsForecastData?.current}
-              currentTides={currentTides.data}
-              isNWSLoading={isNWSLoading}
-              isTideLoading={isTideDataLoading}
-            />
+            {/* NWS forecast + rating */}
+            <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
+              <SpotMetricBar
+                current={nwsForecastData?.current}
+                currentTides={currentTides.data}
+                isNWSLoading={isNWSLoading}
+                isTideLoading={isTideDataLoading}
+              >
+                {nwsForecastData?.current && (
+                  <ForecastRatingComponent
+                    spotId={spotData.id}
+                    spotSlug={spotData.slug}
+                    spotName={spotData.name}
+                    forecastData={{
+                      current: nwsForecastData.current,
+                      timestamp: new Date().toISOString(),
+                      spot_id: spotData.id,
+                      spot_name: spotData.name,
+                    }}
+                  />
+                )}
+              </SpotMetricBar>
+            </SectionContainer>
 
-            {nwsForecastData?.current && (
-              <ForecastRatingComponent
-                spotId={spotData.id}
-                spotSlug={spotData.slug}
-                spotName={spotData.name}
-                forecastData={{
-                  current: nwsForecastData.current,
-                  timestamp: new Date().toISOString(),
-                  spot_id: spotData.id,
-                  spot_name: spotData.name
-                }}
-              />
-            )}
-          </SectionContainer>
+            {/* Swell forecast chart */}
+            <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
+              <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} height={250} />
+            </SectionContainer>
 
-          {/* Swell forecast chart */}
-          <SectionContainer
-            background="PAPER"
-            spacing="NORMAL"
-            marginBottom="NORMAL"
-          >
-            <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} height={250} />
-          </SectionContainer>
-
-          {/* Weather & Tide */}
-          {currentWeather && (
-            <SectionContainer
-              title="Weather & Tide"
-              background="PAPER"
-              spacing="NORMAL"
-              marginBottom="NORMAL"
-            >
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <WeatherWind weatherData={currentWeather} isLoading={isNWSLoading} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box>
-                    <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 3 }}>
-                      Tide Status
-                    </Typography>
+            {/* Weather & Tide */}
+            {currentWeather && (
+              <SectionContainer background="DEFAULT" spacing="NORMAL" marginBottom="NORMAL">
+                <Grid container spacing={2.5}>
+                  <Grid item xs={12} sm={6}>
+                    <WeatherWind weatherData={currentWeather} isLoading={isNWSLoading} />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
                     {isTideDataLoading ? (
                       <Loading />
                     ) : dailyTides?.data && currentTides?.data ? (
-                      <TideSparklineCard predictions={dailyTides.data.predictions} />
+                      <TideSparklineCard
+                        predictions={dailyTides.data.predictions}
+                        stationId={station.data?.station_id}
+                      />
                     ) : (
                       <NoData />
                     )}
+                  </Grid>
+                </Grid>
+              </SectionContainer>
+            )}
+
+            {/* Map */}
+            <SectionContainer background="DEFAULT" spacing="NORMAL" marginBottom="NORMAL">
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 2.5 }}>
+                  <Box>
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: '0.16em',
+                        textTransform: 'uppercase',
+                        color: 'text.secondary',
+                        mb: 0.5,
+                      }}
+                    >
+                      Location
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                        fontWeight: 700,
+                        fontSize: 36,
+                        letterSpacing: '-0.025em',
+                        lineHeight: 1.05,
+                      }}
+                    >
+                      Explore
+                    </Typography>
                   </Box>
-                </Grid>
-              </Grid>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    href={`https://www.google.com/maps?q=${spotData.latitude},${spotData.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      borderRadius: '999px',
+                      px: 2,
+                      fontWeight: 600,
+                      fontSize: 13,
+                    }}
+                  >
+                    Open in map ↗
+                  </Button>
+                </Box>
+                <MapBoxSingle
+                  lat={spotData.latitude}
+                  lng={spotData.longitude}
+                  zoom={8}
+                  nearbyBuoys={nearbyBuoys || []}
+                />
             </SectionContainer>
-          )}
 
-          {/* Map */}
-          {!isEmpty(spotData) && (
-            <SectionContainer
-              background="PAPER"
-              spacing="NORMAL"
-              marginBottom="NORMAL"
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={12} md={6} lg={6}>
-                  <MapBoxSingle
-                    lat={spotData.latitude}
-                    lng={spotData.longitude}
-                    zoom={8}
-                    nearbyBuoys={nearbyBuoys || []}
-                  />
-                </Grid>
-              </Grid>
-            </SectionContainer>
-          )}
-
-        </PageContainer>
-      ): null}
+          </PageContainer>
+        </>
+      ) : null}
     </>
   )
 }

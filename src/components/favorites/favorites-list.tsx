@@ -157,7 +157,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   );
 
   return (
-    <Box sx={{ mt: 3 }}>
+    <Box sx={{ mt: 3, mb: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
           My lineup

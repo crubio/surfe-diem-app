@@ -1,36 +1,74 @@
-import { Box, Divider, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Divider, Paper, Tooltip, Typography, useTheme } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Loading } from 'components/layout/loading';
 import { NoData } from '@features/cards/no_data';
+import { useColorMode } from 'providers/theme-provider';
+import { colorTokens } from 'config/theme';
 import { ParsedNWSCurrent } from 'utils/nws-parser';
 import { formatDirection, kilometersPerHourToMph } from 'utils/formatting';
 import { getCurrentTideValue } from 'utils/tides';
 import { TidesDataCurrent } from '@features/tides/api/tides';
 
-interface MetricProps {
+interface MetricTileProps {
   label: string;
   tooltip: string;
-  value: React.ReactNode;
+  value: string | null;
+  sub?: string;
   isLoading: boolean;
+  accentColor: string;
+  bgColor: string;
+  textTertiary: string;
+  textSecondary: string;
 }
 
-const Metric = ({ label, tooltip, value, isLoading }: MetricProps) => (
-  <Box sx={{ flex: 1, textAlign: 'center', px: 2, py: 1.5 }}>
+const MetricTile = ({ label, tooltip, value, sub, isLoading, accentColor, bgColor, textTertiary, textSecondary }: MetricTileProps) => (
+  <Box
+    sx={{
+      flex: 1,
+      minWidth: { xs: '40%', sm: 0 },
+      px: 2.5,
+      py: 2,
+      borderRadius: '12px',
+      backgroundColor: bgColor,
+    }}
+  >
     {isLoading ? (
       <Loading />
     ) : value ? (
       <>
-        <Typography variant="h5" color="primary.main" sx={{ fontWeight: 'bold' }}>
-          {value}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, mt: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: textTertiary,
+            }}
+          >
             {label}
           </Typography>
           <Tooltip title={tooltip} placement="bottom" arrow>
-            <InfoOutlinedIcon sx={{ fontSize: '0.85rem', color: 'text.disabled', cursor: 'help' }} />
+            <InfoOutlinedIcon sx={{ fontSize: '0.8rem', color: textTertiary, cursor: 'help' }} />
           </Tooltip>
         </Box>
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 30,
+            letterSpacing: '-0.03em',
+            lineHeight: 1,
+            color: accentColor,
+          }}
+        >
+          {value}
+        </Typography>
+        {sub && (
+          <Typography sx={{ fontSize: 12, color: textSecondary, mt: 0.5 }}>
+            {sub}
+          </Typography>
+        )}
       </>
     ) : (
       <NoData />
@@ -43,34 +81,46 @@ interface SpotMetricBarProps {
   currentTides: TidesDataCurrent | null | undefined;
   isNWSLoading: boolean;
   isTideLoading: boolean;
+  children?: React.ReactNode;
 }
 
-export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoading }: SpotMetricBarProps) => {
+export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoading, children }: SpotMetricBarProps) => {
+  const theme = useTheme();
+  const { mode } = useColorMode();
+  const tokens = colorTokens[mode];
+
+  const tileProps = {
+    accentColor: tokens.accentDark,
+    bgColor: tokens.bgSoft,
+    textTertiary: tokens.textTertiary,
+    textSecondary: theme.palette.text.secondary,
+  };
+
   const tideValue = currentTides ? getCurrentTideValue(currentTides) : null;
 
-  const metrics: MetricProps[] = [
+  const tiles = [
     {
-      label: 'Primary swell',
-      tooltip: 'This is the estimated average height of the highest one-third of the swells.',
+      label: 'Wave height',
+      tooltip: 'Estimated average height of the highest one-third of the swells.',
       value: current?.primary_swell_height ? `${current.primary_swell_height.toFixed(1)}ft` : null,
       isLoading: isNWSLoading,
     },
     {
       label: 'Swell period',
-      tooltip: 'This is the peak period in seconds of the swells. If more than one swell is present, this is the period of the swell containing the maximum energy.',
+      tooltip: 'Peak period in seconds of the dominant swell.',
       value: current?.primary_swell_period ? `${current.primary_swell_period}s` : null,
       isLoading: isNWSLoading,
     },
     {
       label: 'Direction',
-      tooltip: 'Compass direction that the swells are coming from. Direction is given on a 16 point compass scale',
+      tooltip: 'Compass direction the swells are coming from.',
       value: current?.primary_swell_direction ? formatDirection(current.primary_swell_direction) : null,
       isLoading: isNWSLoading,
     },
     {
       label: 'Wind',
       tooltip: 'Current wind speed.',
-      value: current?.wind_speed ? `${Math.round(kilometersPerHourToMph(current.wind_speed))} mph` : null,
+      value: current?.wind_speed ? `${Math.round(kilometersPerHourToMph(current.wind_speed))}mph` : null,
       isLoading: isNWSLoading,
     },
     {
@@ -82,25 +132,35 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
   ];
 
   return (
-    <Box>
-      <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-        NWS Forecast
-      </Typography>
-    <Paper variant="outlined" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'stretch' }}>
-      {metrics.map((metric, i) => (
+    <Paper sx={{ p: 3.5 }}>
+      <Box sx={{ mb: 2.5 }}>
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 18,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          NWS Forecast
+        </Typography>
+        <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, mt: 0.25 }}>
+          National Weather Service
+        </Typography>
+      </Box>
+
+      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+        {tiles.map((tile) => (
+          <MetricTile key={tile.label} {...tile} {...tileProps} />
+        ))}
+      </Box>
+
+      {children && (
         <>
-          <Box key={metric.label} sx={{ flex: 1 }}>
-            <Metric {...metric} />
-          </Box>
-          {i < metrics.length - 1 && (
-            <>
-              <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
-              <Divider sx={{ display: { xs: 'block', sm: 'none' } }} />
-            </>
-          )}
+          <Divider sx={{ mt: 2.5, mb: 2.5, borderColor: tokens.rule }} />
+          {children}
         </>
-      ))}
+      )}
     </Paper>
-    </Box>
   );
 };
