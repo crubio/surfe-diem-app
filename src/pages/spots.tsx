@@ -1,121 +1,237 @@
-import { getSurfSpots } from "@features/locations/api/locations";
+import { getSurfSpots, getSurfSpotClosest } from "@features/locations/api/locations";
 import { Spot } from "../types";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { Item, LinkRouter, SEO, PageContainer, SectionContainer, ContentWrapper } from "components";
-import { sortBy } from "lodash";
+import { LinkRouter, SEO, PageContainer, HeroSection } from "components";
 import surfImage from "assets/sharks1.jpg";
 import NoDataFound from "components/common/not-found";
+import { useColorMode } from "providers/theme-provider";
+import { colorTokens } from "config/theme";
+import HeroWidget from "components/common/hero-widget";
+import { useUserLocation, useGeolocationStore } from "../stores/geolocation-store";
+import { useNWSForecast } from "hooks/useNWSForecast";
+import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
+import { getCurrentTideValue } from "utils/tides";
+import { kilometersPerHourToMph } from "utils/formatting";
+import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
+import { useEffect } from "react";
+
+function sortBySubregion(data: Spot[]) {
+  const sortedData: { [key: string]: Spot[] } = {};
+  data.forEach(spot => {
+    if (!sortedData[spot.subregion_name]) {
+      sortedData[spot.subregion_name] = [];
+    }
+    sortedData[spot.subregion_name].push(spot);
+  });
+  return sortedData;
+}
 
 const SpotsPage = () => {
-  const {data} = useQuery({
+  const theme = useTheme();
+  const { mode } = useColorMode();
+  const tokens = colorTokens[mode];
+
+  const { location } = useUserLocation();
+  const coordinates = location?.coordinates;
+
+  useEffect(() => {
+    if (useGeolocationStore.getState().location === undefined && !useGeolocationStore.getState().isLoading) {
+      useGeolocationStore.getState().requestGeolocation();
+    }
+  }, []);
+
+  // Spots directory
+  const { data } = useQuery({
     queryKey: ['surf_spots'],
     queryFn: async () => getSurfSpots()
   });
 
-    sortBy(data, ['subregion_name' ]);
+  // Widget data — same query keys as home page so cache is shared
+  const { data: closestSpots } = useQuery({
+    queryKey: ['closest_spots', coordinates?.latitude, coordinates?.longitude],
+    queryFn: () => getSurfSpotClosest(coordinates!.latitude, coordinates!.longitude),
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
+    staleTime: 5 * 60 * 1000,
+  });
 
-    function sortBySubregion(data: Spot[]) {
-        const sortedData: { [key: string]: Spot[] } = {}
-        data.forEach(spot => {
-            if (!sortedData[spot.subregion_name]) {
-                sortedData[spot.subregion_name] = [];
-            }
-            sortedData[spot.subregion_name].push(spot);
-        });
-        return sortedData;
-    }
+  const { data: nwsForecastData } = useNWSForecast(
+    closestSpots?.[0]?.id,
+    { enabled: !!closestSpots && closestSpots.length > 0 }
+  );
 
-    const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
-    const sortedSpots = sortBySubregion(spotsArray);
+  const { data: batchRecommendations } = useQuery({
+    queryKey: ['batch_recommendations', closestSpots?.map(s => s.id).join(',')],
+    queryFn: () => getBatchRecommendationsFromAPI(closestSpots!.map(spot => ({
+      ...spot,
+      distance: spot.distance ? `${spot.distance} miles` : undefined
+    }))),
+    enabled: !!closestSpots && closestSpots.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-    return (
-        <>
-          <SEO title="Surf Spots - Surfe Diem" />
-      {/* Hero Section */}
-      <Box sx={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${surfImage})`,
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
-        height: { xs: "200px", sm: "240px", md: "290px" },
-        backgroundPosition: "center",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        textAlign: "center"
-      }}>
-        <Typography variant="h2" component="h1" sx={{ fontWeight: 'bold', mb: 2, color: 'white' }}>
-          Surf spots
-        </Typography>
-        <Typography variant="h5" sx={{ mb: 3, color: 'rgba(255,255,255,0.9)' }}>
-          Explore surf spots by region, get detailed information about surf conditions, and find the best waves.
-        </Typography>
-      </Box>
+  const { data: closestTideStation } = useQuery({
+    queryKey: ['closest_tide_station', coordinates?.latitude, coordinates?.longitude],
+    queryFn: () => getClostestTideStation({ lat: coordinates!.latitude, lng: coordinates!.longitude }),
+    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
+  });
 
-      <PageContainer maxWidth="XL" padding="MEDIUM" marginTop={{ xs: 1, sm: 0 }}>
-        {/* Content Section */}
-        <ContentWrapper margin="LG">
-          <SectionContainer 
-            title="Surf spots by region"
-            background="DEFAULT"
-            spacing="NORMAL"
+  const { data: currentTides } = useQuery({
+    queryKey: ['current_tides', closestTideStation?.station_id],
+    queryFn: () => getCurrentTides({ station: closestTideStation!.station_id }),
+    enabled: !!closestTideStation?.station_id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const bestConditions = batchRecommendations?.bestConditions ?? null;
+  const cleanestConditions = batchRecommendations?.cleanestConditions ?? null;
+  const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
+
+  const nwsCurrent = nwsForecastData?.current;
+  const closestSpotData = closestSpots?.[0] && nwsCurrent ? {
+    spot: closestSpots[0].name,
+    waveHeight: `${nwsCurrent.wave_height.toFixed(1)}-${(nwsCurrent.wave_height + 1).toFixed(1)}ft`,
+    score: getEnhancedConditionScore({
+      waveHeight: nwsCurrent.wave_height,
+      windSpeed: Math.floor(kilometersPerHourToMph(nwsCurrent.wind_speed || 0)),
+    }),
+  } : null;
+
+  const showWidget = !!(bestConditions && cleanestConditions && closestSpotData && currentTideValue != null);
+
+  const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
+  const sortedSpots = sortBySubregion(spotsArray);
+
+  return (
+    <>
+      <SEO title="Surf Spots - Surfe Diem" />
+
+      <HeroSection
+        image={surfImage}
+        heading="Surf Spots"
+        body="Explore surf spots by region, get detailed information about surf conditions, and find the best waves."
+        ctas={[
+          { label: 'Explore map', href: '/map', variant: 'outlined' },
+        ]}
+        widget={showWidget ? (
+          <HeroWidget
+            rows={[
+              {
+                label: 'Best right now',
+                spot: bestConditions!.spot,
+                value: bestConditions!.waveHeight ?? '—',
+                score: bestConditions!.score,
+              },
+              {
+                label: 'Cleanest',
+                spot: cleanestConditions!.spot,
+                value: cleanestConditions!.waveHeight ?? '—',
+                score: cleanestConditions!.score,
+              },
+              {
+                label: 'Closest to you',
+                spot: closestSpotData!.spot,
+                value: closestSpotData!.waveHeight,
+                score: closestSpotData!.score,
+              },
+              {
+                label: 'Current tide',
+                value: `${currentTideValue!.toFixed(1)}ft`,
+              },
+            ]}
+          />
+        ) : null}
+      />
+
+      <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            sx={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: tokens.textTertiary,
+              mb: 0.5,
+            }}
           >
-              {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
-                  Object.keys(sortedSpots).map((subregion) => (
-                      <Box key={subregion} sx={{ 
-                          marginBottom: { xs: "15px", sm: "20px" }, 
-                          width: "100%" 
-                      }}>
-                          <Typography 
-                              variant="h5" 
-                              component="div" 
-                              sx={{ 
-                                  marginBottom: { xs: "8px", sm: "10px" },
-                                  fontSize: { xs: "1.125rem", sm: "1.25rem" },
-                                  fontWeight: 600,
-                                  color: "text.secondary"
-                              }}
-                          >
-                              {subregion}
-                          </Typography>
-                          <Box sx={{ 
-                              display: 'flex', 
-                              flexWrap: 'wrap', 
-                              gap: { xs: 1, sm: 2 }
-                          }}>
-                              {sortedSpots[subregion].map((spot) => (
-                                  <Item 
-                                      key={spot.id} 
-                                      sx={{ 
-                                          width: { xs: '100%', sm: '300px' },
-                                          padding: { xs: '12px', sm: '10px' },
-                                          minHeight: { xs: '48px', sm: 'auto' }
-                                      }}
-                                  >
-                                      <LinkRouter to={`/spot/${spot.slug || spot.id}`}>
-                                          <Typography 
-                                              variant="h6"
-                                              sx={{
-                                                  fontSize: { xs: '1rem', sm: '1.125rem' },
-                                                  fontWeight: 500,
-                                                  textAlign: { xs: 'center', sm: 'left' }
-                                              }}
-                                          >
-                                              {spot.name}
-                                          </Typography>
-                                      </LinkRouter>
-                                  </Item>
-                              ))}
-                          </Box>
-                      </Box>
-                  ))
-              ) : <NoDataFound />}
-          </SectionContainer>
-        </ContentWrapper>
+            Directory
+          </Typography>
+          <Typography
+            component="h2"
+            sx={{
+              fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+              fontWeight: 700,
+              fontSize: { xs: '28px', md: '36px' },
+              letterSpacing: '-0.025em',
+              lineHeight: 1.05,
+              color: theme.palette.text.primary,
+            }}
+          >
+            By Region
+          </Typography>
+        </Box>
+
+        {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
+          Object.keys(sortedSpots).map((subregion) => (
+            <Box key={subregion} sx={{ mb: 4 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: { xs: '16px', sm: '18px' },
+                  letterSpacing: '-0.01em',
+                  color: tokens.textTertiary,
+                  mb: 1.5,
+                }}
+              >
+                {subregion}
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 1.5 } }}>
+                {sortedSpots[subregion].map((spot) => (
+                  <LinkRouter
+                    key={spot.id}
+                    to={`/spot/${spot.slug || spot.id}`}
+                    underline="none"
+                  >
+                    <Box
+                      sx={{
+                        px: 2,
+                        py: 1.25,
+                        borderRadius: '12px',
+                        backgroundColor: tokens.bgSoft,
+                        border: `1px solid ${tokens.rule}`,
+                        transition: 'border-color 0.15s, background-color 0.15s',
+                        '&:hover': {
+                          borderColor: tokens.ruleHi,
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                          fontWeight: 500,
+                          color: theme.palette.text.primary,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {spot.name}
+                      </Typography>
+                    </Box>
+                  </LinkRouter>
+                ))}
+              </Box>
+            </Box>
+          ))
+        ) : (
+          <NoDataFound />
+        )}
       </PageContainer>
-        </>
-    )
-}
+    </>
+  );
+};
 
 export default SpotsPage;

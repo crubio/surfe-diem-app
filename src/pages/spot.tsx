@@ -2,7 +2,7 @@ import { Box, Button, Grid, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { Loading, SEO, SurfSpotStructuredData, PageContainer, SectionContainer } from "components"
+import { Loading, SEO, SurfSpotStructuredData, PageContainer } from "components"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
@@ -11,10 +11,14 @@ import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero } from
 import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast } from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 import { TideSparklineCard } from "@features/tides"
+import { useColorMode } from "providers/theme-provider"
+import { colorTokens } from "config/theme"
 
 const SpotPage = () => {
   const params = useParams()
   const { spotId } = params
+  const { mode } = useColorMode()
+  const tokens = colorTokens[mode]
 
   const isSlug = spotId ? isNaN(Number(spotId)) : false
 
@@ -66,13 +70,13 @@ const SpotPage = () => {
 
             {/* ML model */}
             {mlForecastData && (
-              <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
+              <Box sx={{ mb: 2 }}>
                 <MLForecastCard data={mlForecastData} />
-              </SectionContainer>
+              </Box>
             )}
 
             {/* NWS forecast + rating */}
-            <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
+            <Box sx={{ mb: 2 }}>
               <SpotMetricBar
                 current={nwsForecastData?.current}
                 currentTides={currentTides.data}
@@ -93,16 +97,16 @@ const SpotPage = () => {
                   />
                 )}
               </SpotMetricBar>
-            </SectionContainer>
+            </Box>
 
             {/* Swell forecast chart */}
-            <SectionContainer background="DEFAULT" spacing="TIGHT" marginBottom="NORMAL">
+            <Box sx={{ mb: 2 }}>
               <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} height={250} />
-            </SectionContainer>
+            </Box>
 
             {/* Weather & Tide */}
             {currentWeather && (
-              <SectionContainer background="DEFAULT" spacing="NORMAL" marginBottom="NORMAL">
+              <Box sx={{ mb: 2 }}>
                 <Grid container spacing={2.5}>
                   <Grid item xs={12} sm={6}>
                     <WeatherWind weatherData={currentWeather} isLoading={isNWSLoading} />
@@ -120,11 +124,11 @@ const SpotPage = () => {
                     )}
                   </Grid>
                 </Grid>
-              </SectionContainer>
+              </Box>
             )}
 
             {/* Map */}
-            <SectionContainer background="DEFAULT" spacing="NORMAL" marginBottom="NORMAL">
+            <Box>
                 <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 2.5 }}>
                   <Box>
                     <Typography
@@ -133,7 +137,7 @@ const SpotPage = () => {
                         fontWeight: 700,
                         letterSpacing: '0.16em',
                         textTransform: 'uppercase',
-                        color: 'text.secondary',
+                        color: tokens.textTertiary,
                         mb: 0.5,
                       }}
                     >
@@ -173,7 +177,7 @@ const SpotPage = () => {
                   zoom={8}
                   nearbyBuoys={nearbyBuoys || []}
                 />
-            </SectionContainer>
+            </Box>
 
           </PageContainer>
         </>
