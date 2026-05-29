@@ -1,9 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MAPBOX_API_KEY } from 'config';
-import { useEffect, useRef, useState } from 'react';
-import { Collapse, IconButton, Box, Typography } from '@mui/material';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import { useEffect, useRef } from 'react';
 import { BuoyNearestType } from '../../../types';
 import './mapbox.css'
 mapboxgl.accessToken = MAPBOX_API_KEY;
@@ -17,7 +15,6 @@ interface MapProps {
 
 const MapBoxSingle = (props: MapProps) => {
   const {lat, lng, zoom, nearbyBuoys} = props
-  const [isExpanded, setIsExpanded] = useState(true);
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const buoyMarkers = useRef<mapboxgl.Marker[]>([]);
@@ -32,21 +29,11 @@ const MapBoxSingle = (props: MapProps) => {
       zoom: zoom,
     });
 
-    const el = document.createElement('div');
-    el.className = 'marker-single';
-
     let marker: mapboxgl.Marker | null = null;
     if (map.current) {
       // Create spot marker element with consistent styling
       const spotEl = document.createElement('div');
-      spotEl.className = 'marker marker-spot_location';
-      spotEl.style.width = '50px';
-      spotEl.style.height = '50px';
-      spotEl.style.borderRadius = '50%';
-      spotEl.style.backgroundColor = '#1ed6e6'; // Blue color for spots (matching main map)
-      spotEl.style.border = '3px solid white';
-      spotEl.style.cursor = 'pointer';
-      spotEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+      spotEl.className = 'marker marker-spot_location marker-pulse';
       
       marker = new mapboxgl.Marker(spotEl)
       .setLngLat([lng, lat])
@@ -65,13 +52,6 @@ const MapBoxSingle = (props: MapProps) => {
         // Create buoy marker element
         const buoyEl = document.createElement('div');
         buoyEl.className = 'marker marker-buoy_location';
-        buoyEl.style.width = '50px';
-        buoyEl.style.height = '50px';
-        buoyEl.style.borderRadius = '50%';
-        buoyEl.style.backgroundColor = '#f06292'; // Pink color for buoys (matching main map)
-        buoyEl.style.border = '3px solid white';
-        buoyEl.style.cursor = 'pointer';
-        buoyEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
         
         // Create popup content
         const popupContent = document.createElement('div');
@@ -105,11 +85,8 @@ const MapBoxSingle = (props: MapProps) => {
         
         // Add click handler to close other popups
         buoyMarker.getElement().addEventListener('click', () => {
-          // Close all other popups
-          buoyMarkers.current.forEach(marker => {
-            if (marker !== buoyMarker) {
-              marker.getPopup().remove();
-            }
+          buoyMarkers.current.forEach(m => {
+            if (m !== buoyMarker) m.getPopup().remove();
           });
         });
       });
@@ -135,25 +112,7 @@ const MapBoxSingle = (props: MapProps) => {
     };
   }, [lat, lng, zoom, nearbyBuoys])
 
-  return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-        <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
-          Explore
-        </Typography>
-        <IconButton 
-          onClick={() => setIsExpanded(!isExpanded)}
-          size="small"
-          aria-label={isExpanded ? 'minimize map' : 'expand map'}
-        >
-          {isExpanded ? <ExpandLess /> : <ExpandMore />}
-        </IconButton>
-      </Box>
-      <Collapse in={isExpanded}>
-        <div ref={mapContainer} className="map-container" />
-      </Collapse>
-    </Box>
-  )
+  return <div ref={mapContainer} className="map-container" />
 }
 
 export default MapBoxSingle

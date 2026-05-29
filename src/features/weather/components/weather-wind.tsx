@@ -1,4 +1,6 @@
-import { Box, Card, CardContent, Typography, Link } from "@mui/material"
+import { Box, Chip, Link, Paper, Typography, useTheme } from "@mui/material"
+import { useColorMode } from 'providers/theme-provider'
+import { colorTokens } from 'config/theme'
 import { WeatherResponse } from "../types"
 
 interface WeatherWindProps {
@@ -7,80 +9,91 @@ interface WeatherWindProps {
 }
 
 export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps) => {
-  if (isLoading || !weatherData) {
-    return null
-  }
+  const theme = useTheme()
+  const { mode } = useColorMode()
+  const tokens = colorTokens[mode]
 
-  // Extract current temperature (first item in temperature array)
+  if (isLoading || !weatherData) return null
+
   const currentTemp = weatherData.data?.temperature?.[0]
-  
-  // Extract current weather condition (first item in weather array)
   const currentWeather = weatherData.data?.weather?.[0] || "Clear"
-  
-  // Extract wind info from first text description
   const windInfo = weatherData.data?.text?.[0] || ""
-  
-  // Extract hazard information
   const hazards = weatherData.data?.hazard || []
   const hazardUrls = weatherData.data?.hazardUrl || []
-  
-  // Parse wind data from text (simple extraction)
-  const windMatch = windInfo.match(/([NSEW]+)\s+wind\s+(\d+)\s+to\s+(\d+)\s+kt/)
-  const windDirection = windMatch ? windMatch[1] : ""
-  const windSpeedMin = windMatch ? windMatch[2] : ""
-  const windSpeedMax = windMatch ? windMatch[3] : ""
+
+  const feelsLike = weatherData.currentobservation?.AirTemp
+  const uvIndex = null // not in API response currently
 
   return (
-    <Box>
-      <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', mb: 3 }}>
+    <Paper sx={{ p: 3, height: '100%' }}>
+      <Typography
+        sx={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: tokens.textTertiary,
+          mb: 1.5,
+        }}
+      >
         Current Weather
       </Typography>
-      <Card sx={{ textAlign: 'center' }}>
-        <CardContent sx={{ py: 1, px: 2 }}>
-        {/* Current Temperature and Weather */}
-        <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', fontSize: '2.25rem', mb: 0.5 }}>
-          {currentTemp && `${currentTemp}°F`}
+
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 0.5 }}>
+        <Typography
+          sx={{
+            fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+            fontWeight: 700,
+            fontSize: 72,
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: tokens.accentDark,
+          }}
+        >
+          {currentTemp ? `${currentTemp}°F` : '—'}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-          {currentWeather || "Clear"}
+      </Box>
+
+      <Typography sx={{ fontSize: 15, color: theme.palette.text.primary, mb: 0.5 }}>
+        {currentWeather}
+      </Typography>
+
+      {feelsLike && (
+        <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary, mb: 1.5 }}>
+          Feels like {feelsLike}°
+          {uvIndex !== null ? ` · UV ${uvIndex} of 10` : ''}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.875rem' }}>
+      )}
+
+      {windInfo && (
+        <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary, mb: 1.5, lineHeight: 1.5 }}>
           {windInfo}
         </Typography>
-        
-        {/* Wind Information */}
-        {windDirection && (
-          <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-            <Typography variant="subtitle1" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-              {windDirection} wind {windSpeedMin}-{windSpeedMax} kt
-            </Typography>
-          </Box>
-        )}
-        
-        {/* Hazards */}
-        {hazards.length > 0 && (
-          <Box sx={{ pt: 1, borderTop: 1, borderColor: 'divider' }}>
-            {hazards.map((hazard: string, index: number) => (
-              <Link
-                key={index}
-                href={hazardUrls[index] || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ 
-                  display: 'block',
-                  color: 'warning.main',
-                  textDecoration: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: 'bold'
-                }}
-              >
-                ⚠️ {hazard}
-              </Link>
-            ))}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
-    </Box>
+      )}
+
+      {hazards.length > 0 && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+          {hazards.map((hazard: string, index: number) => (
+            <Chip
+              key={index}
+              label={`⚠ ${hazard}`}
+              size="small"
+              component={hazardUrls[index] ? Link : 'div'}
+              href={hazardUrls[index] || undefined}
+              target={hazardUrls[index] ? '_blank' : undefined}
+              rel={hazardUrls[index] ? 'noopener noreferrer' : undefined}
+              clickable={!!hazardUrls[index]}
+              sx={{
+                backgroundColor: 'rgba(255,152,0,0.1)',
+                color: theme.palette.warning.main,
+                fontWeight: 600,
+                fontSize: 11,
+                border: `1px solid rgba(255,152,0,0.25)`,
+              }}
+            />
+          ))}
+        </Box>
+      )}
+    </Paper>
   )
-} 
+}

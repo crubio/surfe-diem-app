@@ -1,6 +1,8 @@
-import { Box, Chip, Divider, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Divider, Paper, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useColorMode } from 'providers/theme-provider';
+import { colorTokens } from 'config/theme';
 import { MLForecastResponse } from '@/types';
 
 interface MLForecastCardProps {
@@ -8,6 +10,10 @@ interface MLForecastCardProps {
 }
 
 export const MLForecastCard = ({ data }: MLForecastCardProps) => {
+  const theme = useTheme();
+  const { mode } = useColorMode();
+  const tokens = colorTokens[mode];
+
   const observed = data.observed_wave_height;
   const predicted = data.forecast;
 
@@ -15,65 +21,132 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
 
   return (
     <Paper
-      variant="outlined"
-      sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, px: 3, py: 2, gap: 2 }}
+      sx={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: { xs: 'flex-start', md: 'center' },
+        px: { xs: 2, md: 3.5 },
+        py: 2.5,
+        gap: 0,
+        overflow: 'hidden',
+      }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-          Surfe Diem Model
-        </Typography>
-        <Chip label="BETA" size="small" color="primary" variant="outlined" sx={{ height: 18, fontSize: '0.65rem' }} />
-        <Tooltip
-          title="Wave height forecast from the Surfe Diem ML model, trained on NDBC buoy observations. Only available at select spots."
-          placement="right"
-          arrow
+      {/* Left cell — label */}
+      <Box
+        sx={{
+          minWidth: { md: 200 },
+          pr: { md: 3 },
+          mr: { md: 3 },
+          borderRight: { md: `1px solid ${theme.palette.divider}` },
+          pb: { xs: 2, md: 0 },
+          mb: { xs: 2, md: 0 },
+          borderBottom: { xs: `1px solid ${theme.palette.divider}`, md: 'none' },
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Typography
+            sx={{
+              fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+              fontWeight: 700,
+              fontSize: 16,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Surfe Diem Model
+          </Typography>
+          <Chip
+            label="BETA"
+            size="small"
+            color="primary"
+            sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em' }}
+          />
+          <Tooltip
+            title="Wave height forecast from the Surfe Diem ML model, trained on NDBC buoy observations. Only available at select spots."
+            placement="right"
+            arrow
+          >
+            <InfoOutlinedIcon sx={{ fontSize: '0.95rem', color: 'text.disabled', cursor: 'help' }} />
+          </Tooltip>
+        </Box>
+        <Typography
+          sx={{
+            fontFamily: 'monospace',
+            fontSize: 12,
+            color: tokens.textTertiary,
+          }}
         >
-          <InfoOutlinedIcon sx={{ fontSize: '0.95rem', color: 'text.disabled', cursor: 'help' }} />
-        </Tooltip>
+          WVHT · multi-horizon
+        </Typography>
       </Box>
 
-      <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
-
-      <Tooltip
-        title="Significant wave height is approximately equal to the average of the highest one-third of the waves, as measured from the trough to the crest of the waves."
-        placement="bottom"
-        arrow
+      {/* Data cells */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: 0,
+          flex: 1,
+        }}
       >
-        <Typography variant="caption" color="text.secondary" sx={{ cursor: 'help', textDecoration: 'underline dotted' }}>
-          WVHT
-        </Typography>
-      </Tooltip>
+        {/* Observed */}
+        {observed?.value_ft != null && (
+          <>
+            <Box sx={{ px: { xs: 0, md: 3 }, py: { xs: 1, md: 0 }, textAlign: 'center', minWidth: 80 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 32,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 1,
+                  color: tokens.accentDark,
+                }}
+              >
+                {observed.value_ft.toFixed(1)}
+                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, ml: 0.5, color: tokens.textTertiary }}>ft</Box>
+              </Typography>
+              <Typography
+                sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: tokens.textTertiary, mt: 0.5 }}
+              >
+                Observed
+              </Typography>
+            </Box>
 
-      <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+            {predicted && predicted.length > 0 && (
+              <ArrowForwardIcon sx={{ color: tokens.textTertiary, fontSize: '1.1rem', mx: 1, display: { xs: 'none', md: 'block' } }} />
+            )}
+          </>
+        )}
 
-      {observed && observed.value_ft != null && (
-        <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
-          <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-            {observed.value_ft.toFixed(1)}ft
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Observed
-          </Typography>
-        </Box>
-      )}
-
-      {observed && observed.value_ft != null && predicted && (
-        <ArrowForwardIcon sx={{ color: 'text.disabled', fontSize: '1.1rem', alignSelf: 'center', display: { xs: 'none', sm: 'block' } }} />
-      )}
-
-      {predicted && predicted.map((row, idx) => (
-        <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
-          <Box sx={{ textAlign: { xs: 'left', sm: 'center' } }}>
-            <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
-              {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}ft
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.horizon_hours}hr forecast
-            </Typography>
+        {/* Forecast cells */}
+        {predicted?.map((row, idx) => (
+          <Box key={idx} sx={{ display: 'flex', alignItems: 'center' }}>
+            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 1.5, md: 2.5 }, display: { xs: 'none', md: 'block' } }} />
+            <Box sx={{ px: { xs: 1.5, md: 0 }, py: { xs: 1, md: 0 }, textAlign: 'center', minWidth: 72 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 32,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 1,
+                  color: theme.palette.text.primary,
+                }}
+              >
+                {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}
+                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, ml: 0.5, color: tokens.textTertiary }}>ft</Box>
+              </Typography>
+              <Typography
+                sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: tokens.textTertiary, mt: 0.5 }}
+              >
+                {row.horizon_hours}hr
+              </Typography>
+            </Box>
           </Box>
-        </Box>
-      ))}
+        ))}
+      </Box>
     </Paper>
   );
 };

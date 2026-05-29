@@ -157,41 +157,24 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   );
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography
-        variant="h4"
-        component="h2"
-        sx={{
-          mb: 2,
-          fontSize: { xs: '1.5rem', sm: '2rem' },
-          fontWeight: 700
-        }}
-      >
-        My Lineup
+    <Box sx={{ mt: 3, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 600 }}>
+          My lineup
+        </Typography>
         <IconButton
           onClick={() => setExpanded(!expanded)}
           size="small"
-          sx={{
-            color: 'primary.main',
-            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
-          }}
+          sx={{ color: 'primary.main', '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' } }}
         >
           {expanded ? <ExpandLess /> : <ExpandMore />}
         </IconButton>
+      </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        {favorites.length === 0
+          ? 'No favorites yet — add spots and buoys from their detail pages.'
+          : `${favorites.length} spot${favorites.length !== 1 ? 's' : ''} and buoy${favorites.length !== 1 ? 's' : ''} saved`}
       </Typography>
-
-      {favorites.length === 0 && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mb: 2,
-            fontSize: { xs: '0.875rem', sm: '1rem' }
-          }}
-        >
-          No favorites in your quiver yet. Add some to get quick surf conditions for your favorite spots and buoys.
-        </Typography>
-      )}
 
       <Collapse in={expanded} timeout="auto">
         {renderItems(firstRowItems)}
