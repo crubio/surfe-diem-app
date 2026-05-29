@@ -8,6 +8,10 @@ const TEMPLATE_PATH = path.join(DIST_DIR, 'index.html');
 const BASE_URL = 'https://surfe-diem.com';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://api.surfe-diem.com/api/v1';
 
+// Used for dynamic pages (spots/buoys) whose HTML shells are genuinely regenerated at each deploy.
+// Static pages use hardcoded dates — only update these when content/SEO intent meaningfully changes.
+const BUILD_DATE = new Date().toISOString().split('T')[0];
+
 async function run() {
   if (!fs.existsSync(TEMPLATE_PATH)) {
     console.error('Build template index.html missing! Run vite build first.');
@@ -30,34 +34,40 @@ async function run() {
       {
         path: '',
         title: 'Surfe Diem - Free Surf Conditions for the Community',
-        desc: 'Real-time surf forecasting, ocean tracking tools, and live data telemetry.'
+        desc: 'Real-time surf forecasting, ocean tracking tools, and live data telemetry.',
+        lastmod: '2026-05-29',
       },
       {
         path: 'about',
         title: 'About Us | Surfe Diem',
-        desc: 'Learn about the open-source community surf tools driving Surfe Diem.'
+        desc: 'Learn about the open-source community surf tools driving Surfe Diem.',
+        lastmod: '2026-05-29',
       },
       {
         path: 'map',
         title: 'Global Surf Spot & Buoy Map | Surfe Diem',
-        desc: 'Interactive live radar tracking map for tracking global ocean swells.'
+        desc: 'Interactive live radar tracking map for tracking global ocean swells.',
+        lastmod: '2026-05-29',
       },
       {
         path: 'spots',
         title: 'Surf Spots | Surfe Diem',
-        desc: 'Browse 2,000+ surf spots with real-time conditions, forecasts, and wave data.'
+        desc: 'Browse 2,000+ surf spots with real-time conditions, forecasts, and wave data.',
+        lastmod: '2026-05-29',
       },
 
       ...spots.map(spot => ({
         path: `spot/${spot.slug || spot.id}`,
         title: `${spot.name} Surf Forecast & Swell Conditions | Surfe Diem`,
-        desc: `Real-time surf reports, wind arrays, wave telemetry, and tide forecasts for ${spot.name}. 100% free with no ads.`
+        desc: `Real-time surf reports, wind arrays, wave telemetry, and tide forecasts for ${spot.name}. 100% free with no ads.`,
+        lastmod: BUILD_DATE,
       })),
 
       ...buoys.map(buoy => ({
         path: `location/${buoy.location_id}`,
         title: `NOAA Buoy ${buoy.name || buoy.location_id} Marine Data | Surfe Diem`,
-        desc: `Live offshore buoy wave periods, primary heights, and water temperature arrays for buoy station ${buoy.location_id}.`
+        desc: `Live offshore buoy wave periods, primary heights, and water temperature arrays for buoy station ${buoy.location_id}.`,
+        lastmod: BUILD_DATE,
       }))
     ];
 
@@ -103,7 +113,7 @@ async function run() {
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
       ...routes.map(route => {
         const urlPath = route.path ? `/${route.path}` : '';
-        return `  <url>\n    <loc>${BASE_URL}${urlPath}</loc>\n    <changefreq>daily</changefreq>\n  </url>`;
+        return `  <url>\n    <loc>${BASE_URL}${urlPath}</loc>\n    <lastmod>${route.lastmod}</lastmod>\n    <changefreq>daily</changefreq>\n  </url>`;
       }),
       '</urlset>'
     ].join('\n');
