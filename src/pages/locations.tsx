@@ -7,7 +7,6 @@ import { formatLatLong } from "utils/common"
 import ErrorPage from "./error"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { Loading } from "components/layout/loading"
-import { NoData } from "@features/cards/no_data"
 import { useFavorites } from "providers/favorites-provider"
 import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material'
 import { useColorMode } from "providers/theme-provider"
@@ -37,7 +36,7 @@ const MetricTile = ({ label, value, isLoading, bgColor, textTertiary, accentColo
     >
       {isLoading ? (
         <Loading />
-      ) : value ? (
+      ) : (
         <>
           <Typography
             sx={{
@@ -58,14 +57,12 @@ const MetricTile = ({ label, value, isLoading, bgColor, textTertiary, accentColo
               fontSize: 30,
               letterSpacing: '-0.03em',
               lineHeight: 1,
-              color: accentColor,
+              color: value ? accentColor : textTertiary,
             }}
           >
-            {value}
+            {value ?? '—'}
           </Typography>
         </>
-      ) : (
-        <NoData />
       )}
     </Box>
   );
@@ -92,8 +89,7 @@ const LocationsPage = () => {
 
   const latLong = formatLatLong(locationData?.location || "")
 
-  const latestWave = (latestObservationData ?? [])[0] || [];
-  const latestSwell = (latestObservationData ?? [])[1] || [];
+  const latestReading = Object.assign({}, ...(latestObservationData ?? []));
 
   const favorited = isFavorited(String(locationData?.location_id ?? ''), 'buoy');
 
@@ -113,10 +109,10 @@ const LocationsPage = () => {
   };
 
   const metrics = [
-    { label: 'Swell Height', value: latestSwell.swell_height },
-    { label: 'Swell Period', value: latestSwell.period },
-    { label: 'Direction', value: latestSwell.direction },
-    ...(latestWave.water_temp ? [{ label: 'Water Temp', value: latestWave.water_temp }] : []),
+    { label: 'Wave Height', value: latestReading.wave_height ?? latestReading.swell_height },
+    { label: 'Period', value: latestReading.peak_period ?? latestReading.period },
+    { label: 'Water Temp', value: latestReading.water_temp },
+    { label: 'Air Temp', value: latestReading.air_temp },
   ];
 
   return (
