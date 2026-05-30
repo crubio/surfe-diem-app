@@ -1,6 +1,7 @@
 import { getSurfSpots, getSurfSpotClosest } from "@features/locations/api/locations";
 import { Spot } from "../types";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Box, InputAdornment, TextField, Typography, useTheme } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { useQuery } from "@tanstack/react-query";
 import { LinkRouter, SEO, PageContainer, HeroSection } from "components";
 import surfImage from "assets/sharks1.jpg";
@@ -14,7 +15,7 @@ import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tid
 import { getCurrentTideValue } from "utils/tides";
 import { kilometersPerHourToMph } from "utils/formatting";
 import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function sortBySubregion(data: Spot[]) {
   const sortedData: { [key: string]: Spot[] } = {};
@@ -31,6 +32,7 @@ const SpotsPage = () => {
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
+  const [query, setQuery] = useState('');
 
   const { location } = useUserLocation();
   const coordinates = location?.coordinates;
@@ -44,7 +46,7 @@ const SpotsPage = () => {
   // Spots directory
   const { data } = useQuery({
     queryKey: ['surf_spots'],
-    queryFn: async () => getSurfSpots()
+    queryFn: async () => getSurfSpots({ limit: 5000 })
   });
 
   // Widget data — same query keys as home page so cache is shared
@@ -102,7 +104,20 @@ const SpotsPage = () => {
   const showWidget = !!(bestConditions && cleanestConditions && closestSpotData && currentTideValue != null);
 
   const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
-  const sortedSpots = sortBySubregion(spotsArray);
+  const totalCount = spotsArray.length;
+
+  // Client-side filter — only active after 3 characters
+  const filtered = useMemo(() => {
+    if (query.length < 3) return spotsArray;
+    const q = query.toLowerCase();
+    return spotsArray.filter(s =>
+      s.name.toLowerCase().includes(q) || s.subregion_name.toLowerCase().includes(q)
+    );
+  }, [spotsArray, query]);
+
+  const sortedSpots = useMemo(() => sortBySubregion(filtered), [filtered]);
+  const resultCount = filtered.length;
+  const isFiltering = query.length >= 3;
 
   return (
     <>
@@ -146,35 +161,77 @@ const SpotsPage = () => {
       />
 
       <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
-        <Box sx={{ mb: 3 }}>
-          <Typography
+
+        {/* Header strip */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 11,
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
+                color: tokens.textTertiary,
+                mb: 0.5,
+              }}
+            >
+              Browse
+            </Typography>
+            <Typography
+              component="h1"
+              sx={{
+                fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                fontWeight: 700,
+                fontSize: { xs: '28px', md: '36px' },
+                letterSpacing: '-0.025em',
+                lineHeight: 1.05,
+                color: theme.palette.text.primary,
+              }}
+            >
+              Surf Spots
+            </Typography>
+            {totalCount > 0 && (
+              <Typography sx={{ fontSize: 13, color: tokens.textTertiary, mt: 0.5 }}>
+                {totalCount} spots across all regions
+              </Typography>
+            )}
+          </Box>
+
+          {/* Search */}
+          <TextField
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search spots or regions…"
+            size="small"
             sx={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: tokens.textTertiary,
-              mb: 0.5,
+              minWidth: { xs: '100%', sm: '280px' },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '999px',
+                backgroundColor: tokens.bgSoft,
+                '& fieldset': { borderColor: tokens.rule },
+                '&:hover fieldset': { borderColor: tokens.ruleHi },
+              },
             }}
-          >
-            Directory
-          </Typography>
-          <Typography
-            component="h2"
-            sx={{
-              fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-              fontWeight: 700,
-              fontSize: { xs: '28px', md: '36px' },
-              letterSpacing: '-0.025em',
-              lineHeight: 1.05,
-              color: theme.palette.text.primary,
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: 18, color: tokens.textTertiary }} />
+                </InputAdornment>
+              ),
             }}
-          >
-            By Region
-          </Typography>
+          />
         </Box>
 
-        {sortedSpots && Object.keys(sortedSpots).length > 0 ? (
+        {/* Result count */}
+        <Typography sx={{ fontSize: 12, color: tokens.textTertiary, mb: 2.5 }}>
+          {isFiltering
+            ? `Showing ${resultCount} of ${totalCount} spots`
+            : `Showing all ${totalCount} spots`
+          }
+        </Typography>
+
+        {/* Spot list */}
+        {Object.keys(sortedSpots).length > 0 ? (
           Object.keys(sortedSpots).map((subregion) => (
             <Box key={subregion} sx={{ mb: 4 }}>
               <Typography
@@ -229,6 +286,7 @@ const SpotsPage = () => {
         ) : (
           <NoDataFound />
         )}
+
       </PageContainer>
     </>
   );
