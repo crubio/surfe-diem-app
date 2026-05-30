@@ -132,7 +132,7 @@ export default function EnhancedSelect({
             placeholder={placeholder || `Search ${type === 'spot' ? 'surf spots' : 'buoys'}...`}
             sx={{
               '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
+                borderRadius: 1,
                 '&:hover fieldset': {
                   borderColor: theme.palette.primary.main,
                 },
