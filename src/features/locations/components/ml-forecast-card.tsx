@@ -1,9 +1,10 @@
-import { Box, Chip, Divider, Paper, Tooltip, Typography, useTheme } from '@mui/material';
+import { Box, Chip, Paper, Tooltip, Typography, useTheme } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { MLForecastResponse } from '@/types';
+import { ForecastCell } from 'components/common/forecast-cell';
 
 interface MLForecastCardProps {
   data: MLForecastResponse;
@@ -32,7 +33,6 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
         overflow: 'hidden',
       }}
     >
-      {/* Left cell — label */}
       <Box
         sx={{
           minWidth: { md: 200 },
@@ -62,7 +62,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em' }}
           />
           <Tooltip
-            title="Wave height forecast from the Surfe Diem ML model, trained on NDBC buoy observations. Only available at select spots."
+            title="Wave height, dominant period, and groundswell direction forecast from the Surfe Diem ML model, trained on NDBC buoy observations. Only available at select spots."
             placement="right"
             arrow
           >
@@ -76,11 +76,10 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             color: tokens.textTertiary,
           }}
         >
-          WVHT · multi-horizon
+          wave ht · period · direction
         </Typography>
       </Box>
 
-      {/* Data cells */}
       <Box
         sx={{
           display: 'flex',
@@ -90,61 +89,74 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
           flex: 1,
         }}
       >
-        {/* Observed */}
         {observed?.value_ft != null && (
           <>
-            <Box sx={{ px: { xs: 0, md: 3 }, py: { xs: 1, md: 0 }, textAlign: 'center', minWidth: 80 }}>
+            <Box
+              sx={{
+                px: { xs: 0, md: 3 },
+                py: { xs: 1, md: 0 },
+                textAlign: 'center',
+                minWidth: 80,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 0.25,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: tokens.textTertiary,
+                }}
+              >
+                Now
+              </Typography>
               <Typography
                 sx={{
                   fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                   fontWeight: 700,
-                  fontSize: 32,
+                  fontSize: 28,
                   letterSpacing: '-0.04em',
                   lineHeight: 1,
                   color: tokens.accentDark,
                 }}
               >
                 {observed.value_ft.toFixed(1)}
-                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, ml: 0.5, color: tokens.textTertiary }}>ft</Box>
+                <Box component="span" sx={{ fontSize: 13, fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+                  ft
+                </Box>
               </Typography>
               <Typography
-                sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: tokens.textTertiary, mt: 0.5 }}
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: tokens.textTertiary,
+                }}
               >
-                Observed
+                observed
               </Typography>
             </Box>
 
             {predicted && predicted.length > 0 && (
-              <ArrowForwardIcon sx={{ color: tokens.textTertiary, fontSize: '1.1rem', mx: 1, display: { xs: 'none', md: 'block' } }} />
+              <ArrowForwardIcon
+                sx={{
+                  color: tokens.textTertiary,
+                  fontSize: '1.1rem',
+                  mx: 1,
+                  display: { xs: 'none', md: 'block' },
+                }}
+              />
             )}
           </>
         )}
 
-        {/* Forecast cells */}
-        {predicted?.map((row, idx) => (
-          <Box key={idx} sx={{ display: 'flex', alignItems: 'center' }}>
-            <Divider orientation="vertical" flexItem sx={{ mx: { xs: 1.5, md: 2.5 }, display: { xs: 'none', md: 'block' } }} />
-            <Box sx={{ px: { xs: 1.5, md: 0 }, py: { xs: 1, md: 0 }, textAlign: 'center', minWidth: 72 }}>
-              <Typography
-                sx={{
-                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-                  fontWeight: 700,
-                  fontSize: 32,
-                  letterSpacing: '-0.04em',
-                  lineHeight: 1,
-                  color: theme.palette.text.primary,
-                }}
-              >
-                {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}
-                <Box component="span" sx={{ fontSize: 14, fontWeight: 500, ml: 0.5, color: tokens.textTertiary }}>ft</Box>
-              </Typography>
-              <Typography
-                sx={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: tokens.textTertiary, mt: 0.5 }}
-              >
-                {row.horizon_hours}hr
-              </Typography>
-            </Box>
-          </Box>
+        {predicted?.map((row) => (
+          <ForecastCell key={row.horizon_hours} row={row} theme={theme} tokens={tokens} />
         ))}
       </Box>
     </Paper>

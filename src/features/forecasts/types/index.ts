@@ -137,25 +137,33 @@ export interface MLForecastParams {
 }
 
 export interface MLForecastItem {
-  horizon_hours: number;    // hours ahead this prediction covers
-  valid_time: string;       // ISO 8601 datetime
-  value_m: number;          // meters
-  value_ft: number;         // feet — already converted by API
+  horizon_hours: number;
+  valid_time: string;
+  value_m: number;
+  value_ft: number;
+  dominant_period_s?: number;
+  ground_swell_direction_deg?: number;
+  ground_swell_direction_confidence?: number;
 }
 
 export interface MLObservedWaveHeight {
-  observed_time: string;    // ISO 8601 datetime
-  value_m: number;          // meters
-  value_ft: number;         // feet — already converted by API
+  observed_time: string;
+  value_m: number;
+  value_ft: number;
 }
 
 export interface MLForecastResponse {
   station_id: string;
+  spot_id?: number;
+  latitude?: number;
+  longitude?: number;
   observed_wave_height: MLObservedWaveHeight;
   forecast: MLForecastItem[];
   source: string;
   units: {
     wave_height: string;
     wave_height_imperial: string;
+    dominant_period?: string;
+    swell_direction?: string;
   };
 }
