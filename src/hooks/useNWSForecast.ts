@@ -54,6 +54,15 @@ export const useNWSForecast = (
 
       const nwsData = response.data;
 
+      // wave_data may be null when NWS coverage is unavailable (ndbc_fallback_station)
+      if (!nwsData.wave_data) {
+        return {
+          current: null,
+          hourly: [],
+          raw: nwsData,
+        } as TransformedNWSForecast;
+      }
+
       // Transform raw NWS data to UI format
       const current = buildCurrentForecast(nwsData.wave_data, nwsData.timezone);
       const hourly = buildHourlyForecast(nwsData.wave_data, nwsData.timezone, hourlyForecastHours);
@@ -99,6 +108,14 @@ export const useNWSForecastBySlug = (
       }
 
       const nwsData = response.data;
+
+      if (!nwsData.wave_data) {
+        return {
+          current: null,
+          hourly: [],
+          raw: nwsData,
+        } as TransformedNWSForecast;
+      }
 
       const current = buildCurrentForecast(nwsData.wave_data, nwsData.timezone);
       const hourly = buildHourlyForecast(nwsData.wave_data, nwsData.timezone, hourlyForecastHours);

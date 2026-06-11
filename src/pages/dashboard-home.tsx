@@ -64,7 +64,7 @@ const DashboardHome = () => {
   const coordinates = location?.coordinates;
 
   // List of closest spots to user's geolocation if available
-  const {data: closestSpots, isError: isClosestSpotsError} = useQuery({
+  const {data: closestSpots, isLoading: isClosestSpotsLoading, isError: isClosestSpotsError} = useQuery({
     queryKey: ['closest_spots', coordinates?.latitude, coordinates?.longitude],
     queryFn: () => getSurfSpotClosest(coordinates!.latitude, coordinates!.longitude),
     enabled: !!coordinates?.latitude && !!coordinates?.longitude,
@@ -209,9 +209,9 @@ const DashboardHome = () => {
 
   // Map loading/error states to recommendation keys for granular control
   const recommendationStates = {
-    best: { isLoading: isBatchLoading, isError: isBatchError },
-    closest: { isLoading: isForecastLoading, isError: isForecastError || isClosestSpotsError },
-    cleanest: { isLoading: isBatchLoading, isError: isBatchError }
+    best: { isLoading: isBatchLoading || isClosestSpotsLoading, isError: isBatchError },
+    closest: { isLoading: isForecastLoading || isClosestSpotsLoading, isError: isForecastError || isClosestSpotsError },
+    cleanest: { isLoading: isBatchLoading || isClosestSpotsLoading, isError: isBatchError }
   };
 
   const recommendations = [
@@ -298,7 +298,7 @@ const DashboardHome = () => {
               <DashboardCard
                 key={key}
                 isLoading={recommendationStates[key as keyof typeof recommendationStates].isLoading}
-                isError={recommendationStates[key as keyof typeof recommendationStates].isError || data === null}
+                isError={recommendationStates[key as keyof typeof recommendationStates].isError || !data}
                 title={title}
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
@@ -325,7 +325,7 @@ const DashboardHome = () => {
             {/* TODO: Refactor this card or make a new one */}
             <DashboardCard
               isLoading={isForecastLoading}
-              isError={isForecastError || isClosestSpotsError}
+              isError={isForecastError || isClosestSpotsError || (!isForecastLoading && !isClosestSpotsLoading && !currentSwellData)}
               title="Primary Swell"
               name={''}
               score={currentSwellData ? {
@@ -366,7 +366,7 @@ const DashboardHome = () => {
             
             <DashboardCard
               isLoading={isBatchLoading}
-              isError={isBatchError || isClosestSpotsError}
+              isError={isBatchError || isClosestSpotsError || (!isBatchLoading && !isClosestSpotsLoading && !highestWaves)}
               title="Highest Waves"
               name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
               subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}

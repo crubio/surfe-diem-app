@@ -119,13 +119,14 @@ export interface NWSForecastResponse {
   grid_id: string;
   grid_x: number;
   grid_y: number;
-  wave_data: NWSWaveData;
+  wave_data: NWSWaveData | null;
   source: "nws" | "cache";  // Literal union type
   updated_at: string;  // ISO 8601 datetime
   timezone: string;  // e.g., "America/Los_Angeles"
   units: NWSUnits;
   cached_at: string | null;
   expires_at: string | null;
+  ndbc_fallback_station?: boolean;
 }
 
 // ========================================
