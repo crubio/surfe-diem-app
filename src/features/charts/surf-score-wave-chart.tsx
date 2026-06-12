@@ -20,6 +20,7 @@ interface SurfScoreTimelineProps {
   data: TransformedNWSForecast | null;
   isLoading?: boolean;
   height?: number;
+  noDataMessage?: string;
 }
 
 const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
@@ -49,6 +50,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   data,
   isLoading,
   height = 280,
+  noDataMessage = 'No forecast data available',
 }) => {
   const theme = useTheme();
   const { mode } = useColorMode();
@@ -83,7 +85,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   if (!data?.hourly || chartData.length === 0) {
     return (
       <Paper sx={{ p: 3.5 }}>
-        <Typography color="text.secondary">No forecast data available</Typography>
+        <Typography color="text.secondary">{noDataMessage}</Typography>
       </Paper>
     );
   }

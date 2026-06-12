@@ -126,7 +126,7 @@ export interface NWSForecastResponse {
   units: NWSUnits;
   cached_at: string | null;
   expires_at: string | null;
-  ndbc_fallback_station?: boolean;
+  ndbc_fallback_station?: string | null;
 }
 
 // ========================================

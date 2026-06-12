@@ -7,8 +7,8 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherWind } from "@features/weather/components/weather-wind"
 import { getCurrentWeather } from "@features/weather/api"
 import { NoData } from "@features/cards/no_data"
-import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero } from "@features/locations/components"
-import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast } from "hooks"
+import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard } from "@features/locations/components"
+import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast, useLatestObservation } from "hooks"
 import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
 import { TideSparklineCard } from "@features/tides"
 import { useColorMode } from "providers/theme-provider"
@@ -35,6 +35,12 @@ const SpotPage = () => {
   })
 
   const { data: nearbyBuoys } = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
+
+  const ndbcFallbackStation = nwsForecastData?.raw?.ndbc_fallback_station
+  const { data: latestObservation } = useLatestObservation(ndbcFallbackStation ?? undefined)
+
+  const nwsUnavailable = !isNWSLoading && !nwsForecastData?.current
+  const observation = latestObservation?.[0] ?? null
 
   return (
     <>
@@ -99,9 +105,18 @@ const SpotPage = () => {
               </SpotMetricBar>
             </Box>
 
-            {/* Swell forecast chart */}
+            {/* Swell forecast chart or NDBC fallback observation */}
             <Box sx={{ mb: 2 }}>
-              <SurfScoreWaveChart data={nwsForecastData ?? null} isLoading={isNWSLoading} height={250} />
+              {nwsUnavailable && observation && ndbcFallbackStation ? (
+                <NDBCObservationCard stationId={ndbcFallbackStation} observation={observation} />
+              ) : (
+                <SurfScoreWaveChart
+                  data={nwsForecastData ?? null}
+                  isLoading={isNWSLoading}
+                  height={250}
+                  noDataMessage={nwsUnavailable ? 'No nearby buoy observation available for this location' : undefined}
+                />
+              )}
             </Box>
 
             {/* Weather & Tide */}

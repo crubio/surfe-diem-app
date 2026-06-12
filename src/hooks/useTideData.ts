@@ -49,7 +49,7 @@ export const useTideData = (latitude: number | undefined, longitude: number | un
     station,
     dailyTides,
     currentTides,
-    isLoading: station.isPending || dailyTides.isPending || currentTides.isPending,
+    isLoading: station.isLoading || dailyTides.isLoading || currentTides.isLoading,
     isError: station.isError || dailyTides.isError || currentTides.isError,
   };
 }; 

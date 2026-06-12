@@ -1,7 +1,6 @@
 import { Box, Divider, Paper, Tooltip, Typography, useTheme } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Loading } from 'components/layout/loading';
-import { NoData } from '@features/cards/no_data';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { ParsedNWSCurrent } from 'utils/nws-parser';
@@ -34,7 +33,7 @@ const MetricTile = ({ label, tooltip, value, sub, isLoading, accentColor, bgColo
   >
     {isLoading ? (
       <Loading />
-    ) : value ? (
+    ) : (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
           <Typography
@@ -59,10 +58,10 @@ const MetricTile = ({ label, tooltip, value, sub, isLoading, accentColor, bgColo
             fontSize: 30,
             letterSpacing: '-0.03em',
             lineHeight: 1,
-            color: accentColor,
+            color: value ? accentColor : textTertiary,
           }}
         >
-          {value}
+          {value ?? '—'}
         </Typography>
         {sub && (
           <Typography sx={{ fontSize: 12, color: textSecondary, mt: 0.5 }}>
@@ -70,8 +69,6 @@ const MetricTile = ({ label, tooltip, value, sub, isLoading, accentColor, bgColo
           </Typography>
         )}
       </>
-    ) : (
-      <NoData />
     )}
   </Box>
 );
