@@ -54,7 +54,7 @@ const MapPage = () => {
       <Box sx={{ px: { xs: 2, md: 4 }, pt: 3, pb: 2 }}>
         <Typography
           sx={{
-            fontSize: 11,
+            fontSize: '0.75rem',
             fontWeight: 700,
             letterSpacing: '0.16em',
             textTransform: 'none',
@@ -69,7 +69,7 @@ const MapPage = () => {
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: { xs: '32px', md: '44px' },
+            fontSize: { xs: '2rem', md: '2.75rem' },
             letterSpacing: '-0.03em',
             lineHeight: 1,
             color: theme.palette.text.primary,
@@ -89,7 +89,7 @@ const MapPage = () => {
               justifyContent: 'center',
             }}>
               <CircularProgress size={20} />
-              <Typography sx={{ fontSize: 14, color: tokens.textTertiary }}>Loading map...</Typography>
+              <Typography sx={{ fontSize: '0.875rem', color: tokens.textTertiary }}>Loading map...</Typography>
             </Box>
           }>
             <MapBox
@@ -104,14 +104,14 @@ const MapPage = () => {
               sx={{
                 fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                 fontWeight: 700,
-                fontSize: 20,
+                fontSize: '1.25rem',
                 color: theme.palette.text.primary,
                 mb: 0.5,
               }}
             >
               Could not load map data
             </Typography>
-            <Typography sx={{ fontSize: 14, color: tokens.textTertiary }}>
+            <Typography sx={{ fontSize: '0.875rem', color: tokens.textTertiary }}>
               Try refreshing the page.
             </Typography>
           </Box>
@@ -122,7 +122,7 @@ const MapPage = () => {
             justifyContent: 'center',
           }}>
             <CircularProgress size={20} />
-            <Typography sx={{ fontSize: 14, color: tokens.textTertiary }}>Loading map...</Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: tokens.textTertiary }}>Loading map...</Typography>
           </Box>
         )}
       </Box>

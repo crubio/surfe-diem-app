@@ -49,7 +49,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             sx={{
               fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
               fontWeight: 700,
-              fontSize: 16,
+              fontSize: '1rem',
               letterSpacing: '-0.02em',
             }}
           >
@@ -59,7 +59,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             label="BETA"
             size="small"
             color="primary"
-            sx={{ height: 18, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.08em' }}
+            sx={{ height: 18, fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.08em' }}
           />
           <Tooltip
             title="Wave height, dominant period, and groundswell direction forecast from the Surfe Diem ML model, trained on NDBC buoy observations. Only available at select spots."
@@ -72,7 +72,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
         <Typography
           sx={{
             fontFamily: 'monospace',
-            fontSize: 12,
+            fontSize: '0.75rem',
             color: tokens.textTertiary,
           }}
         >
@@ -105,7 +105,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             >
               <Typography
                 sx={{
-                  fontSize: 10,
+                  fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'none',
@@ -118,20 +118,20 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
                 sx={{
                   fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                   fontWeight: 700,
-                  fontSize: 28,
+                  fontSize: '1.75rem',
                   letterSpacing: '-0.04em',
                   lineHeight: 1,
                   color: tokens.accentDark,
                 }}
               >
                 {observed.value_ft.toFixed(1)}
-                <Box component="span" sx={{ fontSize: 13, fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
                   ft
                 </Box>
               </Typography>
               <Typography
                 sx={{
-                  fontSize: 11,
+                  fontSize: '0.75rem',
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'none',
@@ -146,7 +146,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
               <ArrowForwardIcon
                 sx={{
                   color: tokens.textTertiary,
-                  fontSize: '1.1rem',
+                  fontSize: '1.125rem',
                   mx: 1,
                   display: { xs: 'none', md: 'block' },
                 }}

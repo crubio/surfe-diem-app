@@ -82,7 +82,7 @@ const AboutPage = () => {
                   sx={{ mb: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.125rem' }, display: 'flex', alignItems: 'center', gap: 1 }}
                 >
                   🤖 Surfe Diem Predictive Model
-                  <Chip label="BETA" size="small" color="primary" variant="outlined" sx={{ height: 18, fontSize: '0.65rem' }} />
+                  <Chip label="BETA" size="small" color="primary" variant="outlined" sx={{ height: 18, fontSize: '0.75rem' }} />
                 </Typography>
                 <Typography
                   variant="body2"

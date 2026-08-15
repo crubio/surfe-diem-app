@@ -50,7 +50,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
       {/* Header */}
       <Box sx={{ mb: 2 }}>
         <Typography sx={{
-          fontSize: 11,
+          fontSize: '0.75rem',
           fontWeight: 700,
           letterSpacing: '0.16em',
           textTransform: 'none',
@@ -70,7 +70,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
             {/* Left: label + spot name */}
             <Box sx={{ minWidth: 0 }}>
               <Typography sx={{
-                fontSize: 11,
+                fontSize: '0.75rem',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'none',
@@ -81,7 +81,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
               </Typography>
               {row.spot && (
                 <Typography sx={{
-                  fontSize: 14,
+                  fontSize: '0.875rem',
                   fontWeight: 500,
                   color: colors.spotName,
                   overflow: 'hidden',
@@ -98,7 +98,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
               <Typography sx={{
                 fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                 fontWeight: 700,
-                fontSize: 22,
+                fontSize: '1.375rem',
                 color: colors.accent,
                 letterSpacing: '-0.02em',
               }}>

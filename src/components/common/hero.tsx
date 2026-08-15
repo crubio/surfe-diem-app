@@ -80,7 +80,7 @@ const HeroSection = ({ image, widget, heading = DEFAULT_HEADING, body = 'Real-ti
           </Typography>
 
           {/* Body */}
-          <Typography sx={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.5, maxWidth: '480px' }}>
+          <Typography sx={{ fontSize: '1rem', color: 'rgba(255,255,255,0.75)', lineHeight: 1.5, maxWidth: '480px' }}>
             {body}
           </Typography>
 
@@ -98,7 +98,7 @@ const HeroSection = ({ image, widget, heading = DEFAULT_HEADING, body = 'Real-ti
                   borderColor: 'rgba(255,255,255,0.4)',
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: 15,
+                  fontSize: '1rem',
                   backdropFilter: 'blur(10px)',
                   backgroundColor: 'rgba(255,255,255,0.08)',
                   '&:hover': {
@@ -112,7 +112,7 @@ const HeroSection = ({ image, widget, heading = DEFAULT_HEADING, body = 'Real-ti
                   backgroundColor: 'white',
                   color: '#006978',
                   fontWeight: 700,
-                  fontSize: 15,
+                  fontSize: '1rem',
                   '&:hover': { backgroundColor: 'rgba(255,255,255,0.9)' },
                 }}
               >

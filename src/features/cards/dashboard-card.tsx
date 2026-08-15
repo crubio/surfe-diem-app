@@ -123,12 +123,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           )}
         </Box>
 
-        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 1, fontSize: '1.8rem', color: colors.name }}>
+        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 1, fontSize: '2rem', color: colors.name }}>
           {name}
         </Typography>
 
         {subtitle && (
-          <Typography variant="h6" sx={{ mb: 1, fontSize: '1.6rem', fontWeight: 'bold', color: colors.subtitle }}>
+          <Typography variant="h6" sx={{ mb: 1, fontSize: '1.5rem', fontWeight: 'bold', color: colors.subtitle }}>
             {subtitle} {waveDirection && `• ${waveDirection}`} {wavePeriod && `• ${wavePeriod}`}
           </Typography>
         )}

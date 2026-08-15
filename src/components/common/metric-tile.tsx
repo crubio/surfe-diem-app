@@ -42,7 +42,7 @@ export const MetricTile = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
           <Typography
             sx={{
-              fontSize: 11,
+              fontSize: '0.75rem',
               fontWeight: 700,
               letterSpacing: '0.1em',
               textTransform: 'none',
@@ -61,7 +61,7 @@ export const MetricTile = ({
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: 30,
+            fontSize: '2rem',
             letterSpacing: '-0.03em',
             lineHeight: 1,
             color: value ? accentColor : textTertiary,
@@ -70,7 +70,7 @@ export const MetricTile = ({
           {value ?? '—'}
         </Typography>
         {sub && textSecondary && (
-          <Typography sx={{ fontSize: 12, color: textSecondary, mt: 0.5 }}>
+          <Typography sx={{ fontSize: '0.75rem', color: textSecondary, mt: 0.5 }}>
             {sub}
           </Typography>
         )}

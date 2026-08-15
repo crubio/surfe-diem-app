@@ -209,7 +209,7 @@ export default function SearchAppBar() {
                       textAlign="center"
                       component="span"
                       sx={{ 
-                        fontSize: '16px',
+                        fontSize: '1rem',
                         fontWeight: 500,
                         color: 'text.primary'
                       }}

@@ -38,7 +38,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
       >
         <Typography
           sx={{
-            fontSize: 10,
+            fontSize: '0.75rem',
             fontWeight: 700,
             letterSpacing: '0.1em',
             textTransform: 'none',
@@ -52,21 +52,21 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: 28,
+            fontSize: '1.75rem',
             letterSpacing: '-0.04em',
             lineHeight: 1,
             color: theme.palette.text.primary,
           }}
         >
           {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}
-          <Box component="span" sx={{ fontSize: 13, fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+          <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
             ft
           </Box>
         </Typography>
 
         <Typography
           sx={{
-            fontSize: 12,
+            fontSize: '0.75rem',
             fontWeight: 600,
             color: tokens.textTertiary,
             lineHeight: 1.2,
@@ -78,7 +78,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
         {hasDirection ? (
           <Typography
             sx={{
-              fontSize: 11,
+              fontSize: '0.75rem',
               fontWeight: 600,
               color: lowConfidence ? tokens.textTertiary : theme.palette.text.secondary,
               lineHeight: 1.2,
@@ -91,7 +91,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
             {getSwellDirectionText(row.ground_swell_direction_deg!)}
           </Typography>
         ) : (
-          <Typography sx={{ fontSize: 11, color: tokens.textTertiary }}>—</Typography>
+          <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>—</Typography>
         )}
       </Box>
     </Box>

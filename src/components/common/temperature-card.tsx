@@ -90,7 +90,7 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({
         sx={{ 
           mb: 1,
           textAlign: 'center',
-          fontSize: '0.9rem'
+          fontSize: '0.875rem'
         }}
       >
         {showFahrenheit ? formatTemp(temperature, 'C') : formatTemp(temperature, 'F')}

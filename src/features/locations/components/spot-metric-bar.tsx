@@ -70,13 +70,13 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: 18,
+            fontSize: '1.125rem',
             letterSpacing: '-0.02em',
           }}
         >
           NWS Forecast
         </Typography>
-        <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, mt: 0.25 }}>
+        <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
           National Weather Service
         </Typography>
       </Box>

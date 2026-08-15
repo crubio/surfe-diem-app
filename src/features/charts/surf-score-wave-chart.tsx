@@ -98,7 +98,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         <Box>
           <Typography
             sx={{
-              fontSize: 11,
+              fontSize: '0.75rem',
               fontWeight: 700,
               letterSpacing: '0.16em',
               textTransform: 'none',
@@ -112,7 +112,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
             sx={{
               fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
               fontWeight: 700,
-              fontSize: 22,
+              fontSize: '1.375rem',
               letterSpacing: '-0.025em',
               color: theme.palette.text.primary,
             }}
@@ -125,11 +125,11 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: theme.palette.primary.light }} />
-            <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Primary swell</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>Primary swell</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: tokens.secondarySwellColor }} />
-            <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Secondary swell</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>Secondary swell</Typography>
           </Box>
         </Box>
       </Box>

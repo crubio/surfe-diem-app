@@ -86,7 +86,7 @@ const LocationsPage = () => {
                 <Box>
                   <Typography
                     sx={{
-                      fontSize: 11,
+                      fontSize: '0.75rem',
                       fontWeight: 700,
                       letterSpacing: '0.16em',
                       textTransform: 'none',
@@ -122,7 +122,7 @@ const LocationsPage = () => {
                       px: 2,
                       py: 0.75,
                       fontWeight: 600,
-                      fontSize: 13,
+                      fontSize: '0.875rem',
                       flexShrink: 0,
                     }}
                   >
@@ -137,14 +137,14 @@ const LocationsPage = () => {
                   <Chip
                     label={locationData.description}
                     size="small"
-                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: 11 }}
+                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: '0.75rem' }}
                   />
                 )}
                 {locationData?.location?.split("(")[0]?.trim() && (
                   <Chip
                     label={locationData.location.split("(")[0].trim()}
                     size="small"
-                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: 11 }}
+                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: '0.75rem' }}
                   />
                 )}
                 {locationData?.url && (
@@ -156,7 +156,7 @@ const LocationsPage = () => {
                     rel="noopener noreferrer"
                     clickable
                     size="small"
-                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: 11 }}
+                    sx={{ backgroundColor: tokens.bgSoft, color: theme.palette.text.secondary, fontSize: '0.75rem' }}
                   />
                 )}
               </Box>
@@ -171,13 +171,13 @@ const LocationsPage = () => {
                   sx={{
                     fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                     fontWeight: 700,
-                    fontSize: 18,
+                    fontSize: '1.125rem',
                     letterSpacing: '-0.02em',
                   }}
                 >
                   Latest Observation
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, mt: 0.25 }}>
+                <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
                   Most recent buoy reading
                 </Typography>
               </Box>
@@ -205,7 +205,7 @@ const LocationsPage = () => {
                 <Box>
                   <Typography
                     sx={{
-                      fontSize: 11,
+                      fontSize: '0.75rem',
                       fontWeight: 700,
                       letterSpacing: '0.16em',
                       textTransform: 'none',
@@ -219,7 +219,7 @@ const LocationsPage = () => {
                     sx={{
                       fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                       fontWeight: 700,
-                      fontSize: 36,
+                      fontSize: '2.25rem',
                       letterSpacing: '-0.025em',
                       lineHeight: 1.05,
                     }}
@@ -237,7 +237,7 @@ const LocationsPage = () => {
                     borderRadius: '999px',
                     px: 2,
                     fontWeight: 600,
-                    fontSize: 13,
+                    fontSize: '0.875rem',
                   }}
                 >
                   Open in map ↗

@@ -38,7 +38,7 @@ export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
       <Box>
-        <Typography sx={{ fontSize: 14, fontWeight: 600 }}>
+        <Typography sx={{ fontSize: '0.875rem', fontWeight: 600 }}>
           Was this forecast accurate?
         </Typography>
         <Typography variant="caption" color="text.secondary">

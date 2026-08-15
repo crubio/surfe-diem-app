@@ -148,7 +148,7 @@ const SpotPage = () => {
                   <Box>
                     <Typography
                       sx={{
-                        fontSize: 11,
+                        fontSize: '0.75rem',
                         fontWeight: 700,
                         letterSpacing: '0.16em',
                         textTransform: 'none',
@@ -162,7 +162,7 @@ const SpotPage = () => {
                       sx={{
                         fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                         fontWeight: 700,
-                        fontSize: 36,
+                        fontSize: '2.25rem',
                         letterSpacing: '-0.025em',
                         lineHeight: 1.05,
                       }}
@@ -180,7 +180,7 @@ const SpotPage = () => {
                       borderRadius: '999px',
                       px: 2,
                       fontWeight: 600,
-                      fontSize: 13,
+                      fontSize: '0.875rem',
                     }}
                   >
                     Open in map ↗

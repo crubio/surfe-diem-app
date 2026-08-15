@@ -163,7 +163,7 @@ const SpotHero = ({
               px: 2,
               py: 0.75,
               fontWeight: 600,
-              fontSize: 13,
+              fontSize: '0.875rem',
               ...(favorited ? {
                 backgroundColor: theme.palette.primary.main,
                 color: 'white',
@@ -193,7 +193,7 @@ const SpotHero = ({
                   backgroundColor: theme.palette[conditionScore.color]?.main ?? theme.palette.info.main,
                   color: 'white',
                   fontWeight: 700,
-                  fontSize: 11,
+                  fontSize: '0.75rem',
                 }}
               />
             </Box>
@@ -229,7 +229,7 @@ const SpotHero = ({
                 <Box component="span" sx={{ fontSize: '0.45em', color: 'rgba(255,255,255,0.65)', ml: 0.5 }}>ft</Box>
               </Typography>
               {period !== null && direction !== null && (
-                <Typography sx={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', ml: 1 }}>
+                <Typography sx={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', ml: 1 }}>
                   {getSwellDirectionText(direction)} · {period.toFixed(1)}s
                 </Typography>
               )}
@@ -245,7 +245,7 @@ const SpotHero = ({
                 sx={{
                   backgroundColor: tokens.bgSoft,
                   color: theme.palette.text.secondary,
-                  fontSize: 11,
+                  fontSize: '0.75rem',
                   fontWeight: 500,
                 }}
               />

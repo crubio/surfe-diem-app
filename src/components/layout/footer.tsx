@@ -40,15 +40,15 @@ export default function Footer() {
 
         {/* Nav links */}
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
-          <LinkRouter to="/" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Dashboard</LinkRouter>
-          <LinkRouter to="/spots" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Spots</LinkRouter>
-          <LinkRouter to="/map" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Map</LinkRouter>
-          <LinkRouter to="/about" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>About</LinkRouter>
-          <Link href="mailto:contact@surfe-diem.com" sx={{ fontSize: 13, color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Contact</Link>
+          <LinkRouter to="/" sx={{ fontSize: '0.875rem', color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Dashboard</LinkRouter>
+          <LinkRouter to="/spots" sx={{ fontSize: '0.875rem', color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Spots</LinkRouter>
+          <LinkRouter to="/map" sx={{ fontSize: '0.875rem', color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Map</LinkRouter>
+          <LinkRouter to="/about" sx={{ fontSize: '0.875rem', color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>About</LinkRouter>
+          <Link href="mailto:contact@surfe-diem.com" sx={{ fontSize: '0.875rem', color: tokens.textTertiary, textDecoration: 'none', '&:hover': { color: 'primary.main' } }}>Contact</Link>
         </Box>
 
         {/* Copyright */}
-        <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>
+        <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>
           © {new Date().getFullYear()} Surfe Diem
         </Typography>
       </Container>

@@ -18,8 +18,8 @@ const MetricRow = ({ label, value, textTertiary }: MetricRowProps) => {
   if (!value) return null;
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-      <Typography sx={{ fontSize: 12, color: textTertiary, fontWeight: 500 }}>{label}</Typography>
-      <Typography sx={{ fontSize: 14, fontWeight: 700 }}>{value}</Typography>
+      <Typography sx={{ fontSize: '0.75rem', color: textTertiary, fontWeight: 500 }}>{label}</Typography>
+      <Typography sx={{ fontSize: '0.875rem', fontWeight: 700 }}>{value}</Typography>
     </Box>
   );
 };
@@ -34,7 +34,7 @@ export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationC
       <Box sx={{ mb: 2.5 }}>
         <Typography
           sx={{
-            fontSize: 11,
+            fontSize: '0.75rem',
             fontWeight: 700,
             letterSpacing: '0.16em',
             textTransform: 'none',
@@ -48,7 +48,7 @@ export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationC
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: 22,
+            fontSize: '1.375rem',
             letterSpacing: '-0.025em',
             color: theme.palette.text.primary,
           }}

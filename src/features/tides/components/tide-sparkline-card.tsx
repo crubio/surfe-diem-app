@@ -38,7 +38,7 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
         <Box>
           <Typography
             sx={{
-              fontSize: 11,
+              fontSize: '0.75rem',
               fontWeight: 700,
               letterSpacing: '0.16em',
               textTransform: 'none',
@@ -49,7 +49,7 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
             Tide Status
           </Typography>
           {stationId && (
-            <Typography sx={{ fontSize: 11, color: tokens.textTertiary }}>
+            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>
               Station {stationId}
             </Typography>
           )}
@@ -60,7 +60,7 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
         sx={{
           fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
           fontWeight: 700,
-          fontSize: 56,
+          fontSize: '3.5rem',
           letterSpacing: '-0.04em',
           lineHeight: 1,
           color: tokens.accentDark,
@@ -69,7 +69,7 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
       >
         {min.toFixed(1)}–{max.toFixed(1)}ft
       </Typography>
-      <Typography sx={{ fontSize: 12, color: tokens.textTertiary, mb: 2 }}>
+      <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mb: 2 }}>
         Today's range
       </Typography>
 
@@ -119,17 +119,17 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
               sx={{
                 fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                 fontWeight: 700,
-                fontSize: 16,
+                fontSize: '1rem',
                 color: tokens.accentDark,
                 lineHeight: 1,
               }}
             >
               {event.value}ft
             </Typography>
-            <Typography sx={{ fontSize: 11, color: tokens.textTertiary, mt: 0.25 }}>
+            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mt: 0.25 }}>
               {event.label}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: theme.palette.text.secondary, mt: 0.25 }}>
+            <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
               {event.time}
             </Typography>
           </Box>

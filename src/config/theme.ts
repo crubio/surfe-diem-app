@@ -1,4 +1,20 @@
+import React from 'react';
 import { ThemeOptions } from '@mui/material';
+
+// Module augmentation — custom typography variants
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    eyebrow: React.CSSProperties;
+  }
+  interface TypographyVariantsOptions {
+    eyebrow?: React.CSSProperties;
+  }
+}
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    eyebrow: true;
+  }
+}
 
 // Shadow scale
 export const shadows = {
@@ -72,6 +88,12 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     h6: { fontWeight: 600 },
     subtitle2: { textTransform: 'none' },
     overline: { textTransform: 'none' },
+    // Custom variant: small all-caps eyebrow labels (replaces inline fontSize:11 + letterSpacing patterns)
+    eyebrow: {
+      fontSize: '0.75rem',
+      fontWeight: 700,
+      letterSpacing: '0.1em',
+    },
   },
   shape: {
     borderRadius: 16,

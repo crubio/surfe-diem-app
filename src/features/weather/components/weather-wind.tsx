@@ -28,7 +28,7 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
     <Paper sx={{ p: 3, height: '100%' }}>
       <Typography
         sx={{
-          fontSize: 11,
+          fontSize: '0.75rem',
           fontWeight: 700,
           letterSpacing: '0.16em',
           textTransform: 'none',
@@ -44,7 +44,7 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: 72,
+            fontSize: '4.5rem',
             letterSpacing: '-0.04em',
             lineHeight: 1,
             color: tokens.accentDark,
@@ -54,19 +54,19 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
         </Typography>
       </Box>
 
-      <Typography sx={{ fontSize: 15, color: theme.palette.text.primary, mb: 0.5 }}>
+      <Typography sx={{ fontSize: '1rem', color: theme.palette.text.primary, mb: 0.5 }}>
         {currentWeather}
       </Typography>
 
       {feelsLike && (
-        <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary, mb: 1.5 }}>
+        <Typography sx={{ fontSize: '0.875rem', color: theme.palette.text.secondary, mb: 1.5 }}>
           Feels like {feelsLike}°
           {uvIndex !== null ? ` · UV ${uvIndex} of 10` : ''}
         </Typography>
       )}
 
       {windInfo && (
-        <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary, mb: 1.5, lineHeight: 1.5 }}>
+        <Typography sx={{ fontSize: '0.875rem', color: theme.palette.text.secondary, mb: 1.5, lineHeight: 1.5 }}>
           {windInfo}
         </Typography>
       )}
@@ -87,7 +87,7 @@ export const WeatherWind = ({ weatherData, isLoading = false }: WeatherWindProps
                 backgroundColor: 'rgba(255,152,0,0.1)',
                 color: theme.palette.warning.main,
                 fontWeight: 600,
-                fontSize: 11,
+                fontSize: '0.75rem',
                 border: `1px solid rgba(255,152,0,0.25)`,
               }}
             />

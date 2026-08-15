@@ -167,7 +167,7 @@ const SpotsPage = () => {
           <Box>
             <Typography
               sx={{
-                fontSize: 11,
+                fontSize: '0.75rem',
                 fontWeight: 700,
                 letterSpacing: '0.16em',
                 textTransform: 'none',
@@ -191,7 +191,7 @@ const SpotsPage = () => {
               Surf Spots
             </Typography>
             {totalCount > 0 && (
-              <Typography sx={{ fontSize: 13, color: tokens.textTertiary, mt: 0.5 }}>
+              <Typography sx={{ fontSize: '0.875rem', color: tokens.textTertiary, mt: 0.5 }}>
                 {totalCount} spots across all regions
               </Typography>
             )}
@@ -223,7 +223,7 @@ const SpotsPage = () => {
         </Box>
 
         {/* Result count */}
-        <Typography sx={{ fontSize: 12, color: tokens.textTertiary, mb: 2.5 }}>
+        <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mb: 2.5 }}>
           {isFiltering
             ? `Showing ${resultCount} of ${totalCount} spots`
             : `Showing all ${totalCount} spots`
