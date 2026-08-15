@@ -215,9 +215,9 @@ const DashboardHome = () => {
   };
 
   const recommendations = [
-    { key: 'best', title: 'Best Right Now', data: bestConditions },
-    { key: 'closest', title: 'Closest to You', data: closestSpotData },
-    { key: 'cleanest', title: 'Cleanest Conditions', data: cleanestConditions }
+    { key: 'best', title: 'Best right now', data: bestConditions },
+    { key: 'closest', title: 'Closest to you', data: closestSpotData },
+    { key: 'cleanest', title: 'Cleanest conditions', data: cleanestConditions }
   ];
 
   return (
@@ -326,7 +326,7 @@ const DashboardHome = () => {
             <DashboardCard
               isLoading={isForecastLoading}
               isError={isForecastError || isClosestSpotsError || (!isForecastLoading && !isClosestSpotsLoading && !currentSwellData)}
-              title="Primary Swell"
+              title="Primary swell"
               name={''}
               score={currentSwellData ? {
                 label: getSwellQualityDescription(currentSwellData.primarySwellHeight),
@@ -342,7 +342,7 @@ const DashboardHome = () => {
             <DashboardCard
               isLoading={tidesLoading}
               isError={tidesError || isClosestSpotsError}
-              title="Current Tide"
+              title="Current tide"
               name={currentTideValue != null ? `${currentTideValue.toFixed(1)}ft` : ''}
               score={{ label: currentTideTime || 'Loading...', color: 'info', description: currentTideTime ? `as of ${currentTideTime}` : 'recent reading' }}
               description={closestTideStation ? `Reported from station ${closestTideStation.station_id}` : undefined}
@@ -353,7 +353,7 @@ const DashboardHome = () => {
             <DashboardCard
               isLoading={isForecastLoading}
               isError={isForecastError || isClosestSpotsError}
-              title="Water Temperature"
+              title="Water temperature"
               name={waterTemp ? `${waterTemp}°F` : 'N/A'}
               score={waterTemp ? {
                 label: waterTemp >= 70 ? 'Warm' : waterTemp >= 60 ? 'Moderate' : 'Cold',
@@ -367,7 +367,7 @@ const DashboardHome = () => {
             <DashboardCard
               isLoading={isBatchLoading}
               isError={isBatchError || isClosestSpotsError || (!isBatchLoading && !isClosestSpotsLoading && !highestWaves)}
-              title="Highest Waves"
+              title="Highest waves"
               name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
               subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
               heightValue={highestWaves?.waveHeightValue}
@@ -391,7 +391,7 @@ const DashboardHome = () => {
           marginTop={0}
         >
           <SearchCard
-            label="Find a Buoy"
+            label="Find a buoy"
             items={buoys && buoys.length > 0 ? orderBy(buoys, ["name"], ["asc"]) : []}
             selectValueKey="location_id"
             doOnSelect={goToBuoyPage}
@@ -399,7 +399,7 @@ const DashboardHome = () => {
             placeholder="Search buoys..."
           />
           <SearchCard
-            label="Find a Spot"
+            label="Find a spot"
             items={spots ? orderBy(spots, ["subregion_name", "name"], ["asc"]) : []}
             selectValueKey="id"
             doOnSelect={goToSpotPage}

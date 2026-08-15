@@ -34,16 +34,16 @@ const Summary = ({ location_id }: SummaryProps) => {
     )
     return (
       <>
-        <Typography variant="h3" sx={{marginBottom: "2px"}}>
+        <Typography variant="h5" sx={{marginBottom: "2px"}}>
           {latestObservation.wave_height}
         </Typography>
         { latestObservation.peak_period && (
-          <Typography sx={{ mb: 1.5 }} color="text">
+          <Typography sx={{ mb: 1.5 }} color="text.secondary">
             {latestObservation.peak_period}
           </Typography>
         )}
         {latestObservation.water_temp && (
-          <Typography sx={{ mb: 1.5 }} color="text">
+          <Typography sx={{ mb: 1.5 }} color="text.secondary">
             {latestObservation.water_temp}
           </Typography>
         )}
@@ -64,7 +64,7 @@ const Summary = ({ location_id }: SummaryProps) => {
           }}
         >
           <CardContent>
-            <h2>{locationData?.name}</h2>
+            <Typography variant="h6" component="h2">{locationData?.name}</Typography>
             <Typography sx={{ mb: 1 }} color="text.secondary">
               <LocationOn /> {locationData?.location && formatLatLong(locationData.location).join(', ')}
             </Typography>

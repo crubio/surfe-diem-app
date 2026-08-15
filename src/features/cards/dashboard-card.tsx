@@ -123,12 +123,12 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
           )}
         </Box>
 
-        <Typography variant="h1" component="div" sx={{ fontWeight: 'bold', mb: 1, fontSize: '1.8rem', color: colors.name }}>
+        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 1, fontSize: '1.8rem', color: colors.name }}>
           {name}
         </Typography>
 
         {subtitle && (
-          <Typography variant="h2" sx={{ mb: 1, fontSize: '1.6rem', fontWeight: 'bold', color: colors.subtitle }}>
+          <Typography variant="h6" sx={{ mb: 1, fontSize: '1.6rem', fontWeight: 'bold', color: colors.subtitle }}>
             {subtitle} {waveDirection && `• ${waveDirection}`} {wavePeriod && `• ${wavePeriod}`}
           </Typography>
         )}
@@ -136,7 +136,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         {heightValue !== undefined && (
           <Box sx={{ mt: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="caption" sx={{ color: colors.caption }}>Wave Height</Typography>
+              <Typography variant="caption" sx={{ color: colors.caption }}>Wave height</Typography>
               <Typography variant="caption" sx={{ color: colors.caption }}>{heightValue.toFixed(1)}ft</Typography>
             </Box>
             <LinearProgress
@@ -157,7 +157,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
         {speedValue !== undefined && (
           <Box sx={{ mt: 1.5 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="caption" sx={{ color: colors.caption }}>Wind Speed</Typography>
+              <Typography variant="caption" sx={{ color: colors.caption }}>Wind speed</Typography>
               <Typography variant="caption" sx={{ color: colors.caption }}>{speedValue}mph</Typography>
             </Box>
             <LinearProgress

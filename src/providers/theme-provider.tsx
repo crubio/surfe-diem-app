@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, ReactNode } from 'react';
-import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider as MUIThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { getThemeOptions } from '../config/theme';
 
@@ -21,8 +21,13 @@ export const useColorMode = () => useContext(ColorModeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<ColorMode>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === 'light' || saved === 'dark' ? saved : 'light';
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'light' || saved === 'dark') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
   });
 
   const toggleColorMode = () => {
@@ -33,7 +38,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const theme = useMemo(() => createTheme(getThemeOptions(mode)), [mode]);
+  const theme = useMemo(() => responsiveFontSizes(createTheme(getThemeOptions(mode))), [mode]);
 
   return (
     <ColorModeContext.Provider value={{ mode, toggleColorMode }}>

@@ -1,6 +1,4 @@
-
-import { Container } from '@mui/material';
-import Box from '@mui/material/Box';
+import { Box, Container, Typography } from '@mui/material';
 
 export function MaintenanceCard() {
   return (
@@ -14,12 +12,10 @@ export function MaintenanceCard() {
       alignItems: 'center'
     }}>
       <Box sx={{ textAlign: 'center' }}>
-        <h1>surfe diem</h1>
-        <div className="card">
-          <p>
-            this site is under construction. check back soon.
-          </p>
-        </div>
+        <Typography variant="h4" component="h1" sx={{ mb: 2 }}>surfe diem</Typography>
+        <Typography variant="body1" color="text.secondary">
+          This site is under construction. Check back soon.
+        </Typography>
       </Box>
     </Container>
     </>

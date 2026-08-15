@@ -7,66 +7,13 @@ import { formatLatLong } from "utils/common"
 import ErrorPage from "./error"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { Loading } from "components/layout/loading"
+import { MetricTile } from "components/common/metric-tile"
 import { useFavorites } from "providers/favorites-provider"
 import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material'
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
 import type { Favorite } from "types"
 
-interface MetricTileProps {
-  label: string;
-  value: string | null | undefined;
-  isLoading: boolean;
-  bgColor: string;
-  textTertiary: string;
-  accentColor: string;
-}
-
-const MetricTile = ({ label, value, isLoading, bgColor, textTertiary, accentColor }: MetricTileProps) => {
-  return (
-    <Box
-      sx={{
-        flex: 1,
-        minWidth: { xs: '40%', sm: 0 },
-        px: 2.5,
-        py: 2,
-        borderRadius: '12px',
-        backgroundColor: bgColor,
-      }}
-    >
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          <Typography
-            sx={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: textTertiary,
-              mb: 0.75,
-            }}
-          >
-            {label}
-          </Typography>
-          <Typography
-            sx={{
-              fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-              fontWeight: 700,
-              fontSize: 30,
-              letterSpacing: '-0.03em',
-              lineHeight: 1,
-              color: value ? accentColor : textTertiary,
-            }}
-          >
-            {value ?? '—'}
-          </Typography>
-        </>
-      )}
-    </Box>
-  );
-};
 
 const LocationsPage = () => {
   const params = useParams()
@@ -142,7 +89,7 @@ const LocationsPage = () => {
                       fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: '0.16em',
-                      textTransform: 'uppercase',
+                      textTransform: 'none',
                       color: tokens.textTertiary,
                       mb: 0.5,
                     }}
@@ -261,7 +208,7 @@ const LocationsPage = () => {
                       fontSize: 11,
                       fontWeight: 700,
                       letterSpacing: '0.16em',
-                      textTransform: 'uppercase',
+                      textTransform: 'none',
                       color: tokens.textTertiary,
                       mb: 0.5,
                     }}

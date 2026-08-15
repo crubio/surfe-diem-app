@@ -8,7 +8,7 @@ interface ForecastRatingProps {
   spotId: number;
   spotSlug: string;
   spotName: string;
-  forecastData: Record<string, any>;
+  forecastData: Record<string, unknown>;
 }
 
 export const ForecastRatingComponent: React.FC<ForecastRatingProps> = ({

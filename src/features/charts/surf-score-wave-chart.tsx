@@ -11,7 +11,7 @@ import {
   ReferenceDot,
   TooltipContentProps,
 } from 'recharts';
-import { Box, Paper, Typography, useTheme } from '@mui/material';
+import { Box, Paper, Typography, useTheme, type Theme } from '@mui/material';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { TransformedNWSForecast } from 'hooks/useNWSForecast';
@@ -23,8 +23,9 @@ interface SurfScoreTimelineProps {
   noDataMessage?: string;
 }
 
-const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>) => {
-  const theme = useTheme();
+type TooltipExtraProps = { theme: Theme; tokens: (typeof colorTokens)[keyof typeof colorTokens] };
+
+const CustomTooltip = ({ active, payload, theme, tokens }: TooltipContentProps<number, string> & TooltipExtraProps) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
@@ -38,7 +39,7 @@ const CustomTooltip = ({ active, payload }: TooltipContentProps<number, string>)
         Primary: {d.primary?.toFixed(1)}ft
       </Typography>
       {d.secondary > 0 && (
-        <Typography variant="caption" display="block" sx={{ color: '#7ed992', fontWeight: 700 }}>
+        <Typography variant="caption" display="block" sx={{ color: tokens.secondarySwellColor, fontWeight: 700 }}>
           Secondary: {d.secondary?.toFixed(1)}ft
         </Typography>
       )}
@@ -100,7 +101,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: '0.16em',
-              textTransform: 'uppercase',
+              textTransform: 'none',
               color: tokens.textTertiary,
               mb: 0.5,
             }}
@@ -127,7 +128,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
             <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Primary swell</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: '#7ed992' }} />
+            <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: tokens.secondarySwellColor }} />
             <Typography sx={{ fontSize: 12, color: tokens.textTertiary }}>Secondary swell</Typography>
           </Box>
         </Box>
@@ -143,8 +144,8 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
                 <stop offset="95%" stopColor={theme.palette.primary.light} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="chartGradientSecondary" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#7ed992" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#7ed992" stopOpacity={0} />
+                <stop offset="5%" stopColor={tokens.secondarySwellColor} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={tokens.secondarySwellColor} stopOpacity={0} />
               </linearGradient>
             </defs>
 
@@ -171,7 +172,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               width={36}
             />
 
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip theme={theme} tokens={tokens} />} />
 
             <ReferenceLine
               x={0}
@@ -193,7 +194,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
             <Area
               type="basis"
               dataKey="secondary"
-              stroke="#7ed992"
+              stroke={tokens.secondarySwellColor}
               strokeWidth={2}
               strokeOpacity={0.8}
               fill="url(#chartGradientSecondary)"

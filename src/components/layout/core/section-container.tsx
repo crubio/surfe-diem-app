@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Divider, Typography, type TypographyProps } from '@mui/material';
 import { Item } from 'components/layout/item';
 import { 
   SECTION_SPACING, 
@@ -47,7 +47,7 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
     >
       {title && (
         <Typography 
-          variant={titleVariant.toLowerCase() as any} 
+          variant={TYPOGRAPHY_VARIANTS[titleVariant] as TypographyProps['variant']} 
           component="h2" 
           sx={{ 
             mb: spacingValue, 
@@ -60,7 +60,7 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
       
       {subtitle && (
         <Typography 
-          variant={subtitleVariant.toLowerCase() as any} 
+          variant={TYPOGRAPHY_VARIANTS[subtitleVariant] as TypographyProps['variant']} 
           component="h3" 
           sx={{ 
             mb: spacingValue, 
@@ -76,14 +76,7 @@ const SectionContainer: React.FC<SectionContainerProps> = ({
         {children}
       </Box>
 
-      {showDivider && (
-        <Box sx={{ 
-          borderTop: '1px solid', 
-          borderColor: 'divider', 
-          mt: spacingValue,
-          opacity: 0.6 
-        }} />
-      )}
+      {showDivider && <Divider sx={{ mt: spacingValue, opacity: 0.6 }} />}
     </Item>
   );
 };

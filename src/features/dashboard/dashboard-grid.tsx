@@ -44,12 +44,13 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   marginBottom = DASHBOARD_CARD_SECTION_MB,
   marginTop,
   padding = ITEM_PADDING,
-  background = 'background.default',
+  background = 'default',
 }) => {
-  const { location } = useGeolocationStore.getState();
+  const { location } = useGeolocationStore();
+  const bgToken = background === 'default' ? 'background.default' : 'background.paper';
   return (
-    <Item sx={{ 
-      bgcolor: background, 
+    <Item sx={{
+      bgcolor: bgToken,
       marginBottom: marginBottom, 
       marginTop: marginTop,
       p: padding 

@@ -1,6 +1,5 @@
-import { Box, Divider, Paper, Tooltip, Typography, useTheme } from '@mui/material';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { Loading } from 'components/layout/loading';
+import { Box, Divider, Paper, Typography, useTheme } from '@mui/material';
+import { MetricTile } from 'components/common/metric-tile';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { ParsedNWSCurrent } from 'utils/nws-parser';
@@ -8,70 +7,6 @@ import { formatDirection, kilometersPerHourToMph } from 'utils/formatting';
 import { getCurrentTideValue } from 'utils/tides';
 import { TidesDataCurrent } from '@features/tides/api/tides';
 
-interface MetricTileProps {
-  label: string;
-  tooltip: string;
-  value: string | null;
-  sub?: string;
-  isLoading: boolean;
-  accentColor: string;
-  bgColor: string;
-  textTertiary: string;
-  textSecondary: string;
-}
-
-const MetricTile = ({ label, tooltip, value, sub, isLoading, accentColor, bgColor, textTertiary, textSecondary }: MetricTileProps) => (
-  <Box
-    sx={{
-      flex: 1,
-      minWidth: { xs: '40%', sm: 0 },
-      px: 2.5,
-      py: 2,
-      borderRadius: '12px',
-      backgroundColor: bgColor,
-    }}
-  >
-    {isLoading ? (
-      <Loading />
-    ) : (
-      <>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.75 }}>
-          <Typography
-            sx={{
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: textTertiary,
-            }}
-          >
-            {label}
-          </Typography>
-          <Tooltip title={tooltip} placement="bottom" arrow>
-            <InfoOutlinedIcon sx={{ fontSize: '0.8rem', color: textTertiary, cursor: 'help' }} />
-          </Tooltip>
-        </Box>
-        <Typography
-          sx={{
-            fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-            fontWeight: 700,
-            fontSize: 30,
-            letterSpacing: '-0.03em',
-            lineHeight: 1,
-            color: value ? accentColor : textTertiary,
-          }}
-        >
-          {value ?? '—'}
-        </Typography>
-        {sub && (
-          <Typography sx={{ fontSize: 12, color: textSecondary, mt: 0.5 }}>
-            {sub}
-          </Typography>
-        )}
-      </>
-    )}
-  </Box>
-);
 
 interface SpotMetricBarProps {
   current: ParsedNWSCurrent | null | undefined;

@@ -1,8 +1,5 @@
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import DialogTitle from '@mui/material/DialogTitle';
-import Dialog from '@mui/material/Dialog';
+import React from 'react';
+import { Dialog, DialogTitle, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import { useNavigate } from "react-router-dom";
 import { LocationOn, Support } from '@mui/icons-material';
 import { BuoyLocation, Spot } from '../../types';
@@ -30,7 +27,7 @@ export function SearchResultsDialog<T>(props: SimpleDialogProps<T>) {
   const renderResultItem = (item: Spot | BuoyLocation) => {
     if ('location_id' in item) {
       return (
-        <ListItem disableGutters key={item.location_id}>
+        <ListItem disableGutters>
           <ListItemButton onClick={() => handleListItemClick(`/location/${item.location_id}`)}>
             <Support sx={{marginRight: '10px'}} /><ListItemText primary={item.name} />
           </ListItemButton>
@@ -38,7 +35,7 @@ export function SearchResultsDialog<T>(props: SimpleDialogProps<T>) {
       )
     } else {
       return (
-        <ListItem disableGutters key={item.id}>
+        <ListItem disableGutters>
           <ListItemButton onClick={() => handleListItemClick(`/spot/${item.slug || item.id}`)}>
             <LocationOn sx={{marginRight: '10px'}} /><ListItemText primary={item.name} />
           </ListItemButton>
@@ -50,9 +47,11 @@ export function SearchResultsDialog<T>(props: SimpleDialogProps<T>) {
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>Search results for "{searchTerm}"</DialogTitle>
-      {results && results.length && results.map((item) => (
-        renderResultItem(item as unknown as Spot | BuoyLocation)
-      ))}
+      {results && results.length > 0 && results.map((item) => {
+        const typedItem = item as unknown as Spot | BuoyLocation;
+        const key = 'location_id' in typedItem ? typedItem.location_id : typedItem.id;
+        return <React.Fragment key={key}>{renderResultItem(typedItem)}</React.Fragment>;
+      })}
     </Dialog>
   );
 }

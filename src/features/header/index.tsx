@@ -1,14 +1,10 @@
 import React from 'react';
 import SdBanner from '../../assets/sd_banner.svg?react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import { AppBar, Box, ButtonBase, IconButton, Link, Menu, MenuItem, Toolbar, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import { IconButton, Link, Menu, MenuItem, useTheme, useMediaQuery, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { getSearchResults } from '../locations/api/locations';
 import { useEffect, useState } from 'react';
@@ -180,7 +176,7 @@ export default function SearchAppBar() {
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                zIndex: 1300,
+                zIndex: theme.zIndex.modal,
                 display: { xs: 'block', md: 'none' },
                 '& .MuiPaper-root': {
                   minWidth: '200px',
@@ -267,11 +263,7 @@ export default function SearchAppBar() {
             // order: { xs: 2, md: 1 },
             ml: { md: 2 }
           }}>
-            {renderNavLinks(pageMap).map((page, index) => (
-              <div key={index}>
-                {page}
-              </div>
-            ))}
+            {renderNavLinks(pageMap)}
           </Box>
           {/* location display */}
           <Box sx={{
@@ -284,7 +276,7 @@ export default function SearchAppBar() {
           }}>
             <ChangeLocationModal open={locationModalOpen} onClose={() => setLocationModalOpen(false)} />
             {location ? (
-              <Box
+              <ButtonBase
                 onClick={() => setLocationModalOpen(true)}
                 sx={{
                   display: 'flex',
@@ -295,7 +287,6 @@ export default function SearchAppBar() {
                   borderRadius: '999px',
                   backgroundColor: 'rgba(255,255,255,0.10)',
                   border: '1px solid rgba(255,255,255,0.14)',
-                  cursor: 'pointer',
                   '&:hover': { backgroundColor: 'rgba(255,255,255,0.16)' },
                 }}>
                 {/* Status dot with faded outer ring */}
@@ -317,9 +308,9 @@ export default function SearchAppBar() {
                 <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, lineHeight: 1 }}>
                   {location.address}
                 </Typography>
-              </Box>
+              </ButtonBase>
             ) : (
-              <Box
+              <ButtonBase
                 onClick={() => setLocationModalOpen(true)}
                 sx={{
                   display: 'flex',
@@ -330,7 +321,6 @@ export default function SearchAppBar() {
                   borderRadius: '999px',
                   backgroundColor: 'rgba(255,255,255,0.06)',
                   border: '1px solid rgba(255,255,255,0.08)',
-                  cursor: 'pointer',
                   '&:hover': { backgroundColor: 'rgba(255,255,255,0.10)' },
                 }}>
                 <Box sx={{
@@ -342,13 +332,18 @@ export default function SearchAppBar() {
                 <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)', fontWeight: 500, lineHeight: 1 }}>
                   Detecting location...
                 </Typography>
-              </Box>
+              </ButtonBase>
             )}
           </Box>
 
           {/* Light/dark toggle */}
           <Tooltip title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-            <IconButton onClick={toggleColorMode} color="inherit" sx={{ ml: 1 }}>
+            <IconButton
+              onClick={toggleColorMode}
+              color="inherit"
+              aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              sx={{ ml: 1 }}
+            >
               {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
             </IconButton>
           </Tooltip>

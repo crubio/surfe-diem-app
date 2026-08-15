@@ -154,9 +154,6 @@ export default function EnhancedSelect({
         clearOnEscape={true}
         openOnFocus={true}
         sx={{
-          '& .MuiAutocomplete-listbox': {
-            maxHeight: isMobile ? '300px' : '400px',
-          },
           '& .MuiAutocomplete-option': {
             padding: '8px 16px',
             '&:hover': {

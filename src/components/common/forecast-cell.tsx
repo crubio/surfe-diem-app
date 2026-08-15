@@ -41,7 +41,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            textTransform: 'none',
             color: tokens.textTertiary,
           }}
         >

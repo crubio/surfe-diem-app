@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Favorite, BuoyBatchData, SpotBatchData } from '../../types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
-import { Typography, Box, Grid, Collapse, IconButton } from '@mui/material';
+import { Typography, Box, Collapse, IconButton, useTheme } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { getSwellDirectionText } from 'utils/swell';
@@ -23,9 +23,8 @@ interface FavoriteItemProps {
 }
 
 const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type }) => {
-  /**
-   * Get current conditions based on type and data structure
-   */
+  const theme = useTheme();
+
   const getConditions = () => {
     if (!currentData) return null;
     
@@ -69,9 +68,8 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
     ? goToSpotPage(favorite.id as number, (currentData as any)?.slug)
     : goToBuoyPage(favorite.id as string);
 
-  // Color coding for spots vs buoys
   const getTypeColor = () => {
-    return type === 'spot' ? '#1ed6e6' : '#f06292'; // Primary blue for spots, secondary pink for buoys
+    return type === 'spot' ? theme.palette.primary.main : theme.palette.secondary.main;
   };
 
   return (
@@ -143,17 +141,17 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
   };
 
   const renderItems = (items: Favorite[]) => (
-    <Grid container spacing={{ xs: 1, sm: 2 }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' }, gap: { xs: 1, sm: 2 } }}>
       {items.map((favorite) => (
-        <Grid item xs={12} sm={6} md={2.4} key={`${favorite.type}-${favorite.id}`}>
+        <Box key={`${favorite.type}-${favorite.id}`}>
           <FavoriteItem
             favorite={favorite}
             currentData={resolveData(favorite)}
             type={favorite.type as 'spot' | 'buoy'}
           />
-        </Grid>
+        </Box>
       ))}
-    </Grid>
+    </Box>
   );
 
   return (
@@ -165,6 +163,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
         <IconButton
           onClick={() => setExpanded(!expanded)}
           size="small"
+          aria-label={expanded ? 'Collapse my lineup' : 'Expand my lineup'}
           sx={{ color: 'primary.main', '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' } }}
         >
           {expanded ? <ExpandLess /> : <ExpandMore />}
@@ -189,6 +188,7 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
               <IconButton
                 onClick={() => setShowMore(!showMore)}
                 size="small"
+                aria-label={showMore ? 'Show fewer favorites' : 'Show more favorites'}
                 sx={{
                   color: 'primary.main',
                   '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }

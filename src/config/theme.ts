@@ -10,6 +10,7 @@ export const shadows = {
 export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
     mode,
+    contrastThreshold: 4.5,
     ...(mode === 'dark'
       ? {
           background: {
@@ -69,6 +70,8 @@ export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
     h4: { fontWeight: 700 },
     h5: { fontWeight: 600 },
     h6: { fontWeight: 600 },
+    subtitle2: { textTransform: 'none' },
+    overline: { textTransform: 'none' },
   },
   shape: {
     borderRadius: 16,
@@ -105,6 +108,7 @@ export const colorTokens = {
     rule: 'rgba(0,90,110,0.08)',
     ruleHi: 'rgba(0,90,110,0.18)',
     accentDark: '#006978',
+    secondarySwellColor: '#7ed992',
   },
   dark: {
     bgSoft: '#0a1d27',
@@ -112,5 +116,6 @@ export const colorTokens = {
     rule: 'rgba(255,255,255,0.08)',
     ruleHi: 'rgba(255,255,255,0.14)',
     accentDark: '#1ed6e6',
+    secondarySwellColor: '#7ed992',
   },
 };

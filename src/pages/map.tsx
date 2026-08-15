@@ -57,7 +57,7 @@ const MapPage = () => {
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.16em',
-            textTransform: 'uppercase',
+            textTransform: 'none',
             color: tokens.textTertiary,
             mb: 0.5,
           }}

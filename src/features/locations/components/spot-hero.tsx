@@ -99,8 +99,8 @@ const SpotHero = ({
                 <stop offset="100%" stopColor={theme.palette.primary.light} stopOpacity={0} />
               </linearGradient>
               <linearGradient id="heroGradientSecondary" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7ed992" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#7ed992" stopOpacity={0} />
+                <stop offset="0%" stopColor={tokens.secondarySwellColor} stopOpacity={0.3} />
+                <stop offset="100%" stopColor={tokens.secondarySwellColor} stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis dataKey="i" hide />
@@ -119,7 +119,7 @@ const SpotHero = ({
             <Area
               type="basis"
               dataKey="secondary"
-              stroke="#7ed992"
+              stroke={tokens.secondarySwellColor}
               strokeWidth={2}
               strokeOpacity={0.8}
               fill="url(#heroGradientSecondary)"

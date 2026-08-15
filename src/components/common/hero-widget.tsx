@@ -53,7 +53,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: '0.16em',
-          textTransform: 'uppercase',
+          textTransform: 'none',
           color: colors.header,
         }}>
           Right Now
@@ -73,7 +73,7 @@ const HeroWidget = ({ rows }: HeroWidgetProps) => {
                 fontSize: 11,
                 fontWeight: 700,
                 letterSpacing: '0.1em',
-                textTransform: 'uppercase',
+                textTransform: 'none',
                 color: colors.label,
                 mb: 0.25,
               }}>

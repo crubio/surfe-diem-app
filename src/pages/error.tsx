@@ -1,4 +1,4 @@
-import { Container } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import ErrorIcon from '@mui/icons-material/Error';
 
 interface ErrorPageProps {
@@ -22,10 +22,12 @@ export default function ErrorPage(props: ErrorPageProps) {
     }}>
       <div id="error-page">
         <ErrorIcon color="secondary" sx={{ fontSize: 40 }} />
-        <h2>The following error has occurred.</h2>
-        <p>
-          <i>{error.statusText || error.message }</i>
-        </p>
+        <Typography variant="h5" component="h2" sx={{ mt: 2, mb: 1 }}>
+          The following error has occurred.
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          <em>{error.statusText || error.message}</em>
+        </Typography>
       </div>
     </Container>
   );

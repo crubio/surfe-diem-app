@@ -1,7 +1,14 @@
+import React from 'react';
 import { Box, Typography, Stack, Link, Divider, Chip } from '@mui/material';
 import { Email, Share } from '@mui/icons-material';
 import heroImageWebp from '../assets/trmp_dont_sarf.webp';
 import { SEO, PageContainer, SectionContainer, ContentWrapper, HeroSection } from 'components';
+
+const FeatureHeading = ({ children }: { children: React.ReactNode }) => (
+  <Typography variant="h6" sx={{ mb: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
+    {children}
+  </Typography>
+);
 
 const AboutPage = () => {
   return (
@@ -23,7 +30,7 @@ const AboutPage = () => {
         <Stack spacing={{ xs: 3, sm: 4 }}>
           {/* Mission Statement */}
           <SectionContainer 
-            title="Our Mission"
+            title="Our mission"
             background="PAPER"
             spacing="NORMAL"
           >
@@ -60,16 +67,7 @@ const AboutPage = () => {
             
             <Stack spacing={{ xs: 1.5, sm: 2 }}>
               <Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: { xs: 0.5, sm: 1 },
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600
-                  }}
-                >
-                  🌊 Real-Time Conditions
-                </Typography>
+                <FeatureHeading>🌊 Real-Time Conditions</FeatureHeading>
                 <Typography
                   variant="body2"
                   color="text.secondary"
@@ -81,14 +79,7 @@ const AboutPage = () => {
               <Box>
                 <Typography
                   variant="h6"
-                  sx={{
-                    mb: { xs: 0.5, sm: 1 },
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}
+                  sx={{ mb: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.125rem' }, display: 'flex', alignItems: 'center', gap: 1 }}
                 >
                   🤖 Surfe Diem Predictive Model
                   <Chip label="BETA" size="small" color="primary" variant="outlined" sx={{ height: 18, fontSize: '0.65rem' }} />
@@ -105,16 +96,7 @@ const AboutPage = () => {
                 </Typography>
               </Box>
               <Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: { xs: 0.5, sm: 1 },
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600
-                  }}
-                >
-                  📊 Detailed Forecasts
-                </Typography>
+                <FeatureHeading>📊 Detailed Forecasts</FeatureHeading>
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
@@ -124,16 +106,7 @@ const AboutPage = () => {
                 </Typography>
               </Box>
               <Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: { xs: 0.5, sm: 1 },
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600
-                  }}
-                >
-                  🗺️ Spot Discovery
-                </Typography>
+                <FeatureHeading>🗺️ Spot Discovery</FeatureHeading>
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
@@ -143,16 +116,7 @@ const AboutPage = () => {
                 </Typography>
               </Box>
               <Box>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    mb: { xs: 0.5, sm: 1 },
-                    fontSize: { xs: '1rem', sm: '1.125rem' },
-                    fontWeight: 600
-                  }}
-                >
-                  ⭐ Personal Favorites
-                </Typography>
+                <FeatureHeading>⭐ Personal Favorites</FeatureHeading>
                 <Typography 
                   variant="body2" 
                   color="text.secondary"
@@ -166,7 +130,7 @@ const AboutPage = () => {
 
           {/* Community & Growth */}
           <SectionContainer 
-            title="Join Our Community"
+            title="Join our community"
             background="PAPER"
             spacing="NORMAL"
           >
@@ -195,7 +159,7 @@ const AboutPage = () => {
 
           {/* Data Sources */}
           <SectionContainer 
-            title="Data Sources"
+            title="Data sources"
             background="PAPER"
             spacing="NORMAL"
           >
@@ -243,7 +207,7 @@ const AboutPage = () => {
 
           {/* Open Models & Datasets */}
           <SectionContainer
-            title="Open Models & Datasets"
+            title="Open models & datasets"
             background="PAPER"
             spacing="NORMAL"
           >
@@ -280,7 +244,7 @@ const AboutPage = () => {
 
           {/* Contact Section */}
           <SectionContainer 
-            title="Get in Touch"
+            title="Get in touch"
             background="PAPER"
             spacing="NORMAL"
           >
@@ -300,7 +264,7 @@ const AboutPage = () => {
 
           {/* Ocean Stewardship */}
           <SectionContainer 
-            title="Ocean Stewardship"
+            title="Ocean stewardship"
             background="PAPER"
             spacing="NORMAL"
           >

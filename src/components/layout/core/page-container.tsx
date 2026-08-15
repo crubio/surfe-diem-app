@@ -45,8 +45,8 @@ const PageContainer: React.FC<PageContainerProps> = ({
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          px: typeof paddingValues === 'object' && 'xs' in paddingValues ? paddingValues.xs : 0,
-          py: typeof paddingValues === 'object' && 'sm' in paddingValues ? paddingValues.sm : 0,
+          px: paddingValues,
+          py: paddingValues,
           width: '100%',
         }}
       >

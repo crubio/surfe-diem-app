@@ -36,7 +36,7 @@ const ContentWrapper: React.FC<ContentWrapperProps> = ({
         justifyContent: centered ? 'center' : 'flex-start',
         p: paddingValue,
         m: marginValue,
-        bgcolor: background === 'transparent' ? 'transparent' : `${background}.main`,
+        bgcolor: background === 'transparent' ? 'transparent' : background === 'default' ? 'background.default' : 'background.paper',
         minHeight,
         maxWidth,
         boxSizing: 'border-box',

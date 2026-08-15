@@ -37,7 +37,7 @@ export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationC
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.16em',
-            textTransform: 'uppercase',
+            textTransform: 'none',
             color: tokens.textTertiary,
             mb: 0.5,
           }}
@@ -58,14 +58,14 @@ export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationC
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-        <MetricRow label="Wave Height" value={observation.wave_height} textTertiary={tokens.textTertiary} />
-        <MetricRow label="Swell Height" value={observation.swell_height} textTertiary={tokens.textTertiary} />
-        <MetricRow label="Peak Period" value={observation.peak_period} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Wave height" value={observation.wave_height} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Swell height" value={observation.swell_height} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Peak period" value={observation.peak_period} textTertiary={tokens.textTertiary} />
         <MetricRow label="Period" value={observation.period} textTertiary={tokens.textTertiary} />
         <MetricRow label="Direction" value={observation.direction} textTertiary={tokens.textTertiary} />
-        <MetricRow label="Wind Wave Height" value={observation.wind_wave_height} textTertiary={tokens.textTertiary} />
-        <MetricRow label="Water Temp" value={observation.water_temp} textTertiary={tokens.textTertiary} />
-        <MetricRow label="Air Temp" value={observation.air_temp} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Wind wave height" value={observation.wind_wave_height} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Water temp" value={observation.water_temp} textTertiary={tokens.textTertiary} />
+        <MetricRow label="Air temp" value={observation.air_temp} textTertiary={tokens.textTertiary} />
       </Box>
     </Paper>
   );

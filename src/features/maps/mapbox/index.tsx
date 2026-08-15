@@ -4,9 +4,10 @@ import { MAPBOX_API_KEY } from 'config';
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import './mapbox.css';
 import {
-  Box, Button, InputAdornment, Paper, TextField,
+  Box, Button, ButtonBase, InputAdornment, Paper, TextField,
   ToggleButton, ToggleButtonGroup, Typography, useTheme,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { Link as RouterLink } from 'react-router-dom';
 import { GeoJSON, GeoJSONProperties } from 'features/maps/types';
@@ -346,7 +347,7 @@ export const MapBox = (props: MapProps) => {
                 color: tokens.textTertiary,
                 '&.Mui-selected': {
                   backgroundColor: theme.palette.primary.main,
-                  color: 'white',
+                  color: theme.palette.primary.contrastText,
                   '&:hover': { backgroundColor: theme.palette.primary.dark },
                 },
               },
@@ -367,15 +368,16 @@ export const MapBox = (props: MapProps) => {
             const isSpot = feature.properties.type === 'spot_location';
             const isSelected = selectedFeature?.properties.id === feature.properties.id;
             return (
-              <Box
+              <ButtonBase
                 key={`${feature.properties.type}-${feature.properties.id}`}
                 onClick={() => flyToFeature(feature)}
                 sx={{
+                  width: '100%',
                   px: 2.5,
                   py: 1.75,
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'flex-start',
                   gap: 1.5,
                   borderLeft: isSelected
                     ? `3px solid ${theme.palette.primary.main}`
@@ -395,7 +397,7 @@ export const MapBox = (props: MapProps) => {
                     flexShrink: 0,
                   }}
                 />
-                <Box sx={{ minWidth: 0 }}>
+                <Box sx={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                   <Typography
                     sx={{
                       fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
@@ -421,7 +423,7 @@ export const MapBox = (props: MapProps) => {
                     {feature.properties.subregion_name || feature.properties.description || ''}
                   </Typography>
                 </Box>
-              </Box>
+              </ButtonBase>
             );
           })}
         </Box>
@@ -433,134 +435,125 @@ export const MapBox = (props: MapProps) => {
       <Box sx={{ flex: 1, position: 'relative' }}>
         <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
 
-        {/* Style switcher — top left, desktop only */}
-        <Paper
-          sx={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-            zIndex: 1,
-            display: { xs: 'none', md: 'flex' },
-            borderRadius: '999px',
-            overflow: 'hidden',
-            border: `1px solid ${tokens.rule}`,
-          }}
-          elevation={2}
-        >
-          {(Object.keys(STYLE_URLS) as MapStyle[]).map((style) => (
-            <Box
-              key={style}
-              onClick={() => setMapStyle(style)}
-              sx={{
-                px: 1.75,
-                py: 0.75,
-                fontSize: 11,
-                fontWeight: 700,
-                cursor: 'pointer',
-                userSelect: 'none',
-                backgroundColor: mapStyle === style ? theme.palette.primary.main : 'transparent',
-                color: mapStyle === style ? 'white' : tokens.textTertiary,
-                transition: 'background-color 0.15s',
-                '&:hover': {
-                  backgroundColor: mapStyle === style ? theme.palette.primary.main : tokens.bgSoft,
-                },
-              }}
-            >
-              {style.charAt(0).toUpperCase() + style.slice(1)}
-            </Box>
-          ))}
-        </Paper>
-
-        {/* Mobile filter toggles — visible only on mobile */}
+        {/* Top-left controls + selected card column */}
         <Box
           sx={{
             position: 'absolute',
             top: 12,
             left: 12,
             zIndex: 1,
-            display: { xs: 'block', md: 'none' },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            maxWidth: 260,
           }}
         >
-          <ToggleButtonGroup
-            value={filterType}
-            exclusive
-            onChange={handleFilterChange}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(255,255,255,0.9)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '20px',
-              '& .MuiToggleButton-root': {
-                color: tokens.textTertiary,
-                border: 'none',
-                borderRadius: '20px',
-                px: 1.5,
-                py: 0.5,
-                fontSize: 11,
-                fontWeight: 700,
-                '&.Mui-selected': {
-                  backgroundColor: theme.palette.primary.main,
-                  color: 'white',
-                },
-              },
-            }}
-          >
-            <ToggleButton value="all">All</ToggleButton>
-            <ToggleButton value="spots">Spots</ToggleButton>
-            <ToggleButton value="buoys">Buoys</ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
-        {/* Selected feature card — bottom left */}
-        {selectedFeature && (
+          {/* Style switcher — desktop only */}
           <Paper
-            elevation={4}
             sx={{
-              position: 'absolute',
-              bottom: 32,
-              left: 12,
-              zIndex: 1,
-              p: 2.5,
-              width: 260,
-              borderRadius: '16px',
+              display: { xs: 'none', md: 'flex' },
+              borderRadius: '999px',
+              overflow: 'hidden',
+              border: `1px solid ${tokens.rule}`,
+              alignSelf: 'flex-start',
             }}
+            elevation={2}
           >
-            <Typography
-              sx={{
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: tokens.textTertiary,
-                mb: 0.5,
-              }}
-            >
-              {selectedFeature.properties.subregion_name ||
-                (selectedFeature.properties.type === 'buoy_location' ? 'Buoy Station' : 'Surf Spot')}
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-                fontWeight: 700,
-                fontSize: 20,
-                letterSpacing: '-0.02em',
-                color: theme.palette.text.primary,
-                mb: 1.5,
-              }}
-            >
-              {selectedFeature.properties.name}
-            </Typography>
-            <Button
-              component={RouterLink}
-              to={getDetailUrl(selectedFeature.properties)}
-              variant="contained"
-              fullWidth
-              sx={{ borderRadius: '999px', fontWeight: 700, fontSize: 13 }}
-            >
-              View details →
-            </Button>
+            {(Object.keys(STYLE_URLS) as MapStyle[]).map((style) => (
+              <ButtonBase
+                key={style}
+                onClick={() => setMapStyle(style)}
+                sx={{
+                  px: 1.75,
+                  py: 0.75,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  userSelect: 'none',
+                  backgroundColor: mapStyle === style ? theme.palette.primary.main : 'transparent',
+                  color: mapStyle === style ? theme.palette.primary.contrastText : tokens.textTertiary,
+                  transition: 'background-color 0.15s',
+                  '&:hover': {
+                    backgroundColor: mapStyle === style ? theme.palette.primary.main : tokens.bgSoft,
+                  },
+                }}
+              >
+                {style.charAt(0).toUpperCase() + style.slice(1)}
+              </ButtonBase>
+            ))}
           </Paper>
-        )}
+
+          {/* Mobile filter toggles */}
+          <Box sx={{ display: { xs: 'block', md: 'none' }, alignSelf: 'flex-start' }}>
+            <ToggleButtonGroup
+              value={filterType}
+              exclusive
+              onChange={handleFilterChange}
+              size="small"
+              sx={{
+                backgroundColor: alpha(theme.palette.background.paper, 0.92),
+                backdropFilter: 'blur(8px)',
+                borderRadius: '20px',
+                '& .MuiToggleButton-root': {
+                  color: tokens.textTertiary,
+                  border: 'none',
+                  borderRadius: '20px',
+                  px: 1.5,
+                  py: 0.5,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  '&.Mui-selected': {
+                    backgroundColor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="all">All</ToggleButton>
+              <ToggleButton value="spots">Spots</ToggleButton>
+              <ToggleButton value="buoys">Buoys</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
+
+          {/* Selected feature card — stacked below controls */}
+          {selectedFeature && (
+            <Paper elevation={4} sx={{ p: 2.5, borderRadius: '16px' }}>
+              <Typography
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textTransform: 'none',
+                  color: tokens.textTertiary,
+                  mb: 0.5,
+                }}
+              >
+                {selectedFeature.properties.subregion_name ||
+                  (selectedFeature.properties.type === 'buoy_location' ? 'Buoy Station' : 'Surf Spot')}
+              </Typography>
+              <Typography
+                sx={{
+                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 20,
+                  letterSpacing: '-0.02em',
+                  color: theme.palette.text.primary,
+                  mb: 1.5,
+                }}
+              >
+                {selectedFeature.properties.name}
+              </Typography>
+              <Button
+                component={RouterLink}
+                to={getDetailUrl(selectedFeature.properties)}
+                variant="contained"
+                fullWidth
+                sx={{ borderRadius: '999px', fontWeight: 700, fontSize: 13 }}
+              >
+                View details →
+              </Button>
+            </Paper>
+          )}
+        </Box>
 
         {/* Legend — bottom right */}
         <Paper

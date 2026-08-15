@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { getWaterTempColor, getWaterTempComfortLevel } from 'utils/water-temp';
 
 interface TemperatureCardProps {
@@ -8,15 +8,15 @@ interface TemperatureCardProps {
   showComfortLevel?: boolean;
 }
 
-const TemperatureCard: React.FC<TemperatureCardProps> = ({ 
-  temperature, 
+const TemperatureCard: React.FC<TemperatureCardProps> = ({
+  temperature,
   showFahrenheit = true,
   showComfortLevel = true
 }) => {
+  const theme = useTheme();
   const tempColor = getWaterTempColor(temperature);
   const comfortLevel = getWaterTempComfortLevel(temperature);
-  
-  // Format temperature
+
   const formatTemp = (temp: number, unit: 'C' | 'F') => {
     if (unit === 'F') {
       const tempF = (temp * 9/5) + 32;
@@ -25,18 +25,8 @@ const TemperatureCard: React.FC<TemperatureCardProps> = ({
     return `${temp.toFixed(1)}°C`;
   };
 
-  // Get color values for styling
-  const getColorValue = (color: string) => {
-    switch (color) {
-      case 'success': return '#4caf50';
-      case 'warning': return '#ff9800';
-      case 'error': return '#f44336';
-      case 'info': return '#2196f3';
-      default: return '#757575';
-    }
-  };
-
-  const colorValue = getColorValue(tempColor);
+  const paletteColor = theme.palette[tempColor as 'success' | 'warning' | 'error' | 'info'];
+  const colorValue = paletteColor?.main ?? theme.palette.grey[600];
 
   return (
     <Box

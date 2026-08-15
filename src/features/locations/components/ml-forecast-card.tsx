@@ -108,7 +108,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
+                  textTransform: 'none',
                   color: tokens.textTertiary,
                 }}
               >
@@ -134,7 +134,7 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
                   fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
+                  textTransform: 'none',
                   color: tokens.textTertiary,
                 }}
               >
