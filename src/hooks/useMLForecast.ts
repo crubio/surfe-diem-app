@@ -18,5 +18,8 @@ export const useMLForecast = (
       return response.data;
     },
     enabled: !!spotId && enabled,
+    // Spots outside California-coast model coverage 404 by design (see
+    // forecast-spot-plan.md §3.E) — don't retry those or spam the console.
+    retry: false,
   });
 };

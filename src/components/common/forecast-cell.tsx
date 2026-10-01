@@ -29,7 +29,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
           px: { xs: 1.5, md: 0 },
           py: { xs: 1, md: 0 },
           textAlign: 'center',
-          minWidth: 72,
+          minWidth: 84,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -52,21 +52,21 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
           sx={{
             fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
             fontWeight: 700,
-            fontSize: '1.75rem',
+            fontSize: '2.125rem',
             letterSpacing: '-0.04em',
             lineHeight: 1,
             color: theme.palette.text.primary,
           }}
         >
           {row.value_ft != null ? row.value_ft.toFixed(1) : '—'}
-          <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+          <Box component="span" sx={{ fontSize: '1.0625rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
             ft
           </Box>
         </Typography>
 
         <Typography
           sx={{
-            fontSize: '0.75rem',
+            fontSize: '1rem',
             fontWeight: 600,
             color: tokens.textTertiary,
             lineHeight: 1.2,
@@ -78,7 +78,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
         {hasDirection ? (
           <Typography
             sx={{
-              fontSize: '0.75rem',
+              fontSize: '1rem',
               fontWeight: 600,
               color: lowConfidence ? tokens.textTertiary : theme.palette.text.secondary,
               lineHeight: 1.2,
@@ -91,7 +91,7 @@ export const ForecastCell = ({ row, theme, tokens }: ForecastCellProps) => {
             {getSwellDirectionText(row.ground_swell_direction_deg!)}
           </Typography>
         ) : (
-          <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>—</Typography>
+          <Typography sx={{ fontSize: '1rem', color: tokens.textTertiary }}>—</Typography>
         )}
       </Box>
     </Box>

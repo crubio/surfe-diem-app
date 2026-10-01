@@ -1,2 +1,5 @@
 export * from './api/tides'
+export * from './api/tide-explorer'
 export * from './components/tide-sparkline-card'
+export * from './components/tide-inline'
+export * from './utils'

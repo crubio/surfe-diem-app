@@ -8,7 +8,7 @@ interface DirectionArrowProps {
 export const DirectionArrow = ({ deg, lowConfidence }: DirectionArrowProps) => (
   <NorthIcon
     sx={{
-      fontSize: '0.875rem',
+      fontSize: '1.125rem',
       transform: `rotate(${deg}deg)`,
       opacity: lowConfidence ? 0.4 : 0.85,
       verticalAlign: 'middle',

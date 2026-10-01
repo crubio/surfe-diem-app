@@ -1,18 +1,28 @@
-import { Box, Button, Grid, Typography } from "@mui/material"
+import { useMemo } from "react"
+import { Box, Button, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
-import { Loading, SEO, SurfSpotStructuredData, PageContainer } from "components"
+import { SEO, SurfSpotStructuredData, PageContainer } from "components"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
-import { WeatherWind } from "@features/weather/components/weather-wind"
+import { WeatherInline } from "@features/weather/components/weather-inline"
 import { getCurrentWeather } from "@features/weather/api"
-import { NoData } from "@features/cards/no_data"
 import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard } from "@features/locations/components"
 import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast, useLatestObservation } from "hooks"
-import { SurfScoreWaveChart } from "@features/charts/surf-score-wave-chart"
-import { TideSparklineCard } from "@features/tides"
+import { ForecastSection, buildDailyForecast } from "@features/forecasts"
+import { TideInline } from "@features/tides"
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
+import { DEFAULT_TIMEZONE } from "utils/constants"
+/* eslint-disable @typescript-eslint/no-unused-vars -- kept for the commented-out
+   Weather & Tide grid below (phase 2 resurrection candidate, see
+   .docs/forecast-spot-plan.md §3.D2): Grid, Loading, NoData, WeatherWind, TideSparklineCard */
+import { Grid } from "@mui/material"
+import { Loading } from "components"
+import { NoData } from "@features/cards/no_data"
+import { WeatherWind } from "@features/weather/components/weather-wind"
+import { TideSparklineCard } from "@features/tides"
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 const SpotPage = () => {
   const params = useParams()
@@ -23,7 +33,15 @@ const SpotPage = () => {
   const isSlug = spotId ? isNaN(Number(spotId)) : false
 
   const { data: spotData, isError, error } = useSpotData(spotId, isSlug)
-  const { station, dailyTides, currentTides, isLoading: isTideDataLoading } = useTideData(spotData?.latitude, spotData?.longitude)
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- only needed by the commented-out TideSparklineCard below (phase 2)
+    station: tideStation,
+    hiLo: tideHiLo,
+    chart: tideChart,
+    tideAvailable,
+    currentState: tideCurrentState,
+    isLoading: isTideDataLoading,
+  } = useTideData(spotData?.latitude, spotData?.longitude, { timezone: spotData?.timezone })
   const { data: nwsForecastData, isLoading: isNWSLoading } = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
   const { data: mlForecastData } = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
 
@@ -41,6 +59,20 @@ const SpotPage = () => {
 
   const nwsUnavailable = !isNWSLoading && !nwsForecastData?.current
   const observation = latestObservation?.[0] ?? null
+
+  // 5-day text forecast — derived client-side from the same hourly NWS data
+  // that feeds the chart, plus Tide Explorer hi/lo predictions. See
+  // .docs/forecast-spot-plan.md §3.A.
+  const dailyForecastDays = useMemo(
+    () =>
+      buildDailyForecast(
+        nwsForecastData?.hourly ?? [],
+        tideHiLo.data?.predictions ?? null,
+        spotData?.timezone || DEFAULT_TIMEZONE,
+        5
+      ),
+    [nwsForecastData?.hourly, tideHiLo.data, spotData?.timezone]
+  )
 
   return (
     <>
@@ -81,13 +113,21 @@ const SpotPage = () => {
               </Box>
             )}
 
-            {/* NWS forecast + rating */}
+            {/* NWS forecast + rating, with condensed weather/tide readouts folded in */}
             <Box sx={{ mb: 2 }}>
               <SpotMetricBar
                 current={nwsForecastData?.current}
-                currentTides={currentTides.data}
+                tideHeightFt={tideCurrentState?.currentHeight ?? null}
                 isNWSLoading={isNWSLoading}
                 isTideLoading={isTideDataLoading}
+                weather={<WeatherInline weatherData={currentWeather} isLoading={isNWSLoading} />}
+                tide={
+                  <TideInline
+                    tideAvailable={tideAvailable}
+                    currentState={tideCurrentState}
+                    isLoading={isTideDataLoading}
+                  />
+                }
               >
                 {nwsForecastData?.current && (
                   <ForecastRatingComponent
@@ -105,22 +145,29 @@ const SpotPage = () => {
               </SpotMetricBar>
             </Box>
 
-            {/* Swell forecast chart or NDBC fallback observation */}
+            {/* Swell forecast: chart + 5-day text (toggled on mobile, both on desktop),
+                or the NDBC fallback observation when NWS has no coverage here */}
             <Box sx={{ mb: 2 }}>
               {nwsUnavailable && observation && ndbcFallbackStation ? (
                 <NDBCObservationCard stationId={ndbcFallbackStation} observation={observation} />
               ) : (
-                <SurfScoreWaveChart
-                  data={nwsForecastData ?? null}
-                  isLoading={isNWSLoading}
-                  height={250}
-                  noDataMessage={nwsUnavailable ? 'No nearby buoy observation available for this location' : undefined}
+                <ForecastSection
+                  nwsData={nwsForecastData ?? null}
+                  isNWSLoading={isNWSLoading}
+                  dailyForecastDays={dailyForecastDays}
+                  isDailyForecastLoading={isNWSLoading || tideHiLo.isLoading}
+                  tideAvailable={tideAvailable}
+                  tideChartSeries={tideChart.data?.predictions}
+                  timezone={spotData.timezone}
                 />
               )}
             </Box>
 
-            {/* Weather & Tide */}
-            {currentWeather && (
+            {/* Weather & Tide — big standalone cards retired in favor of the inline
+                readouts folded into "Forecast right now" above (locked decision, see
+                .docs/forecast-spot-plan.md §3.D2 / §5.5).
+                TODO(phase 2): repurpose TideSparklineCard as a dedicated "Tide Status" card. */}
+            {/* {currentWeather && (
               <Box sx={{ mb: 2 }}>
                 <Grid container spacing={2.5}>
                   <Grid item xs={12} sm={6}>
@@ -129,10 +176,10 @@ const SpotPage = () => {
                   <Grid item xs={12} sm={6}>
                     {isTideDataLoading ? (
                       <Loading />
-                    ) : dailyTides?.data && currentTides?.data ? (
+                    ) : tideChart.data?.predictions?.length ? (
                       <TideSparklineCard
-                        predictions={dailyTides.data.predictions}
-                        stationId={station.data?.station_id}
+                        predictions={tideChart.data.predictions}
+                        stationId={tideStation.data?.station_id}
                       />
                     ) : (
                       <NoData />
@@ -140,7 +187,7 @@ const SpotPage = () => {
                   </Grid>
                 </Grid>
               </Box>
-            )}
+            )} */}
 
             {/* Map */}
             <Box>

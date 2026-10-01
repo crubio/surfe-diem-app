@@ -182,6 +182,9 @@ export const groupNWSDataByHour = (
 export interface NWSHourlyPoint {
   hour: number;
   validTime: string;
+  // Significant wave height (wvht) — combined sea state
+  waveHeightFt: number | null;
+  waveDirection: number | null;         // degrees
   // Primary swell — drives visuals and scoring
   primarySwellHeightFt: number | null;
   primarySwellPeriod: number | null;    // seconds
@@ -204,6 +207,8 @@ export interface NWSHourlyPoint {
  */
 export const buildHourlyForecast = (
   waveData: {
+    wave_height?: NWSDataPoint[];
+    wave_direction?: NWSDataPoint[];
     primary_swell_height?: NWSDataPoint[];
     primary_swell_direction?: NWSDataPoint[];
     primary_swell_period?: NWSDataPoint[];
@@ -213,6 +218,8 @@ export const buildHourlyForecast = (
   timezone: string,
   hours: number = 168
 ): NWSHourlyPoint[] => {
+  const waveHeights = groupNWSDataByHour(waveData.wave_height || [], timezone, hours);
+  const waveDirections = groupNWSDataByHour(waveData.wave_direction || [], timezone, hours);
   const primarySwellHeights = groupNWSDataByHour(waveData.primary_swell_height || [], timezone, hours);
   const primarySwellPeriods = groupNWSDataByHour(waveData.primary_swell_period || [], timezone, hours);
   const primarySwellDirections = groupNWSDataByHour(waveData.primary_swell_direction || [], timezone, hours);
@@ -222,6 +229,10 @@ export const buildHourlyForecast = (
   return primarySwellHeights.map((slot, i) => ({
     hour: slot.hour,
     validTime: slot.validTime ?? '',
+    waveHeightFt: waveHeights[i]?.value !== null && waveHeights[i]?.value !== undefined
+      ? metersToFeet(waveHeights[i].value as number)
+      : null,
+    waveDirection: waveDirections[i]?.value ?? null,
     primarySwellHeightFt: slot.value !== null ? metersToFeet(slot.value) : null,
     primarySwellPeriod: primarySwellPeriods[i]?.value ?? null,
     primarySwellDirection: primarySwellDirections[i]?.value ?? null,
