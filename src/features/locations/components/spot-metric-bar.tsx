@@ -1,22 +1,33 @@
 import { Box, Divider, Paper, Typography, useTheme } from '@mui/material';
+import type { ReactNode } from 'react';
 import { MetricTile } from 'components/common/metric-tile';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { ParsedNWSCurrent } from 'utils/nws-parser';
 import { formatDirection, kilometersPerHourToMph } from 'utils/formatting';
-import { getCurrentTideValue } from 'utils/tides';
-import { TidesDataCurrent } from '@features/tides/api/tides';
-
 
 interface SpotMetricBarProps {
   current: ParsedNWSCurrent | null | undefined;
-  currentTides: TidesDataCurrent | null | undefined;
+  /** Current tide height in feet — derived from Tide Explorer hi/lo data, or null/undefined when unavailable/loading. */
+  tideHeightFt: number | null | undefined;
   isNWSLoading: boolean;
   isTideLoading: boolean;
-  children?: React.ReactNode;
+  /** Condensed inline weather readout — replaces the old standalone WeatherWind card. */
+  weather?: ReactNode;
+  /** Condensed inline tide readout — replaces the old standalone TideSparklineCard on this bar. */
+  tide?: ReactNode;
+  children?: ReactNode;
 }
 
-export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoading, children }: SpotMetricBarProps) => {
+export const SpotMetricBar = ({
+  current,
+  tideHeightFt,
+  isNWSLoading,
+  isTideLoading,
+  weather,
+  tide,
+  children,
+}: SpotMetricBarProps) => {
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
@@ -27,8 +38,6 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
     textTertiary: tokens.textTertiary,
     textSecondary: theme.palette.text.secondary,
   };
-
-  const tideValue = currentTides ? getCurrentTideValue(currentTides) : null;
 
   const tiles = [
     {
@@ -58,7 +67,7 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
     {
       label: 'Tide',
       tooltip: 'Current tide height in feet.',
-      value: tideValue != null ? `${tideValue.toFixed(1)}ft` : null,
+      value: tideHeightFt != null ? `${tideHeightFt.toFixed(1)}ft` : null,
       isLoading: isTideLoading,
     },
   ];
@@ -74,10 +83,10 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
             letterSpacing: '-0.02em',
           }}
         >
-          NWS Forecast
+          Forecast right now
         </Typography>
         <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
-          National Weather Service
+          NWS — National Weather Service forecast
         </Typography>
       </Box>
 
@@ -86,6 +95,16 @@ export const SpotMetricBar = ({ current, currentTides, isNWSLoading, isTideLoadi
           <MetricTile key={tile.label} {...tile} {...tileProps} />
         ))}
       </Box>
+
+      {(weather || tide) && (
+        <>
+          <Divider sx={{ mt: 2.5, mb: 2, borderColor: tokens.rule }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {weather}
+            {tide}
+          </Box>
+        </>
+      )}
 
       {children && (
         <>

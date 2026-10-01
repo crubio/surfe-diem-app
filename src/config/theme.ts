@@ -131,6 +131,7 @@ export const colorTokens = {
     ruleHi: 'rgba(0,90,110,0.18)',
     accentDark: '#006978',
     secondarySwellColor: '#7ed992',
+    tideLine: '#8fa7ae',
   },
   dark: {
     bgSoft: '#0a1d27',
@@ -139,5 +140,6 @@ export const colorTokens = {
     ruleHi: 'rgba(255,255,255,0.14)',
     accentDark: '#1ed6e6',
     secondarySwellColor: '#7ed992',
+    tideLine: '#5c7681',
   },
 };

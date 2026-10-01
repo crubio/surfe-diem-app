@@ -69,15 +69,6 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
             <InfoOutlinedIcon sx={{ fontSize: '0.95rem', color: 'text.disabled', cursor: 'help' }} />
           </Tooltip>
         </Box>
-        <Typography
-          sx={{
-            fontFamily: 'monospace',
-            fontSize: '0.75rem',
-            color: tokens.textTertiary,
-          }}
-        >
-          wave ht · period · direction
-        </Typography>
       </Box>
 
       <Box
@@ -118,14 +109,14 @@ export const MLForecastCard = ({ data }: MLForecastCardProps) => {
                 sx={{
                   fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
                   fontWeight: 700,
-                  fontSize: '1.75rem',
+                  fontSize: '2.125rem',
                   letterSpacing: '-0.04em',
                   lineHeight: 1,
                   color: tokens.accentDark,
                 }}
               >
                 {observed.value_ft.toFixed(1)}
-                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+                <Box component="span" sx={{ fontSize: '1.0625rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
                   ft
                 </Box>
               </Typography>

@@ -8,3 +8,6 @@ export const DEFAULT_CENTER = [-122.4376, 37.7577]
 export const DEFAULT_SPOTS = ["San Francisco", "Santa Cruz", "Pacifica-San Mateo County", "Monterey", "San Luis Obispo County"]
 export const FEATURED_SPOTS = ["south-ocean-beach", "pacifica-linda-mar",  "steamer-lane", "pleasure-point"] // If no location data, use these default popular spots in Santa Cruz & pick them out of the response object
 export const DEFAULT_TIMEZONE = "America/Los_Angeles"
+// Beyond this distance to the nearest Tide Explorer station, treat tide data as unavailable
+// rather than showing a misleading reading from a far-away station. See forecast-spot-plan.md §3.F1.
+export const TIDE_STATION_MAX_MILES = 50
