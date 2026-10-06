@@ -11,7 +11,7 @@
  * Docs: https://api.surfe-diem.com/api/v1#tag/Tide-Explorer
  * See .docs/forecast-spot-plan.md §2b / §3.F for the full analysis.
  */
-import { default as dayjs } from 'dayjs';
+import { DateTime } from 'luxon';
 import { axios } from 'lib/axios';
 import { API_ROUTES } from 'utils/routing';
 
@@ -64,6 +64,12 @@ export interface TidePredictionsChartResponse {
   meta: Record<string, unknown> & { interpolated?: boolean; fallback?: boolean };
 }
 
+export interface TideRecentResponse {
+  data: TideChartPoint[];
+  hilo?: TidePrediction[];
+  meta: Record<string, unknown> & { product?: 'water_level' | 'predictions'; interpolated?: boolean; fallback?: boolean };
+}
+
 // --- Requests ---
 
 interface NearbyStationsParams {
@@ -78,8 +84,12 @@ interface DateRangeParams {
   end_date: string;   // YYYYMMDD
 }
 
-/** Format a date `days` from today as NOAA's YYYYMMDD, for Tide Explorer begin/end params. */
-export const toNoaaDate = (days = 0): string => dayjs().add(days, 'day').format('YYYYMMDD');
+/**
+ * NOAA YYYYMMDD for `days` from today *in the station/spot's timezone*, for
+ * Tide Explorer begin/end params.
+ */
+export const toNoaaDate = (timezone: string, days = 0): string =>
+  DateTime.now().setZone(timezone).plus({ days }).toFormat('yyyyLLdd');
 
 export const getNearbyTideStations = (
   params: NearbyStationsParams
@@ -91,6 +101,10 @@ export const getNearbyTideStations = (
 
 export const getTideToday = (params: { station: string }): Promise<TidePredictionsResponse> => {
   return axios.get(API_ROUTES.TIDE_EXPLORER_TODAY, { params }).then((response) => response.data);
+};
+
+export const getTideRecent = (params: { station: string }): Promise<TideRecentResponse> => {
+  return axios.get(API_ROUTES.TIDE_EXPLORER_RECENT, { params }).then((response) => response.data);
 };
 
 export const getTidePredictions = (params: DateRangeParams): Promise<TidePredictionsResponse> => {

@@ -2,12 +2,16 @@ import { Box, Typography, useTheme } from '@mui/material';
 import type { TideState } from 'utils/tides';
 import { getTideDirectionDescription } from 'utils/tides';
 import { formatNoaaTime12h } from '../utils';
+import { getZoneAbbreviation } from 'utils/timezone';
+import { DEFAULT_TIMEZONE } from 'utils/constants';
 
 interface TideInlineProps {
   /** undefined = station lookup still in flight; false = no usable station nearby. */
   tideAvailable?: boolean;
   currentState: TideState | null;
   isLoading?: boolean;
+  /** Spot's IANA timezone — NOAA times are station-local, labelled with this zone. */
+  timezone?: string;
 }
 
 /**
@@ -15,7 +19,7 @@ interface TideInlineProps {
  * replacement for the standalone `TideSparklineCard` inside `SpotMetricBar`.
  * See .docs/forecast-spot-plan.md §3.D1 / §3.F1.
  */
-export const TideInline = ({ tideAvailable, currentState, isLoading }: TideInlineProps) => {
+export const TideInline = ({ tideAvailable, currentState, isLoading, timezone = DEFAULT_TIMEZONE }: TideInlineProps) => {
   const theme = useTheme();
 
   if (isLoading || tideAvailable === undefined) return null;
@@ -41,7 +45,7 @@ export const TideInline = ({ tideAvailable, currentState, isLoading }: TideInlin
   return (
     <Typography sx={{ fontSize: '0.8125rem', color: theme.palette.text.secondary }}>
       {label} · {currentState.currentHeight.toFixed(1)} ft, {getTideDirectionDescription(currentState.direction)} →{' '}
-      {nextLabel} {currentState.nextHeight.toFixed(1)} ft {formatNoaaTime12h(currentState.nextTime)}
+      {nextLabel} {currentState.nextHeight.toFixed(1)} ft {formatNoaaTime12h(currentState.nextTime)} {getZoneAbbreviation(timezone)}
     </Typography>
   );
 };

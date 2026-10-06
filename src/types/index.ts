@@ -8,12 +8,15 @@ export * from './core';
 // API types
 export * from './api';
 
+// /conditions + /batch-conditions types
+export * from './conditions';
+
 // Common utility types
 export * from './common';
 
 // Favorites types
 // Explicitly re-export FavoritableItem to resolve export ambiguity
-export type { FavoritableItem } from './favorites';
+export type { FavoriteableId } from './favorites';
 export * from './favorites';
 
 // Advanced utility types

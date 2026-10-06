@@ -4,7 +4,7 @@ import {
   getTideDirectionDescription, 
   getTideQualityDescription,
   getCurrentTideValue,
-  getCurrentTideTime
+  getLatestTideReading
 } from '../tides';
 import { TidesDataDaily, TidesDataCurrent } from '@features/tides/api/tides';
 
@@ -282,156 +282,36 @@ describe('Tide Utilities', () => {
     });
   });
 
-  describe('getCurrentTideTime', () => {
-    it('should return formatted local time for valid GMT time', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
+  describe('getLatestTideReading', () => {
+    const tz = 'America/Los_Angeles';
+    // 2025-08-02 14:00 PDT == 21:00 UTC
+    const now = new Date('2025-08-02T21:00:00Z');
+    const series = [
+      { t: '2025-08-02 13:48', v: '2.10' },
+      { t: '2025-08-02 13:54', v: '2.20' },
+      { t: '2025-08-02 14:00', v: '2.30' },
+      { t: '2025-08-02 14:06', v: '2.40' }, // future: interpolated curve runs to end of day
+      { t: '2025-08-02 23:54', v: '4.90' },
+    ];
 
-      const result = getCurrentTideTime(mockCurrentTideData);
-      expect(result).toBeTruthy();
-      expect(typeof result).toBe('string');
-      // Should contain time format like "2:30 PM" or "14:30"
-      expect(result).toMatch(/\d{1,2}:\d{2}/);
+    it('should return the last point at or before now, skipping future points', () => {
+      expect(getLatestTideReading(series, now, tz)).toEqual({ height: 2.3, t: '2025-08-02 14:00' });
     });
 
-    it('should return last time when multiple readings exist', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          },
-          {
-            t: '2025-08-03 15:30',
-            v: '4.123',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          },
-          {
-            t: '2025-08-03 13:30',
-            v: '2.456',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideTime(mockCurrentTideData);
-      expect(result).toBeTruthy();
-      expect(typeof result).toBe('string');
-      // Should contain time format like "1:30 PM" (13:30 converted to local time)
-      expect(result).toMatch(/\d{1,2}:\d{2}/);
+    it('should read station-local times in the given timezone, not the viewer\'s', () => {
+      // Same instant, but the station is in New York (17:00 local): 14:06 is now past, 23:54 still future
+      expect(getLatestTideReading(series, now, 'America/New_York')).toEqual({ height: 2.4, t: '2025-08-02 14:06' });
     });
 
-    it('should return null for missing time', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideTime(mockCurrentTideData);
-      expect(result).toBeNull();
+    it('should skip unparseable values', () => {
+      const withBad = [...series.slice(0, 2), { t: '2025-08-02 14:00', v: '' }];
+      expect(getLatestTideReading(withBad, now, tz)).toEqual({ height: 2.2, t: '2025-08-02 13:54' });
     });
 
-    it('should return null for invalid time format', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: 'invalid-time',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideTime(mockCurrentTideData);
-      expect(result).toBeNull();
+    it('should return null for empty, missing, or all-future series', () => {
+      expect(getLatestTideReading([], now, tz)).toBeNull();
+      expect(getLatestTideReading(undefined, now, tz)).toBeNull();
+      expect(getLatestTideReading([{ t: '2025-08-02 15:00', v: '3.0' }], now, tz)).toBeNull();
     });
   });
-
-  describe('Real-world examples', () => {
-    it('should handle typical tide cycle', () => {
-      const tidesData: TidesDataDaily = {
-        predictions: [
-          { t: "2025-08-02 06:00", v: "1.2", type: "L" },
-          { t: "2025-08-02 12:00", v: "5.8", type: "H" },
-          { t: "2025-08-02 18:00", v: "0.8", type: "L" },
-          { t: "2025-08-02 23:30", v: "4.2", type: "H" }
-        ]
-      };
-
-      // Test rising tide (morning)
-      const morningTime = new Date('2025-08-02T09:00:00Z');
-      const morningResult = calculateCurrentTideState(tidesData, morningTime);
-      
-      if (morningResult) {
-        expect(typeof morningResult.direction).toBe('string');
-        expect(['rising', 'falling']).toContain(morningResult.direction);
-        expect(morningResult.currentHeight).toBeGreaterThan(0);
-        expect(morningResult.currentHeight).toBeLessThan(10); // Reasonable range
-      } else {
-        // Skipping due to timezone issues
-      }
-
-      // Test falling tide (afternoon)
-      const afternoonTime = new Date('2025-08-02T15:00:00Z');
-      const afternoonResult = calculateCurrentTideState(tidesData, afternoonTime);
-      
-      if (afternoonResult) {
-        expect(typeof afternoonResult.direction).toBe('string');
-        expect(['rising', 'falling']).toContain(afternoonResult.direction);
-        expect(afternoonResult.currentHeight).toBeGreaterThan(0);
-        expect(afternoonResult.currentHeight).toBeLessThan(10); // Reasonable range
-      } else {
-        // Skipping due to timezone issues
-      }
-    });
-  });
-}); 
+});

@@ -79,6 +79,7 @@ export const ForecastSection = ({
       days={dailyForecastDays}
       isLoading={isDailyForecastLoading}
       tideAvailable={tideAvailable}
+      timezone={timezone}
     />
   );
 

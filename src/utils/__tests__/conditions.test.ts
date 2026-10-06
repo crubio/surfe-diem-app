@@ -4,8 +4,10 @@ import {
   getWaveHeightScore,
   calculateOverallScore,
   getEnhancedConditionScore,
-  getBatchRecommendationsFromAPI
+  getBatchRecommendationsFromAPI,
+  transformConditionsToConditionResult
 } from '../conditions';
+import { CurrentConditions } from '@/types/conditions';
 
 describe('Surf Condition Scoring', () => {
   describe('getSwellPeriodScore', () => {
@@ -84,7 +86,7 @@ describe('Surf Condition Scoring', () => {
   describe('calculateOverallScore', () => {
     it('should calculate weighted average correctly', () => {
       const scores = {
-        swellPeriod: 80,  // 40% weight
+        periodQuality: 80,  // 40% weight
         windQuality: 60,  // 35% weight
         waveHeight: 100   // 25% weight
       };
@@ -95,7 +97,7 @@ describe('Surf Condition Scoring', () => {
 
     it('should return rounded integer', () => {
       const scores = {
-        swellPeriod: 75,
+        periodQuality: 75,
         windQuality: 85,
         waveHeight: 90
       };
@@ -177,7 +179,7 @@ describe('Surf Condition Scoring', () => {
       const heightScore = getWaveHeightScore(3);   // Good height
       
       const overallScore = calculateOverallScore({
-        swellPeriod: swellScore,
+        periodQuality: swellScore,
         windQuality: windScore,
         waveHeight: heightScore
       });
@@ -196,13 +198,44 @@ describe('Surf Condition Scoring', () => {
     });
   });
 
+  describe('transformConditionsToConditionResult', () => {
+    const spot = { id: 1, name: 'Test Spot', slug: 'test-spot' };
+    const baseConditions = {
+      primary_swell_height: null,
+      primary_swell_period: null,
+      primary_swell_direction: null,
+      wind_wave_height: null,
+      wind_speed: null,
+    } as unknown as CurrentConditions;
+
+    it('should convert metric heights to feet', () => {
+      const result = transformConditionsToConditionResult(
+        { ...baseConditions, primary_swell_height: 1.5, primary_swell_period: 14, wind_wave_height: 0.5 },
+        spot
+      );
+      expect(result.waveHeightValue).toBeCloseTo(4.92, 2);
+      expect(result.swellHeight).toBeCloseTo(4.92, 2);
+      expect(result.waveHeight).toBe('4.9-5.9ft');
+      expect(result.windWaveHeight).toBeCloseTo(1.64, 2);
+      expect(result.conditions).toBe('Slight chop');
+    });
+
+    it('should treat missing heights as zero', () => {
+      const result = transformConditionsToConditionResult(baseConditions, spot);
+      expect(result.waveHeightValue).toBe(0);
+      expect(result.waveHeight).toBe('0-1ft');
+      expect(result.conditions).toBe('Glassy');
+    });
+  });
+
   describe('getBatchRecommendationsFromAPI', () => {
     it('should return null results for empty spots array', async () => {
       const result = await getBatchRecommendationsFromAPI([]);
       expect(result).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null
+        highestWaves: null,
+        bySpotId: {}
       });
     });
 
@@ -212,12 +245,14 @@ describe('Surf Condition Scoring', () => {
       expect(result1).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null
+        highestWaves: null,
+        bySpotId: {}
       });
       expect(result2).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null
+        highestWaves: null,
+        bySpotId: {}
       });
     });
 

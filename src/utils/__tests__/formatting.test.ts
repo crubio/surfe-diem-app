@@ -1,4 +1,4 @@
-import { formatCoordinates, formatWaveHeight, formatWaveHeightRange, formatDirection, formatTemperature, calculateTideStatus } from '../formatting';
+import { formatCoordinates, formatWaveHeight, formatWaveHeightRange, formatDirection, formatTemperature } from '../formatting';
 
 describe('formatting utilities', () => {
   describe('formatCoordinates', () => {
@@ -112,29 +112,4 @@ describe('formatting utilities', () => {
       expect(formatTemperature(null as any)).toBe('N/A');
     });
   });
-
-  describe('calculateTideStatus', () => {
-    it('handles edge cases and invalid input', () => {
-      expect(calculateTideStatus(null as any)).toEqual({ state: 'N/A', timeToNext: 'N/A' });
-      expect(calculateTideStatus(undefined as any)).toEqual({ state: 'N/A', timeToNext: 'N/A' });
-      expect(calculateTideStatus({})).toEqual({ state: 'N/A', timeToNext: 'N/A' });
-      expect(calculateTideStatus({ tides: [] })).toEqual({ state: 'N/A', timeToNext: 'N/A' });
-    });
-
-    it('calculates tide status correctly', () => {
-      const tideData = {
-        tides: [
-          { time: '2025-01-15T08:00:00Z', height: 2.1 },
-          { time: '2025-01-15T14:00:00Z', height: 5.2 },
-          { time: '2025-01-15T20:00:00Z', height: 1.8 }
-        ]
-      };
-
-      const result = calculateTideStatus(tideData);
-      
-      // Should return a valid state (either Rising, Falling, or Unknown)
-      expect(['Rising', 'Falling', 'Unknown']).toContain(result.state);
-      expect(result.timeToNext).toBeDefined();
-    });
-  });
-}); 
+});

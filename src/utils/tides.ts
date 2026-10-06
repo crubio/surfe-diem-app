@@ -4,6 +4,7 @@
 
 import { DateTime } from "luxon";
 import { TidesDataDaily, TidesDataCurrent } from "@features/tides/api/tides";
+import type { TideChartPoint } from "@features/tides/api/tide-explorer";
 
 export interface TideState {
   currentHeight: number;
@@ -125,6 +126,35 @@ export function calculateCurrentTideState(
 }
 
 /**
+ * Latest tide reading at or before `currentTime` from a Tide Explorer
+ * /tides/recent series. Not simply the last element: for stations without a
+ * water-level sensor the series is an interpolated prediction curve running to
+ * the end of today, so it includes future points.
+ * @param series 6-minute points with station-local "YYYY-MM-DD HH:MM" times
+ * @param currentTime Current timestamp (defaults to now)
+ * @param timezone Station IANA timezone — see calculateCurrentTideState
+ * @returns Height (ft) and its station-local timestamp, or null if none qualify
+ */
+export function getLatestTideReading(
+  series: TideChartPoint[] | undefined,
+  currentTime: Date = new Date(),
+  timezone?: string
+): { height: number; t: string } | null {
+  if (!series || series.length === 0) return null;
+
+  const now = timezone ? nowInStationFrame(currentTime, timezone) : currentTime.getTime();
+  const parseTime = (t: string) => (timezone ? parsePredictionTime(t) : new Date(t).getTime());
+
+  for (let i = series.length - 1; i >= 0; i--) {
+    const point = series[i];
+    if (parseTime(point.t) > now) continue;
+    const height = parseFloat(point.v);
+    if (!isNaN(height)) return { height, t: point.t };
+  }
+  return null;
+}
+
+/**
  * Format time to next tide change
  * @param minutes Minutes until next change
  * @returns Formatted string
@@ -187,37 +217,3 @@ export function getCurrentTideValue(currentTideData: TidesDataCurrent): number |
   const tideValue = parseFloat(latestReading.v);
   return isNaN(tideValue) ? null : tideValue;
 }
-
-/**
- * Get current tide time from current tide data (converted from GMT to local)
- * @param currentTideData Current tide data from API
- * @returns Formatted local time string, or null if data is invalid
- */
-export function getCurrentTideTime(currentTideData: TidesDataCurrent): string | null {
-  if (!currentTideData?.data || currentTideData.data.length === 0) {
-    return null;
-  }
-  
-  // Get the most recent tide reading (last index)
-  const latestReading = currentTideData.data[currentTideData.data.length - 1];
-  if (!latestReading?.t) {
-    return null;
-  }
-  
-  try {
-    // Parse GMT time and convert to local timezone
-    const gmtTime = new Date(latestReading.t);
-    // Check if the date is valid
-    if (isNaN(gmtTime.getTime())) {
-      return null;
-    }
-    
-    return gmtTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  } catch (error) {
-    return null;
-  }
-} 

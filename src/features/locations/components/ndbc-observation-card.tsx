@@ -2,10 +2,14 @@ import { Box, Paper, Typography, useTheme } from '@mui/material';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { BuoyLocationLatestObservation } from 'types';
+import { formatLocationTime } from 'utils/timezone';
+import { DEFAULT_TIMEZONE } from 'utils/constants';
 
 interface NDBCObservationCardProps {
   stationId: string;
   observation: BuoyLocationLatestObservation;
+  /** Spot's IANA timezone */
+  timezone?: string;
 }
 
 interface MetricRowProps {
@@ -24,10 +28,11 @@ const MetricRow = ({ label, value, textTertiary }: MetricRowProps) => {
   );
 };
 
-export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationCardProps) => {
+export const NDBCObservationCard = ({ stationId, observation, timezone = DEFAULT_TIMEZONE }: NDBCObservationCardProps) => {
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
+  const observedAt = formatLocationTime(observation.observed_at, timezone);
 
   return (
     <Paper sx={{ p: 3.5 }}>
@@ -55,6 +60,11 @@ export const NDBCObservationCard = ({ stationId, observation }: NDBCObservationC
         >
           Buoy Conditions
         </Typography>
+        {observedAt && (
+          <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mt: 0.5 }}>
+            As of {observedAt}
+          </Typography>
+        )}
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>

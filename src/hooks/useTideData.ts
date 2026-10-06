@@ -1,18 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   getNearbyTideStations,
+  getTideRecent,
   getTidePredictions,
   getTidePredictionsChart,
   toNoaaDate,
 } from '@features/tides/api/tide-explorer';
 import { calculateCurrentTideState, type TideState } from 'utils/tides';
-import { TIDE_STATION_MAX_MILES } from 'utils/constants';
+import { TIDE_STATION_MAX_MILES, DEFAULT_TIMEZONE } from 'utils/constants';
 import { QUERY_KEYS, QUERY_CONFIG } from '../config/query-config';
 
 /**
- * Spot-page tide data, backed by the Tide Explorer API (richer than the legacy
- * `/api/v1/tides/*` routes still used directly by spots.tsx / dashboard-home.tsx —
- * see .docs/forecast-spot-plan.md §2b / §3.F for why).
+ * Tide data for the spot page and dashboard, backed by the Tide Explorer API
+ * (richer than the legacy `/api/v1/tides/*` routes still used directly by
+ * spots.tsx — see .docs/forecast-spot-plan.md §2b / §3.F for why).
  */
 
 /**
@@ -33,18 +34,32 @@ export const useNearbyTideStation = (latitude: number | undefined, longitude: nu
 };
 
 /**
+ * Hook for fetching a station's recent 6-minute tide series (observed water
+ * level where the station has a sensor, interpolated predictions otherwise).
+ */
+export const useTideRecent = (stationId: string | undefined) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.TIDE_EXPLORER_RECENT, stationId],
+    queryFn: () => getTideRecent({ station: stationId! }),
+    enabled: !!stationId,
+    staleTime: QUERY_CONFIG.STALE_TIME.SHORT,
+    gcTime: QUERY_CONFIG.GC_TIME.SHORT,
+  });
+};
+
+/**
  * Hook for fetching multi-day hi/lo tide predictions for a station.
  * Powers the 5-day forecast cards, the "current tide" inline readout, and the
  * SpotMetricBar tide tile.
  */
-export const useTideHiLo = (stationId: string | undefined, days = 5) => {
+export const useTideHiLo = (stationId: string | undefined, timezone: string, days = 5) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.TIDE_EXPLORER_HILO, stationId, days],
+    queryKey: [QUERY_KEYS.TIDE_EXPLORER_HILO, stationId, timezone, days],
     queryFn: () =>
       getTidePredictions({
         station: stationId!,
-        begin_date: toNoaaDate(0),
-        end_date: toNoaaDate(days),
+        begin_date: toNoaaDate(timezone, 0),
+        end_date: toNoaaDate(timezone, days),
       }),
     enabled: !!stationId,
     staleTime: QUERY_CONFIG.STALE_TIME.MEDIUM,
@@ -56,14 +71,14 @@ export const useTideHiLo = (stationId: string | undefined, days = 5) => {
  * Hook for fetching an hourly tide curve for a station (server-interpolated for
  * subordinate/hilo-only stations). Powers the chart tide sparkline.
  */
-export const useTideChart = (stationId: string | undefined, days = 3) => {
+export const useTideChart = (stationId: string | undefined, timezone: string, days = 3) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.TIDE_EXPLORER_CHART, stationId, days],
+    queryKey: [QUERY_KEYS.TIDE_EXPLORER_CHART, stationId, timezone, days],
     queryFn: () =>
       getTidePredictionsChart({
         station: stationId!,
-        begin_date: toNoaaDate(0),
-        end_date: toNoaaDate(days),
+        begin_date: toNoaaDate(timezone, 0),
+        end_date: toNoaaDate(timezone, days),
       }),
     enabled: !!stationId,
     staleTime: QUERY_CONFIG.STALE_TIME.MEDIUM,
@@ -103,8 +118,8 @@ export const useTideData = (
 
   const stationId = tideAvailable ? station.data?.station_id : undefined;
 
-  const hiLo = useTideHiLo(stationId, hiLoDays);
-  const chart = useTideChart(stationId, chartDays);
+  const hiLo = useTideHiLo(stationId, timezone ?? DEFAULT_TIMEZONE, hiLoDays);
+  const chart = useTideChart(stationId, timezone ?? DEFAULT_TIMEZONE, chartDays);
 
   const currentState: TideState | null =
     hiLo.data && hiLo.data.predictions.length > 0
