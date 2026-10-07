@@ -226,6 +226,14 @@ describe('Surf Condition Scoring', () => {
       expect(result.waveHeight).toBe('0-1ft');
       expect(result.conditions).toBe('Glassy');
     });
+
+    it('should convert wind to mph, and leave it undefined when there is no reading', () => {
+      const withWind = transformConditionsToConditionResult({ ...baseConditions, wind_speed: 20 }, spot);
+      expect(withWind.windSpeedValue).toBe(12); // 20 km/h = 12.4 mph, floored
+
+      const noWind = transformConditionsToConditionResult(baseConditions, spot);
+      expect(noWind.windSpeedValue).toBeUndefined();
+    });
   });
 
   describe('getBatchRecommendationsFromAPI', () => {

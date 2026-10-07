@@ -9,7 +9,7 @@ import { Spot, Buoy } from "types/core";
 import { useFavorites } from "../providers/favorites-provider";
 import { FavoritesList } from "../components/favorites/favorites-list";
 import { orderBy } from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getBatchRecommendationsFromAPI } from "utils/conditions";
@@ -26,7 +26,12 @@ import SearchCard from "@features/cards/search-select";
 import { DashboardGrid, GRID_CONFIGS } from "@features/dashboard";
 import { useGeolocationStore, useUserLocation } from "../stores/geolocation-store";
 import { metersToFeet } from "utils/nws-parser";
+import { formatTemperature } from "utils/formatting";
+import { getWaterTempQualityDescription, getWaterTempColor, getWaterTempComfortLevel } from "utils/water-temp";
 
+
+/** "8 mph wind", or undefined when there's no reading so the card omits the line. */
+const formatWind = (mph: number | undefined) => (mph != null ? `${mph} mph wind` : undefined);
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -37,7 +42,7 @@ const DashboardHome = () => {
     trackPageView(variation, 'dashboard-home');
   }, [variation]);
 
-  const {location, source, isLoading, error, hasPermission} = useUserLocation();
+  const {location} = useUserLocation();
 
   useEffect(() => {
     useGeolocationStore.getState();
@@ -90,7 +95,6 @@ const DashboardHome = () => {
   const bestConditions = batchRecommendations?.bestConditions || null;
   const cleanestConditions = batchRecommendations?.cleanestConditions || null;
   const highestWaves = batchRecommendations?.highestWaves || null;
-  const locationSpotsError = isClosestSpotsError || isBatchError;
 
   // Closest Tide Explorer station to the user, same distance guard as the spot page
   const {data: closestTideStation, isLoading: isTideStationLoading, isError: isTideStationError} =
@@ -115,6 +119,9 @@ const DashboardHome = () => {
   const closestSpotRawConditions = closestSpots?.[0]
     ? batchRecommendations?.bySpotId[closestSpots[0].id]?.conditions
     : undefined;
+  // Buoy-only (°C); null when the closest spot's nearest buoy doesn't report it
+  const waterTempC = closestSpotRawConditions?.water_temperature ?? null;
+
   const currentSwellData = closestSpotRawConditions ? {
     primarySwellHeight: metersToFeet(closestSpotRawConditions.primary_swell_height ?? 0),
     primarySwellDirection: closestSpotRawConditions.primary_swell_direction ?? 0,
@@ -272,10 +279,9 @@ const DashboardHome = () => {
                 name={data?.spot || ''}
                 subtitle={data?.waveHeight || ''}
                 score={data?.score}
-                heightValue={data?.waveHeightValue}
-                speedValue={data?.windSpeedValue}
                 waveDirection={data?.waveDirectionFormatted || undefined}
                 wavePeriod={data?.wavePeriodFormatted || undefined}
+                wind={formatWind(data?.windSpeedValue)}
                 description={data?.score?.description}
                 inverted={key === 'best'}
                 onClick={() => data?.slug && navigate(`/spot/${data.slug}`)}
@@ -289,7 +295,7 @@ const DashboardHome = () => {
           <DashboardGrid 
             title="Near your location"
             showSubtitle={true}
-            columns={GRID_CONFIGS.CURRENT_CONDITIONS_NEARBY}
+            columns={GRID_CONFIGS.CURRENT_CONDITIONS}
           >
             {/* TODO: Refactor this card or make a new one */}
             <DashboardCard
@@ -303,7 +309,6 @@ const DashboardHome = () => {
                 description: `${formatSwellPeriod(currentSwellData.primarySwellPeriod)} period from ${getSwellDirectionText(currentSwellData.primarySwellDirection)}`
               } : undefined}
               subtitle={currentSwellData ? formatSwellHeight(currentSwellData.primarySwellHeight)  : undefined}
-              heightValue={currentSwellData?.primarySwellHeight}
               waveDirection={currentSwellData ? getSwellDirectionText(currentSwellData.primarySwellDirection) : undefined}
               wavePeriod={currentSwellData ? formatSwellPeriod(currentSwellData.primarySwellPeriod) : undefined}
             />
@@ -315,23 +320,21 @@ const DashboardHome = () => {
               name={currentTideValue != null ? `${currentTideValue.toFixed(1)}ft` : ''}
               score={{ label: currentTideTime || 'Loading...', color: 'info', description: currentTideTime ? `${tideIsPredicted ? 'predicted' : 'as of'} ${currentTideTime}` : 'recent reading' }}
               description={closestTideStation ? `${tideIsPredicted ? 'Predicted for' : 'Reported from'} ${closestTideStation.name} (${closestTideStation.station_id})` : undefined}
-              heightValue={currentTideValue !== null ? currentTideValue : undefined}
             />
             
-            {/* Water Temperature card - TODO: Add water temp extraction to NWS parser
             <DashboardCard
-              isLoading={isForecastLoading}
-              isError={isForecastError || isClosestSpotsError}
+              isLoading={isBatchLoading || isClosestSpotsLoading}
+              isError={isBatchError || isClosestSpotsError || (!isBatchLoading && !isClosestSpotsLoading && waterTempC == null)}
               title="Water temperature"
-              name={waterTemp ? `${waterTemp}°F` : 'N/A'}
-              score={waterTemp ? {
-                label: waterTemp >= 70 ? 'Warm' : waterTemp >= 60 ? 'Moderate' : 'Cold',
-                color: waterTemp >= 70 ? 'error' : waterTemp >= 60 ? 'warning' : 'info',
-                description: `Water temperature`
+              name={waterTempC != null ? formatTemperature(waterTempC) : ''}
+              score={waterTempC != null ? {
+                label: getWaterTempQualityDescription(waterTempC),
+                color: getWaterTempColor(waterTempC),
               } : undefined}
-              description={waterTemp ? `Current water temp: ${waterTemp}°F` : 'Temperature data pending'}
+              description={waterTempC != null && closestSpots?.[0]
+                ? `${getWaterTempComfortLevel(waterTempC)} · nearest buoy to ${closestSpots[0].name}`
+                : undefined}
             />
-            */}
             
             <DashboardCard
               isLoading={isBatchLoading}
@@ -339,7 +342,7 @@ const DashboardHome = () => {
               title="Highest waves"
               name={highestWaves && typeof highestWaves.waveHeight === 'string' ? highestWaves.waveHeight : ''}
               subtitle={highestWaves ? `${highestWaves.spot} • ${highestWaves.conditions}` : ''}
-              heightValue={highestWaves?.waveHeightValue}
+              wind={formatWind(highestWaves?.windSpeedValue)}
               onClick={() => {
                 if (highestWaves?.slug) {
                   navigate(`/spot/${highestWaves.slug}`);

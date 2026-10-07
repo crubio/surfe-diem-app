@@ -3,22 +3,8 @@
  */
 
 import { formatDirection, kilometersPerHourToMph } from "./formatting";
-import { ParsedNWSCurrent, metersToFeet } from "./nws-parser";
-import { AxiosResponse } from "@/types/api";
+import { metersToFeet } from "./nws-parser";
 import { CurrentConditions } from "@/types/conditions";
-
-/**
- * Interface for surf conditions data
- */
-export interface SurfConditions {
-  waveHeight: number;
-  windSpeed?: number;
-  windDirection?: string;
-  windWaveHeight?: number;
-  windWaveSpeed?: number;
-  tide?: string;
-  seaSurfaceTemperature?: number;
-}
 
 /**
  * Condition quality levels
@@ -246,114 +232,10 @@ export function getWaveHeightColor(waveHeight: number): 'success' | 'warning' | 
 }
 
 /**
- * Get color for wind conditions
- */
-export function getWindColor(windSpeed: number): 'success' | 'warning' | 'error' | 'info' {
-  if (windSpeed < 10) return 'success';  // Light wind
-  if (windSpeed < 15) return 'warning';  // Moderate wind
-  if (windSpeed < 20) return 'info';     // Strong wind
-  return 'error'; // Very strong wind
-}
-
-/**
- * Get descriptive text for conditions
- */
-export function getConditionDescription(conditions: SurfConditions): string {
-  const { waveHeight, windSpeed = 0 } = conditions;
-  
-  if (waveHeight >= 4 && windSpeed < 10) {
-    return 'Epic conditions - get out there!';
-  }
-  
-  if (waveHeight >= 2 && windSpeed < 15) {
-    return 'Good waves, clean conditions';
-  }
-  
-  if (waveHeight >= 1 && windSpeed < 20) {
-    return 'Rideable but windy';
-  }
-  
-  return 'Small waves or challenging wind';
-}
-
-/**
- * Transform NWS current forecast data to ConditionResult format for scoring
- * @param current ParsedNWSCurrent data from NWS API
- * @param spot Spot data with location and metadata
- * @returns ConditionResult ready for scoring and display
- */
-export function transformNWSToConditionResult(
-  current: ParsedNWSCurrent,
-  spot: { id: number; name: string; slug: string; distance?: string }
-): ConditionResult {
-  // Extract main wave metrics (these should always be available from NWS)
-  const waveHeight = current?.wave_height || 0;
-  const wavePeriod = current?.wave_period || 0;
-  const swellPeriod = current?.primary_swell_period || 0;
-  const windSpeedKmh = current?.wind_speed || 0;  // Wind speed from NWS in km/h
-  const windSpeedMph = Math.floor(kilometersPerHourToMph(windSpeedKmh)); // Convert to mph for scoring and display
-  const windWaveHeight = current?.wind_wave_height || 0;
-  
-  // For direction: prefer wave_direction if available, otherwise use primary swell direction
-  const waveDirection = current?.wave_direction && current.wave_direction > 0 
-    ? current.wave_direction 
-    : current?.primary_swell_direction || 0;
-  
-  // Get condition score for display using main wave metrics and actual wind speed (mph)
-  const conditionScore = getEnhancedConditionScore({
-    wavePeriod: wavePeriod,
-    swellPeriod: swellPeriod,
-    windSpeed: windSpeedMph,
-    waveHeight: waveHeight
-  });
-  
-  // Format wave height for display
-  const waveHeightDisplay = waveHeight > 0 
-    ? `${waveHeight.toFixed(1)}-${(waveHeight + 1).toFixed(1)}ft`
-    : '0-1ft';
-  
-  // Determine conditions description based on wind wave height (chop indicator)
-  let conditionsDescription = 'Current conditions';
-  if (windWaveHeight < 0.5) {
-    conditionsDescription = 'Glassy';
-  } else if (windWaveHeight < 1.0) {
-    conditionsDescription = 'Clean';
-  } else if (windWaveHeight < 2.0) {
-    conditionsDescription = 'Slight chop';
-  } else {
-    conditionsDescription = 'Choppy';
-  }
-  
-  const waveDirectionDisplay = formatDirection(waveDirection);
-  
-  const result: ConditionResult = {
-    spot: spot.name,
-    spotId: spot.id,
-    slug: spot.slug,
-    waveHeight: waveHeightDisplay,
-    waveHeightValue: waveHeight,
-    windSpeedValue: windSpeedMph,
-    conditions: conditionsDescription,
-    direction: waveDirectionDisplay,
-    distance: spot.distance,
-    waveDirectionFormatted: waveDirectionDisplay,
-    wavePeriodFormatted: `${wavePeriod.toFixed(1)}s`,
-    score: conditionScore,
-    swellPeriod: wavePeriod,
-    swellHeight: waveHeight,
-    windWaveHeight,
-    swellDirection: waveDirection
-  };
-  
-  return result;
-}
-
-/**
  * Transform /conditions data to ConditionResult format for scoring.
  *
- * Mirrors transformNWSToConditionResult above — same scoring formulas,
- * different source fields. /conditions has no generic bulk wave_height/
- * wave_period the way the old NWS forecast response did, so there's only
+ * /conditions has no generic bulk wave_height/wave_period the way the old
+ * NWS forecast response did, so there's only
  * one modeled period here (primary_swell_period), not two to average —
  * see the periodQualityScore note inline below.
  *
@@ -368,8 +250,10 @@ export function transformConditionsToConditionResult(
   // /conditions returns heights in meters; scoring thresholds and display are in feet
   const waveHeight = metersToFeet(conditions.primary_swell_height ?? 0);
   const wavePeriod = conditions.primary_swell_period ?? 0;
-  const windSpeedKmh = conditions.wind_speed ?? 0;
-  const windSpeedMph = Math.floor(kilometersPerHourToMph(windSpeedKmh));
+  // undefined (not 0) when there's no wind reading, so the UI can omit it
+  const windSpeedMph = conditions.wind_speed != null
+    ? Math.floor(kilometersPerHourToMph(conditions.wind_speed))
+    : undefined;
   const windWaveHeight = metersToFeet(conditions.wind_wave_height ?? 0);
   const waveDirection = conditions.primary_swell_direction ?? 0;
 
