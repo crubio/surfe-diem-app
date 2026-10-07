@@ -54,13 +54,14 @@ export const QUERY_KEYS = {
   FORECAST_HOURLY: 'forecast_hourly',
   FORECAST_DAILY: 'forecast_daily',
   
-  // Tide-related (legacy /api/v1/tides/*, still used by spots.tsx / dashboard-home.tsx)
+  // Tide-related (legacy /api/v1/tides/*, still used by spots.tsx)
   TIDE_STATION: 'tide_station',
   DAILY_TIDES: 'daily_tides',
   CURRENT_TIDES: 'current_tides',
 
-  // Tide Explorer (spot page — see useTideData.ts)
+  // Tide Explorer (spot page + dashboard — see useTideData.ts)
   TIDE_EXPLORER_STATION: 'tide_explorer_station',
+  TIDE_EXPLORER_RECENT: 'tide_explorer_recent',
   TIDE_EXPLORER_HILO: 'tide_explorer_hilo',
   TIDE_EXPLORER_CHART: 'tide_explorer_chart',
   

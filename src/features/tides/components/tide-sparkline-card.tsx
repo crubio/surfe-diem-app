@@ -3,20 +3,25 @@ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, LabelList } from "r
 import { useColorMode } from 'providers/theme-provider'
 import { colorTokens } from 'config/theme'
 import type { ReactNode } from "react"
+import { formatNoaaTime12h } from "../utils"
+import { getZoneAbbreviation } from "utils/timezone"
+import { DEFAULT_TIMEZONE } from "utils/constants"
 
 interface TideSparklineCardProps {
   predictions: Array<{ t: string; v: string }>
   stationId?: string
+  /** Spot's IANA timezone — prediction times are station-local, labelled with this zone. */
+  timezone?: string
 }
 
-export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardProps) => {
+export const TideSparklineCard = ({ predictions, stationId, timezone = DEFAULT_TIMEZONE }: TideSparklineCardProps) => {
   const theme = useTheme()
   const { mode } = useColorMode()
   const tokens = colorTokens[mode]
 
   const points = predictions.slice(0, 4)
   const data = points.map((p) => ({
-    time: new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    time: `${formatNoaaTime12h(p.t)} ${getZoneAbbreviation(timezone)}`,
     value: parseFloat(parseFloat(p.v).toFixed(1)),
   }))
 
@@ -27,7 +32,7 @@ export const TideSparklineCard = ({ predictions, stationId }: TideSparklineCardP
 
   // Build tide events from the 4 key points
   const tideEvents = points.map((p) => ({
-    time: new Date(p.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+    time: `${formatNoaaTime12h(p.t)} ${getZoneAbbreviation(timezone)}`,
     value: parseFloat(parseFloat(p.v).toFixed(1)),
     label: parseFloat(p.v) >= (min + max) / 2 ? 'High' : 'Low',
   }))

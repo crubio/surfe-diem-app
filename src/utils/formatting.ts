@@ -11,18 +11,6 @@ export const kilometersPerHourToMph = (kilometersPerHour: number): number => {
   return parseFloat((kilometersPerHour * 0.621371).toFixed(0));
 };
 
-// Helper function to get wave height percentage for progress bar
-export const getWaveHeightPercentage = (waveHeight: number) => {
-  // Scale 0-15ft to 0-100%
-  return Math.min((waveHeight / 15) * 100, 100);
-};
-
-// Helper function to get wind speed percentage for progress bar
-export const getWindSpeedPercentage = (windSpeed: number) => {
-  // Scale 0-30mph to 0-100%
-  return Math.min((windSpeed / 30) * 100, 100);
-};
-
 /**
  * Format coordinates to 4 decimal places
  * @param lat Latitude
@@ -81,49 +69,3 @@ export const formatTemperature = (tempC: number): string => {
   const tempF = (tempC * 9/5) + 32;
   return `${tempF.toFixed(0)}°F`;
 };
-
-/**
- * Calculate tide status from tide data
- * @param tideData Tide data from API
- * @returns Tide status object with state and time to next change
- */
-export const calculateTideStatus = (tideData: any): { state: string; timeToNext: string } => {
-  if (!tideData || !tideData.tides || tideData.tides.length === 0) {
-    return { state: 'N/A', timeToNext: 'N/A' };
-  }
-
-  const now = new Date();
-  const tides = tideData.tides;
-  
-  // Find current tide state by comparing with tide times
-  let currentState = 'Unknown';
-  let timeToNext = 'N/A';
-  
-  for (let i = 0; i < tides.length - 1; i++) {
-    const currentTide = new Date(tides[i].time);
-    const nextTide = new Date(tides[i + 1].time);
-    
-    if (now >= currentTide && now < nextTide) {
-      // Determine if tide is rising or falling
-      const currentHeight = tides[i].height;
-      const nextHeight = tides[i + 1].height;
-      
-      currentState = nextHeight > currentHeight ? 'Rising' : 'Falling';
-      
-      // Calculate time to next tide change
-      const timeDiff = nextTide.getTime() - now.getTime();
-      const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      if (hours > 0) {
-        timeToNext = `${hours}h ${minutes}m`;
-      } else {
-        timeToNext = `${minutes}m`;
-      }
-      
-      break;
-    }
-  }
-  
-  return { state: currentState, timeToNext };
-}; 

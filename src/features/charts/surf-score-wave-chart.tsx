@@ -13,6 +13,7 @@ import {
   ReferenceDot,
   TooltipContentProps,
 } from 'recharts';
+import type { ValueType, NameType } from 'recharts/types/component/DefaultTooltipContent';
 import { Box, Paper, Typography, useTheme, type Theme } from '@mui/material';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
@@ -36,7 +37,7 @@ interface SurfScoreTimelineProps {
 
 type TooltipExtraProps = { theme: Theme; tokens: (typeof colorTokens)[keyof typeof colorTokens] };
 
-const CustomTooltip = ({ active, payload, theme, tokens }: TooltipContentProps<number, string> & TooltipExtraProps) => {
+const CustomTooltip = ({ active, payload, theme, tokens }: TooltipContentProps<ValueType, NameType> & TooltipExtraProps) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
@@ -100,7 +101,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         i,
         dateKey,
         dayLabel: dt.toFormat('ccc L/d'),
-        timeLabel: dt.toFormat('ccc, LLL d, h a'),
+        timeLabel: dt.setLocale('en-US').toFormat('ccc, LLL d, h a ZZZZ'),
         primary: point.primarySwellHeightFt ?? 0,
         secondary: point.secondarySwellHeightFt ?? 0,
         tide: tideByHourKey?.get(hourKey) ?? null,
@@ -234,7 +235,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               <YAxis yAxisId="tide" orientation="right" domain={['dataMin - 1', 'dataMax + 1']} hide />
             )}
 
-            <Tooltip content={<CustomTooltip theme={theme} tokens={tokens} />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} theme={theme} tokens={tokens} />} />
 
             {/* Day boundaries — subtle separators between calendar days (skip index 0: "NOW" already marks it) */}
             {dayBoundaries.filter((b) => b.index > 0).map((b) => (

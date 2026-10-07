@@ -21,6 +21,8 @@ export const API_ROUTES = {
   SEARCH: `${API_PREFIX}/search`,
   WEATHER: `${API_PREFIX}/weather`,
   BATCH_FORECAST: `${API_PREFIX}/batch-forecast`,
+  CONDITIONS: `${API_PREFIX}/conditions`,
+  BATCH_CONDITIONS: `${API_PREFIX}/batch-conditions`,
   NWS_FORECAST: `${API_PREFIX}/nws/forecast`,
   ML_FORECAST: `${API_PREFIX}/forecast/ml`,
   // Tide Explorer

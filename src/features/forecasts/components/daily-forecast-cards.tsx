@@ -2,7 +2,10 @@ import { Box, Paper, Typography, useTheme } from '@mui/material';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { getSwellDirectionText } from 'utils/swell';
+import { DateTime } from 'luxon';
 import { formatNoaaTime12h } from '@features/tides/utils';
+import { getZoneAbbreviation } from 'utils/timezone';
+import { DEFAULT_TIMEZONE } from 'utils/constants';
 import type { DailyForecastDay } from '../utils/build-daily-forecast';
 
 interface DailyForecastCardsProps {
@@ -10,6 +13,8 @@ interface DailyForecastCardsProps {
   /** undefined = still resolving the tide station; false = no usable station nearby. */
   tideAvailable?: boolean;
   isLoading?: boolean;
+  /** Spot's IANA timezone — all times on the cards are spot-local; labelled once per card. */
+  timezone?: string;
 }
 
 /**
@@ -17,7 +22,7 @@ interface DailyForecastCardsProps {
  * "simplify" ask, not a second hero widget). Desktop: a grid, one column per
  * day. Mobile: a horizontal scroll-snap strip.
  */
-export const DailyForecastCards = ({ days, tideAvailable = true, isLoading }: DailyForecastCardsProps) => {
+export const DailyForecastCards = ({ days, tideAvailable = true, isLoading, timezone = DEFAULT_TIMEZONE }: DailyForecastCardsProps) => {
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
@@ -71,7 +76,7 @@ export const DailyForecastCards = ({ days, tideAvailable = true, isLoading }: Da
             {day.dayLabel}
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mb: 1.5 }}>
-            {day.shortDate}
+            {day.shortDate} · times in {getZoneAbbreviation(timezone, DateTime.fromISO(day.dateKey, { zone: timezone }).plus({ hours: 12 }))}
           </Typography>
 
           {/* Primary swell — peak height + time, period, direction */}

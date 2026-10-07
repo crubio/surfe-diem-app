@@ -126,6 +126,7 @@ const SpotPage = () => {
                     tideAvailable={tideAvailable}
                     currentState={tideCurrentState}
                     isLoading={isTideDataLoading}
+                    timezone={spotData.timezone}
                   />
                 }
               >
@@ -149,7 +150,7 @@ const SpotPage = () => {
                 or the NDBC fallback observation when NWS has no coverage here */}
             <Box sx={{ mb: 2 }}>
               {nwsUnavailable && observation && ndbcFallbackStation ? (
-                <NDBCObservationCard stationId={ndbcFallbackStation} observation={observation} />
+                <NDBCObservationCard stationId={ndbcFallbackStation} observation={observation} timezone={spotData.timezone} />
               ) : (
                 <ForecastSection
                   nwsData={nwsForecastData ?? null}
@@ -180,6 +181,7 @@ const SpotPage = () => {
                       <TideSparklineCard
                         predictions={tideChart.data.predictions}
                         stationId={tideStation.data?.station_id}
+                        timezone={spotData.timezone}
                       />
                     ) : (
                       <NoData />
