@@ -103,6 +103,28 @@ export const DailyForecastCards = ({ days, tideAvailable = true, isLoading, time
                 {day.primary.directionDeg != null ? ` · ${getSwellDirectionText(day.primary.directionDeg)}` : ''}
               </Typography>
             </Box>
+          ) : day.wvht.maxFt != null ? (
+            // Wave-height-only grid: no swell breakdown, so lead with combined height
+            <Box sx={{ mb: 1.25 }}>
+              <Typography
+                sx={{
+                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '1.5rem',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1,
+                  color: tokens.accentDark,
+                }}
+              >
+                {day.wvht.maxFt.toFixed(1)}
+                <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, ml: 0.4, color: tokens.textTertiary }}>
+                  ft
+                </Box>
+              </Typography>
+              <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
+                peak wave height · no swell breakdown
+              </Typography>
+            </Box>
           ) : (
             <Typography sx={{ fontSize: '0.8125rem', color: tokens.textTertiary, mb: 1.25 }}>
               No swell data

@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
-import { Favorite, BuoyBatchData, SpotBatchData } from '../../types';
+import { Favorite, BuoyBatchData, BatchConditionsResult } from '../../types';
 import { Item } from '../layout/item';
 import { LinkRouter } from '../common/link-router';
 import { Typography, Box, Collapse, IconButton, useTheme } from '@mui/material';
 import { goToSpotPage, goToBuoyPage } from '../../utils/routing';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
 import { getSwellDirectionText } from 'utils/swell';
+import { getDisplaySwell } from 'utils/swell-power';
+import { metersToFeet } from 'utils/nws-parser';
 
 interface FavoritesListProps {
   favorites: Favorite[];
   currentData?: {
     buoys?: BuoyBatchData[];
-    spots?: SpotBatchData[];
+    /** /batch-conditions results, same data as the dashboard's spot cards */
+    spots?: BatchConditionsResult[];
   };
   isLoading?: boolean;
 }
 
 interface FavoriteItemProps {
   favorite: Favorite;
-  currentData?: BuoyBatchData | SpotBatchData;
+  currentData?: BuoyBatchData | BatchConditionsResult;
   type: 'spot' | 'buoy';
 }
 
@@ -47,17 +50,17 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
         </Box>
       );
     } else {
-      // Type guard for spot data
-      const spotData = currentData as SpotBatchData;
-      const weather = spotData.weather;
-      if (!weather || !weather.swell) return null;
-      
+      // NWS primary swell, else the buoy's, same as the dashboard cards
+      const conditions = (currentData as BatchConditionsResult).conditions;
+      const swell = conditions ? getDisplaySwell(conditions) : null;
+      if (!swell) return null;
+
       return (
         <Box sx={{ mt: 1 }}>
           <Typography variant="body1" color="text.primary" sx={{ fontSize: { xs: '0.8rem', sm: '1.2rem', fontWeight: "bold" } }}>
-            {weather.swell.height && `${weather.swell.height.toFixed(1)}ft`}
-            {weather.swell.period && ` • ${weather.swell.period.toFixed(1)}s`}
-            {weather.swell.direction && ` • ${getSwellDirectionText(weather.swell.direction)}`}
+            {`${metersToFeet(swell.heightM).toFixed(1)}ft`}
+            {swell.periodS != null && ` • ${Math.round(swell.periodS)}s`}
+            {swell.direction != null && ` • ${getSwellDirectionText(swell.direction)}`}
           </Typography>
         </Box>
       );
@@ -65,7 +68,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, currentData, type
   };
 
   const linkTo = type === 'spot' 
-    ? goToSpotPage(favorite.id as number, (currentData as any)?.slug)
+    ? goToSpotPage(favorite.id as number)
     : goToBuoyPage(favorite.id as string);
 
   const getTypeColor = () => {
@@ -135,9 +138,9 @@ export const FavoritesList: React.FC<FavoritesListProps> = ({
 
   const resolveData = (favorite: Favorite) => {
     if (favorite.type === 'spot') {
-      return currentData?.spots?.find((s) => s.id.toString() === favorite.id);
+      return currentData?.spots?.find((s) => String(s.spot_id) === String(favorite.id));
     }
-    return currentData?.buoys?.find((b) => b.id.toString() === favorite.id);
+    return currentData?.buoys?.find((b) => String(b.id) === String(favorite.id));
   };
 
   const renderItems = (items: Favorite[]) => (

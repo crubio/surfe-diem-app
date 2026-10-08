@@ -2,41 +2,6 @@
  * Swell data processing utilities
  */
 
-export interface SwellData {
-  height: number;
-  period: number;
-  direction: number;
-}
-
-/**
- * Extract swell data from forecast API response
- * @param forecast API forecast response (ForecastDataCurrent)
- * @returns Processed swell data or null if unavailable
- */
-export function extractSwellDataFromForecast(forecast: any): SwellData | null {
-  if (!forecast?.current) {
-    return null;
-  }
-
-  const { current } = forecast;
-  
-  // Extract swell data from API response
-  const swellHeight = current.swell_wave_height;
-  const swellPeriod = current.swell_wave_period;
-  const swellDirection = current.swell_wave_direction;
-  
-  // Validate that we have the essential data
-  if (swellHeight === undefined || swellPeriod === undefined || swellDirection === undefined) {
-    return null;
-  }
-  
-  return {
-    height: swellHeight,
-    period: swellPeriod,
-    direction: swellDirection
-  };
-}
-
 /**
  * Get swell quality description based on period
  * @param period Swell period in seconds
@@ -102,14 +67,3 @@ export function formatSwellPeriod(period: number): string {
   if (!period || period < 0) return '0s';
   return `${period.toFixed(0)}s`;
 }
-
-/**
- * Get swell height percentage for progress bar (0-100)
- * @param height Swell height in feet
- * @returns Percentage value
- */
-export function getSwellHeightPercentage(height: number): number {
-  if (!height || height < 0) return 0;
-  // Scale 0-15ft to 0-100%
-  return Math.min((height / 15) * 100, 100);
-} 

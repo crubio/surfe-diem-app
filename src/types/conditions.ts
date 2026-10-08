@@ -39,6 +39,8 @@ export interface CurrentConditions {
   buoy_wind_wave_direction: number | null;
   buoy_wind_wave_compass_direction: string | null;
   buoy_steepness: string | null; // NDBC's own category, e.g. "SWELL"/"AVERAGE"/"STEEP"
+  buoy_wave_station: string | null;
+  buoy_observed_at: string | null; // ISO 8601 UTC
 
   // Wind — nearest reporting buoy first, NWS gridpoint second.
   wind_speed: number | null; // km/h
@@ -50,8 +52,9 @@ export interface CurrentConditions {
   twenty_foot_wind_direction: number | null;
 
   // Derived
-  swell_power: number | null; // primary swell only
-  total_power: number | null; // primary + secondary + wind wave
+  swell_power: number | null;
+  total_power: number | null;
+  swell_power_source: 'nws' | 'buoy_spec' | 'buoy_bulk' | null;
 }
 
 export interface BatchConditionsResult {

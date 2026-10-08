@@ -51,6 +51,7 @@ export const QUERY_KEYS = {
   
   // Forecast-related
   FORECAST_CURRENT: 'forecast_current',
+  CONDITIONS: 'conditions',
   FORECAST_HOURLY: 'forecast_hourly',
   FORECAST_DAILY: 'forecast_daily',
   

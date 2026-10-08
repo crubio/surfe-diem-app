@@ -14,7 +14,7 @@ import { colorTokens } from 'config/theme';
 import { useColorMode } from 'providers/theme-provider';
 import { getEnhancedConditionScore } from 'utils/conditions';
 import { formatCoordinates } from 'utils/formatting';
-import { getSwellDirectionText } from 'utils/swell';
+import { getForecastHeightSeries } from '@features/forecasts/utils/forecast-height-series';
 import type { ParsedNWSCurrent, NWSHourlyPoint } from 'utils/nws-parser';
 import type { Favorite } from 'types';
 
@@ -62,20 +62,20 @@ const SpotHero = ({
     }
   };
 
+  // Decorative background: same series the forecast chart uses
+  const series = getForecastHeightSeries(hourly);
   const chartData = hourly.slice(0, 72).map((pt, i) => ({
     i,
-    primary: pt.primarySwellHeightFt ?? 0,
-    secondary: pt.secondarySwellHeightFt ?? 0,
+    primary: (series === 'combined' ? pt.waveHeightFt : pt.primarySwellHeightFt) ?? 0,
+    secondary: series === 'combined' ? 0 : pt.secondarySwellHeightFt ?? 0,
   }));
 
-  const waveHeight = current?.primary_swell_height ?? current?.wave_height ?? null;
-  const period = current?.primary_swell_period ?? current?.wave_period ?? null;
-  const direction = current?.primary_swell_direction ?? current?.wave_direction ?? null;
-
-  const conditionScore = current
+  // Rating chip only when NWS has primary swell right now; otherwise it would
+  // rate a 0 ft swell (wave-height-only grids, empty forecast runs)
+  const conditionScore = current?.primary_swell_height
     ? getEnhancedConditionScore({
-        waveHeight: waveHeight ?? undefined,
-        swellPeriod: period ?? undefined,
+        waveHeight: current.primary_swell_height,
+        swellPeriod: current.primary_swell_period || undefined,
       })
     : null;
 
@@ -212,29 +212,6 @@ const SpotHero = ({
           >
             {spotName}
           </Typography>
-
-          {waveHeight !== null && (
-            <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-              <Typography
-                sx={{
-                  fontFamily: '"Bricolage Grotesque", Inter, sans-serif',
-                  fontWeight: 700,
-                  fontSize: { xs: '28px', md: '36px' },
-                  color: theme.palette.primary.light,
-                  letterSpacing: '-0.04em',
-                  lineHeight: 1,
-                }}
-              >
-                {waveHeight.toFixed(1)}
-                <Box component="span" sx={{ fontSize: '0.45em', color: 'rgba(255,255,255,0.65)', ml: 0.5 }}>ft</Box>
-              </Typography>
-              {period !== null && direction !== null && (
-                <Typography sx={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', ml: 1 }}>
-                  {getSwellDirectionText(direction)} · {period.toFixed(1)}s
-                </Typography>
-              )}
-            </Box>
-          )}
 
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             {[formatCoordinates(latitude, longitude), subregionName, timezone].map((label) => (
