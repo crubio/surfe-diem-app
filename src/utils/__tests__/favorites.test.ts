@@ -6,8 +6,6 @@ import {
   removeFavorite,
   isFavorited,
   getFavoritesByType,
-  getFavoriteById,
-  getFavoriteDisplayLocation,
 } from '../favorites';
 import { Favorite } from '../../types';
 
@@ -139,38 +137,4 @@ describe('Favorites Utilities', () => {
     });
   });
 
-  describe('getFavoriteById', () => {
-    it('should return favorite by id and type', () => {
-      const result = getFavoriteById(mockFavorites, '1', 'spot');
-      expect(result).toEqual(mockFavorites[0]);
-    });
-
-    it('should return undefined if not found', () => {
-      const result = getFavoriteById(mockFavorites, '999', 'spot');
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('getFavoriteDisplayLocation', () => {
-    it('should return location string for buoy', () => {
-      const result = getFavoriteDisplayLocation(mockFavorites[1]);
-      expect(result).toBe('36.934 N 122.034 W');
-    });
-
-    it('should return formatted coordinates for spot', () => {
-      const result = getFavoriteDisplayLocation(mockFavorites[0]);
-      expect(result).toBe('36.934, -122.034');
-    });
-
-    it('should return fallback for missing location data', () => {
-      const favoriteWithoutLocation: Favorite = {
-        id: '3',
-        type: 'spot',
-        name: 'Test Spot',
-        addedAt: '2023-01-01T00:00:00.000Z',
-      };
-      const result = getFavoriteDisplayLocation(favoriteWithoutLocation);
-      expect(result).toBe('Location unavailable');
-    });
-  });
 }); 

@@ -1,8 +1,6 @@
 import { 
   calculateCurrentTideState, 
-  formatTimeToNext, 
-  getTideDirectionDescription, 
-  getTideQualityDescription,
+  getTideDirectionDescription,
   getCurrentTideValue,
   getLatestTideReading
 } from '../tides';
@@ -105,49 +103,10 @@ describe('Tide Utilities', () => {
     });
   });
 
-  describe('formatTimeToNext', () => {
-    it('should format minutes correctly', () => {
-      expect(formatTimeToNext(30)).toBe('30 minutes');
-      expect(formatTimeToNext(45)).toBe('45 minutes');
-    });
-
-    it('should format hours correctly', () => {
-      expect(formatTimeToNext(60)).toBe('1 hour');
-      expect(formatTimeToNext(120)).toBe('2 hours');
-    });
-
-    it('should format hours and minutes correctly', () => {
-      expect(formatTimeToNext(90)).toBe('1h 30m');
-      expect(formatTimeToNext(150)).toBe('2h 30m');
-    });
-
-    it('should handle edge cases', () => {
-      expect(formatTimeToNext(0)).toBe('0 minutes');
-      expect(formatTimeToNext(59)).toBe('59 minutes');
-    });
-  });
-
   describe('getTideDirectionDescription', () => {
     it('should return correct descriptions', () => {
       expect(getTideDirectionDescription('rising')).toBe('Rising');
       expect(getTideDirectionDescription('falling')).toBe('Falling');
-    });
-  });
-
-  describe('getTideQualityDescription', () => {
-    it('should return slow change for low rates', () => {
-      expect(getTideQualityDescription(0.3)).toBe('Slow change');
-      expect(getTideQualityDescription(0.49)).toBe('Slow change');
-    });
-
-    it('should return moderate change for medium rates', () => {
-      expect(getTideQualityDescription(0.5)).toBe('Moderate change');
-      expect(getTideQualityDescription(0.99)).toBe('Moderate change');
-    });
-
-    it('should return fast change for high rates', () => {
-      expect(getTideQualityDescription(1.0)).toBe('Fast change');
-      expect(getTideQualityDescription(2.5)).toBe('Fast change');
     });
   });
 

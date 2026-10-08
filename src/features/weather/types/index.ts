@@ -67,8 +67,3 @@ export interface WeatherResponse {
   };
 }
 
-export interface CurrentWeatherProps {
-  currentWeather: WeatherResponse;
-  isLoading: boolean;
-  numItems?: number;
-}

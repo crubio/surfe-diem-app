@@ -53,26 +53,3 @@ export function getHomePageVariation(): HomePageVariation {
   return 'dashboard';
 }
 
-/**
- * Force a specific variation (for testing)
- */
-export function setHomePageVariation(variation: HomePageVariation): void {
-  localStorage.setItem('surfe-diem-homepage-variation', variation);
-}
-
-/**
- * Reset the A/B test assignment
- */
-export function resetHomePageVariation(): void {
-  localStorage.removeItem('surfe-diem-homepage-variation');
-}
-
-/**
- * Get analytics data for the current variation
- */
-export function getVariationAnalytics(): { variation: HomePageVariation; timestamp: number } {
-  return {
-    variation: getHomePageVariation(),
-    timestamp: Date.now(),
-  };
-} 

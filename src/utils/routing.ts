@@ -1,6 +1,5 @@
 // Use with base url environment variable to make a request url
 export const API_PREFIX = "/api/v1";
-export const WEATHER_GOV_API_PREFIX = "https://api.weather.gov";
 // Tide Explorer is a separate feature surface on the same API host — richer tide
 // data (multi-day hi/lo, hourly chart predictions, subordinate-station fallback)
 // than the legacy /api/v1/tides/* routes below. See .docs/forecast-spot-plan.md §2b/§3.F.
@@ -31,7 +30,6 @@ export const API_ROUTES = {
   TIDE_EXPLORER_TODAY: `${TIDE_EXPLORER_PREFIX}/tides/today`,
   TIDE_EXPLORER_RECENT: `${TIDE_EXPLORER_PREFIX}/tides/recent`,
 }
-
 
 // Helpers
 export const goToBuoyPage = (location_id: string) => {return `/location/${location_id}`}

@@ -20,7 +20,6 @@ export type { FavoriteableId } from './favorites';
 export * from './favorites';
 
 // Advanced utility types
-export * from './utils';
 
 // Re-export feature types for convenience
 export * from '../features/forecasts/types';

@@ -144,7 +144,7 @@ const DashboardHome = () => {
     : null;
   
   // Fetch current data for favorites - Updated to React Query v5 object syntax
-  const {data: favoritesData, isPending: favoritesLoading} = useQuery({
+  const {data: favoritesData} = useQuery({
     queryKey: ['favorites-batch-data', favorites.length > 0 ? favorites.map(f => `${f.type}-${f.id}`).join(',') : 'empty'],
     queryFn: async () => {
       if (favorites.length === 0) return { buoys: [], spots: [] };
@@ -193,8 +193,6 @@ const DashboardHome = () => {
       if (closestResult) {
         return { ...closestResult, isLocationBased: true };
       }
-    } else {
-      <LocationPrompt />
     }
   };
 
@@ -274,7 +272,6 @@ const DashboardHome = () => {
           <FavoritesList 
             favorites={favorites}
             currentData={favoritesData}
-            isLoading={favoritesLoading}
           />
         </ContentWrapper>
         {/* Current Conditions Dashboard */}

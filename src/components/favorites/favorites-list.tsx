@@ -16,7 +16,6 @@ interface FavoritesListProps {
     /** /batch-conditions results, same data as the dashboard's spot cards */
     spots?: BatchConditionsResult[];
   };
-  isLoading?: boolean;
 }
 
 interface FavoriteItemProps {
@@ -127,7 +126,6 @@ const ITEMS_PER_ROW = 5;
 export const FavoritesList: React.FC<FavoritesListProps> = ({
   favorites,
   currentData,
-  isLoading
 }) => {
   const [expanded, setExpanded] = useState(true);
   const [showMore, setShowMore] = useState(false);

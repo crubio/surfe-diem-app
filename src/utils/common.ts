@@ -1,17 +1,3 @@
-export const formatNumber = (value: number, n = 2) => {
-  const number = Math.round(value * 100) / 100
-  return number.toFixed(n)
-}
-
-export function validateIsCurrent(observedAt: string | undefined, nHours = 1): boolean {
-  if (!observedAt) return false
-  const now = new Date()
-  const observedAtDate = new Date(observedAt)
-  const diff = now.getTime() - observedAtDate.getTime()
-  const diffHours = Math.floor(diff / (1000 * 60 * 60))
-  return diffHours < nHours
-}
-
 /**
  * Formats a BuoyLocation object location string into usable latitude and longitude
  * e.g., 36.934 N 122.034 W (36°56'4\" N 122°2'2\" W) to 36.934, -122.034

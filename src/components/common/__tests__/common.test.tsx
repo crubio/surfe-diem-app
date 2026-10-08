@@ -1,28 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import BasicSelect from '../basic-select';
+import { describe, it, expect } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import NoDataFound from '../not-found';
 import ImageBox from '../image-box';
 import PageContainer from '../container';
 import { LinkRouter } from '../link-router';
 import ResizableBox from '../resizable-box';
 import { MemoryRouter } from 'react-router-dom';
-
-describe('BasicSelect', () => {
-  it('renders label and items, calls doOnSelect', () => {
-    const doOnSelect = vi.fn();
-    const items = [
-      { id: 1, name: 'Item 1', subregion_name: 'Sub 1', value: 'a' },
-      { id: 2, name: 'Item 2', subregion_name: 'Sub 2', value: 'b' },
-    ];
-    render(<BasicSelect items={items} selectValueKey="value" label="Test Label" doOnSelect={doOnSelect} />);
-    expect(screen.getByLabelText(/Test Label/i)).toBeInTheDocument();
-    fireEvent.mouseDown(screen.getByLabelText(/Test Label/i));
-    expect(screen.getByText(/Item 1/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByText(/Item 1/i));
-    expect(doOnSelect).toHaveBeenCalledWith('a');
-  });
-});
 
 describe('NoDataFound', () => {
   it('renders no data found message', () => {

@@ -99,10 +99,6 @@ export const getNearbyTideStations = (
     .then((response) => response.data);
 };
 
-export const getTideToday = (params: { station: string }): Promise<TidePredictionsResponse> => {
-  return axios.get(API_ROUTES.TIDE_EXPLORER_TODAY, { params }).then((response) => response.data);
-};
-
 export const getTideRecent = (params: { station: string }): Promise<TideRecentResponse> => {
   return axios.get(API_ROUTES.TIDE_EXPLORER_RECENT, { params }).then((response) => response.data);
 };

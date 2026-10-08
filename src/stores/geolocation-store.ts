@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { LocationStore, LocationData, LocationSource, GeolocationCoordinates, SetGeolocationData } from '../types/geolocation';
 import { getGeolocation } from '../utils/geolocation';
-import { getGeoCode, getReverseGeoCode } from '@features/geocoding/api/geocoding';
+import { getReverseGeoCode } from '@features/geocoding/api/geocoding';
 
 const initialState = {
   location: undefined,
@@ -16,7 +16,7 @@ const initialState = {
 
 export const useGeolocationStore = create<LocationStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
 
       getStorage: () => {

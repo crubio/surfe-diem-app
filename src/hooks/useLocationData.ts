@@ -1,16 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { getLocations, getLocation, getLatestObservation, getLocationBuoyNearby, getGeoJsonLocations, getSurfSpotsGeoJson } from '@features/locations/api/locations';
+import { getLocation, getLatestObservation, getLocationBuoyNearby } from '@features/locations/api/locations';
 import { QUERY_KEYS, QUERY_CONFIG } from '../config/query-config';
-
-/**
- * Hook for fetching all locations/buoys
- */
-export const useLocations = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.LOCATIONS],
-    queryFn: () => getLocations(),
-  });
-};
 
 /**
  * Hook for fetching a single location by ID
@@ -43,26 +33,6 @@ export const useNearbyBuoys = (latitude: number | undefined, longitude: number |
     queryFn: () => getLocationBuoyNearby(longitude!, latitude!),
     enabled: !!latitude && !!longitude,
     staleTime: QUERY_CONFIG.STALE_TIME.SHORT,
-  });
-};
-
-/**
- * Hook for fetching GeoJSON data for locations
- */
-export const useLocationsGeoJson = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.LOCATIONS_GEOJSON],
-    queryFn: () => getGeoJsonLocations(),
-  });
-};
-
-/**
- * Hook for fetching GeoJSON data for surf spots
- */
-export const useSpotsGeoJson = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.SPOTS_GEOJSON],
-    queryFn: () => getSurfSpotsGeoJson(),
   });
 };
 

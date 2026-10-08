@@ -73,9 +73,3 @@ export const QUERY_KEYS = {
   SEARCH: 'search',
 } as const;
 
-/**
- * Helper function to create consistent query keys
- */
-export const createQueryKey = (baseKey: keyof typeof QUERY_KEYS, ...params: any[]) => {
-  return [QUERY_KEYS[baseKey], ...params];
-}; 

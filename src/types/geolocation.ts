@@ -4,8 +4,6 @@ export interface GeolocationCoordinates {
   accuracy?: number;
 }
 
-export type GeoAddressType = 'full_name' | 'name_preferred' | 'place_formatted' | 'full_address';
-
 export interface SetGeolocationData extends GeolocationCoordinates {
   address?: string;
   city?: string;
@@ -47,7 +45,3 @@ export interface LocationStore extends UserLocation {
   setPermission: (hasPermission: boolean) => void;
 }
 
-export type LocationInput = {
-  query: string; // e.g., "Santa Cruz, CA"
-  coordinates?: GeolocationCoordinates; // Result after geocoding
-}

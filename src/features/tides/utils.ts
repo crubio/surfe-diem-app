@@ -33,7 +33,3 @@ export const formatNoaaTime12h = (t: string | undefined | null): string => {
   return `${hour12}:${String(parsed.minute).padStart(2, '0')} ${period}`;
 };
 
-/** "YYYY-MM-DD" local-day key for bucketing predictions by calendar day. */
-export const noaaDateKey = (t: string | undefined | null): string | null => {
-  return parseNoaaLocalTime(t)?.dateKey ?? null;
-};

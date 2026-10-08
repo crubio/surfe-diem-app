@@ -31,33 +31,3 @@ export const GRID_CONFIGS = {
   FOUR_COLUMN: { xs: 12, sm: 6, md: 3 } as GridConfig,
 } as const;
 
-/**
- * Helper function to create custom grid configurations
- */
-export const createGridConfig = (
-  xs: number,
-  sm: number,
-  md: number
-): GridConfig => ({
-  xs,
-  sm,
-  md,
-});
-
-/**
- * Common spacing values for dashboard grids
- */
-export const GRID_SPACING = {
-  TIGHT: 1,
-  NORMAL: 2,
-  LOOSE: 3,
-} as const;
-
-/**
- * Common margin bottom values for dashboard sections
- */
-export const SECTION_MARGINS = {
-  SMALL: 2,
-  NORMAL: 3,
-  LARGE: 4,
-} as const;
