@@ -3,8 +3,7 @@
  */
 
 import { DateTime } from "luxon";
-import { TidesDataDaily, TidesDataCurrent } from "@features/tides/api/tides";
-import type { TideChartPoint } from "@features/tides/api/tide-explorer";
+import type { TideChartPoint, TidePrediction } from "@features/tides/api/tide-explorer";
 
 export interface TideState {
   currentHeight: number;
@@ -58,7 +57,7 @@ function nowInStationFrame(currentTime: Date, timezone?: string): number {
  * @returns TideState with current conditions
  */
 export function calculateCurrentTideState(
-  tidesData: TidesDataDaily,
+  tidesData: { predictions: TidePrediction[] },
   currentTime: Date = new Date(),
   timezone?: string
 ): TideState | null {
@@ -163,22 +162,3 @@ export function getTideDirectionDescription(direction: 'rising' | 'falling'): st
   return direction === 'rising' ? 'Rising' : 'Falling';
 }
 
-/**
- * Get current tide value from current tide data
- * @param currentTideData Current tide data from API
- * @returns Current tide height in feet, or null if data is invalid
- */
-export function getCurrentTideValue(currentTideData: TidesDataCurrent): number | null {
-  if (!currentTideData?.data || currentTideData.data.length === 0 ) {
-    return null;
-  }
-  
-  // Get the most recent tide reading (last index)
-  const latestReading = currentTideData.data[currentTideData.data.length - 1];
-  if (!latestReading?.v) {
-    return null;
-  }
-  
-  const tideValue = parseFloat(latestReading.v);
-  return isNaN(tideValue) ? null : tideValue;
-}

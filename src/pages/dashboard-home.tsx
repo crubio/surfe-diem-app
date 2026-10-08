@@ -14,13 +14,10 @@ import { useEffect } from "react";
 import { trackPageView, trackInteraction } from "utils/analytics";
 import { getHomePageVariation } from "utils/ab-testing";
 import { getBatchRecommendationsFromAPI } from "utils/conditions";
-import { getLatestTideReading } from "utils/tides";
-import { formatNoaaTime12h } from "@features/tides/utils";
-import { getZoneAbbreviation, formatLocationTime } from "utils/timezone";
+import { formatLocationTime } from "utils/timezone";
 import { getDisplaySwell, formatSwellPower, getSwellPowerBand } from "utils/swell-power";
 import { SwellPowerInfo, getBatchConditions } from "@features/conditions";
-import { useNearbyTideStation, useTideRecent } from "hooks";
-import { TIDE_STATION_MAX_MILES } from "utils/constants";
+import { useCurrentTide } from "hooks";
 import { getSwellQualityDescription, getSwellDirectionText, getSwellHeightColor, formatSwellHeight, formatSwellPeriod } from "utils/swell";
 import HeroSection from "components/common/hero";
 import HeroWidget from "components/common/hero-widget";
@@ -99,24 +96,9 @@ const DashboardHome = () => {
   const cleanestConditions = batchRecommendations?.cleanestConditions || null;
   const mostPowerful = batchRecommendations?.mostPowerful || null;
 
-  // Closest Tide Explorer station to the user, same distance guard as the spot page
-  const {data: closestTideStation, isLoading: isTideStationLoading, isError: isTideStationError} =
-    useNearbyTideStation(coordinates?.latitude, coordinates?.longitude);
-  const tideStationInRange = !!closestTideStation && closestTideStation.distance <= TIDE_STATION_MAX_MILES;
-
-  // Recent tide series: observed water level, or interpolated predictions for
-  // stations without a sensor (meta.product says which)
-  const {data: recentTides, isLoading: isRecentTidesLoading, isError: isRecentTidesError} =
-    useTideRecent(tideStationInRange ? closestTideStation.station_id : undefined);
-  const tidesLoading = isTideStationLoading || isRecentTidesLoading;
-  const tidesError = isTideStationError || isRecentTidesError || (!!closestTideStation && !tideStationInRange);
-  const tideIsPredicted = recentTides?.meta.product === 'predictions';
-
-  // Series times are station-local; read them in the closest spot's zone, else the viewer's
-  const tideTimezone = closestSpots?.[0]?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const latestTide = getLatestTideReading(recentTides?.data, new Date(), tideTimezone);
-  const currentTideValue = latestTide?.height ?? null;
-  const currentTideTime = latestTide ? `${formatNoaaTime12h(latestTide.t)} ${getZoneAbbreviation(tideTimezone)}` : null;
+  // Current tide near the user; station-local times read in the closest spot's zone
+  const currentTide = useCurrentTide(coordinates?.latitude, coordinates?.longitude, closestSpots?.[0]?.timezone);
+  const currentTideValue = currentTide.height;
 
   // Closest spot's raw conditions, from the same batch call
   const closestSpotRawConditions = closestSpots?.[0]
@@ -348,12 +330,12 @@ const DashboardHome = () => {
             </DashboardCard>
             
             <DashboardCard
-              isLoading={tidesLoading}
-              isError={tidesError || isClosestSpotsError}
+              isLoading={currentTide.isLoading}
+              isError={currentTide.isError || isClosestSpotsError}
               title="Current tide"
               name={currentTideValue != null ? `${currentTideValue.toFixed(1)}ft` : ''}
-              score={{ label: currentTideTime || 'Loading...', color: 'info', description: currentTideTime ? `${tideIsPredicted ? 'predicted' : 'as of'} ${currentTideTime}` : 'recent reading' }}
-              description={closestTideStation ? `${tideIsPredicted ? 'Predicted for' : 'Reported from'} ${closestTideStation.name} (${closestTideStation.station_id})` : undefined}
+              score={{ label: currentTide.time || 'Loading...', color: 'info', description: currentTide.time ? `${currentTide.isPredicted ? 'predicted' : 'as of'} ${currentTide.time}` : 'recent reading' }}
+              description={currentTide.station ? `${currentTide.isPredicted ? 'Predicted for' : 'Reported from'} ${currentTide.station.name} (${currentTide.station.station_id})` : undefined}
             />
             
             <DashboardCard

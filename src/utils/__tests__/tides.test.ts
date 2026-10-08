@@ -1,14 +1,13 @@
 import { 
   calculateCurrentTideState, 
   getTideDirectionDescription,
-  getCurrentTideValue,
   getLatestTideReading
 } from '../tides';
-import { TidesDataDaily, TidesDataCurrent } from '@features/tides/api/tides';
+import type { TidePrediction } from '@features/tides/api/tide-explorer';
 
 describe('Tide Utilities', () => {
   describe('calculateCurrentTideState', () => {
-    const mockTidesData: TidesDataDaily = {
+    const mockTidesData: { predictions: TidePrediction[] } = {
       predictions: [
         { t: "2025-08-02 00:50", v: "1.25", type: "L" },
         { t: "2025-08-02 07:39", v: "3.019", type: "H" },
@@ -107,137 +106,6 @@ describe('Tide Utilities', () => {
     it('should return correct descriptions', () => {
       expect(getTideDirectionDescription('rising')).toBe('Rising');
       expect(getTideDirectionDescription('falling')).toBe('Falling');
-    });
-  });
-
-  describe('getCurrentTideValue', () => {
-    it('should return tide value for valid data', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideValue(mockCurrentTideData);
-      expect(result).toBe(3.245);
-    });
-
-    it('should return last tide value when multiple readings exist', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: '3.245',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          },
-          {
-            t: '2025-08-03 15:30',
-            v: '4.123',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          },
-          {
-            t: '2025-08-03 13:30',
-            v: '2.456',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideValue(mockCurrentTideData);
-      expect(result).toBe(2.456); // Should get the last index (13:30)
-    });
-
-    it('should return null for missing value', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: '',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideValue(mockCurrentTideData);
-      expect(result).toBeNull();
-    });
-
-    it('should return null for invalid value', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: 'invalid',
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideValue(mockCurrentTideData);
-      expect(result).toBeNull();
-    });
-
-    it('should return null for missing data', () => {
-      const mockCurrentTideData: TidesDataCurrent = {
-        metadata: {
-          id: 'test-station',
-          name: 'Test Station',
-          lat: '36.9500',
-          lon: '-122.0333'
-        },
-        data: [
-          {
-            t: '2025-08-03 14:30',
-            v: undefined as any,
-            s: '0.05',
-            f: '1',
-            q: '1'
-          }
-        ]
-      };
-
-      const result = getCurrentTideValue(mockCurrentTideData);
-      expect(result).toBeNull();
     });
   });
 
