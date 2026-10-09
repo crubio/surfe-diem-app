@@ -24,6 +24,10 @@ import { WeatherWind } from "@features/weather/components/weather-wind"
 import { TideSparklineCard } from "@features/tides"
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
+// v1 ML forecast card hidden (2026-10-08): it forecasts combined seas.
+// Will be revived after a new model is trained.
+const SHOW_ML_FORECAST = false
+
 const SpotPage = () => {
   const params = useParams()
   const { spotId } = params
@@ -47,7 +51,7 @@ const SpotPage = () => {
   const { data: nwsForecastData, isLoading: isNWSLoading } = useNWSForecast(spotData?.id, { enabled: !!spotData?.id, includePartial: true })
   // Swell power, and buoy-measured swell where NWS has none
   const { data: conditions, isLoading: isConditionsLoading } = useConditions(spotData?.id)
-  const { data: mlForecastData } = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
+  const { data: mlForecastData } = useMLForecast(spotData?.id, { enabled: SHOW_ML_FORECAST && !!spotData?.id })
 
   // TODO: create hook for current weather if thats needed in the future.
   const { data: currentWeather } = useQuery({
@@ -116,7 +120,7 @@ const SpotPage = () => {
           <PageContainer maxWidth="XL" padding="MEDIUM" marginBottom={20}>
 
             {/* ML model */}
-            {mlForecastData && (
+            {SHOW_ML_FORECAST && mlForecastData && (
               <Box sx={{ mb: 2 }}>
                 <MLForecastCard data={mlForecastData} />
               </Box>
