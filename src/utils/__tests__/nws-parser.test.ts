@@ -1,11 +1,10 @@
 /**
- * Test file to verify NWS parser utilities work correctly
- * This demonstrates the parser with real NWS data structure
+ * NWS parser utilities against a real /nws/forecast response shape.
  */
+import { vi } from 'vitest';
+import { buildCurrentForecast, parseNWSValidTime, groupNWSDataByHour, metersToFeet } from '../nws-parser';
 
-import { buildCurrentForecast, parseNWSValidTime, groupNWSDataByHour } from '../nws-parser';
-
-// Example NWS response structure (from your Untitled-1 JSON)
+// Shape of a real /nws/forecast response (spot 51, MTR grid)
 const exampleNWSData = {
   spot_id: 51,
   latitude: 36.971492,
@@ -76,41 +75,44 @@ const exampleNWSData = {
   },
 };
 
-// Test 1: Parse validTime with timezone
-console.log('=== Test 1: Parse validTime ===');
-const parsed = parseNWSValidTime(
-  '2025-12-29T08:00:00+00:00/PT4H',
-  'America/Los_Angeles'
-);
-console.log('Start (PT):', parsed.start!.toISO());
-console.log('End (PT):', parsed.end!.toISO());
-console.log('Duration:', parsed.duration.toISO());
-console.log('Hours:', parsed.hours);
+describe('NWS parser', () => {
+  beforeEach(() => {
+    // Inside the sample's first primary swell interval (08:00-12:00 UTC)
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-12-29T10:00:00Z'));
+  });
 
-// Test 2: Build current forecast
-console.log('\n=== Test 2: Build Current Forecast ===');
-const current = buildCurrentForecast(exampleNWSData.wave_data, exampleNWSData.timezone);
-console.log('Swell wave height (ft):', current.swell_wave_height.toFixed(1));
-console.log('Primary swell height (ft):', current.primary_swell_height.toFixed(1));
-console.log('Secondary swell height (ft):', current.secondary_swell_height.toFixed(1));
-console.log('Swell period (s):', current.swell_wave_period);
-console.log('Swell direction (°):', current.swell_wave_direction);
-console.log('Wind wave height (ft):', current.wind_wave_height.toFixed(1));
-console.log('Timestamp:', current.timestamp.toISO());
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
-// Test 3: Group by hour
-console.log('\n=== Test 3: Group Data by Hour (24 hours) ===');
-const hourly = groupNWSDataByHour(
-  exampleNWSData.wave_data.wave_height,
-  exampleNWSData.timezone,
-  24
-);
-console.log('First 5 hourly points:');
-hourly.slice(0, 5).forEach((point) => {
-  console.log(`  Hour ${point.hour}: ${point.value ?? 'no data'}`);
+  describe('parseNWSValidTime', () => {
+    it('should parse start, end and duration in the given timezone', () => {
+      const parsed = parseNWSValidTime('2025-12-29T08:00:00+00:00/PT4H', 'America/Los_Angeles');
+      expect(parsed.start!.toISO()).toBe('2025-12-29T00:00:00.000-08:00');
+      expect(parsed.end!.toISO()).toBe('2025-12-29T04:00:00.000-08:00');
+      expect(parsed.hours).toBe(4);
+    });
+  });
+
+  describe('buildCurrentForecast', () => {
+    it('should pick the values valid now and convert heights to feet', () => {
+      const current = buildCurrentForecast(exampleNWSData.wave_data, exampleNWSData.timezone);
+      expect(current.wave_height).toBeCloseTo(metersToFeet(0.3048), 5);
+      expect(current.primary_swell_height).toBeCloseTo(metersToFeet(0.6096), 5);
+      expect(current.primary_swell_period).toBe(10);
+      expect(current.primary_swell_direction).toBe(320);
+      expect(current.secondary_swell_height).toBeCloseTo(metersToFeet(0.3048), 5);
+      expect(current.wind_wave_height).toBe(0);
+    });
+  });
+
+  describe('groupNWSDataByHour', () => {
+    it('should expand multi-hour intervals into hourly slots', () => {
+      const hourly = groupNWSDataByHour(exampleNWSData.wave_data.wave_height, exampleNWSData.timezone, 24);
+      expect(hourly).toHaveLength(24);
+      // The first wave_height interval (P3DT4H) covers the whole 24 h window
+      expect(hourly.every((slot) => slot.value === 0.3048)).toBe(true);
+    });
+  });
 });
-
-console.log('\n✅ All tests completed successfully!');
-console.log(
-  'Tip: You now have all the utilities to convert NWS data to your UI format'
-);

@@ -28,7 +28,7 @@ export interface TransformedNWSForecast {
  * @example
  * const { data, isLoading, error } = useNWSForecast(123);
  * if (data) {
- *   console.log(data.current.swell_wave_height); // In feet
+ *   console.log(data.current.primary_swell_height); // In feet
  * }
  */
 export const useNWSForecast = (
@@ -36,16 +36,19 @@ export const useNWSForecast = (
   options?: {
     enabled?: boolean;
     hourlyForecastHours?: number;
+    /** Also accept wave-height-only grids (raw.swell_coverage === "wave_height_only");
+     * callers must handle the empty swell series. */
+    includePartial?: boolean;
   }
 ) => {
-  const { enabled = true, hourlyForecastHours = 168 } = options || {};
+  const { enabled = true, hourlyForecastHours = 168, includePartial = false } = options || {};
 
   return useQuery({
-    queryKey: [QUERY_KEYS.FORECAST_CURRENT, 'nws', spotId],
+    queryKey: [QUERY_KEYS.FORECAST_CURRENT, 'nws', spotId, includePartial],
     queryFn: async () => {
       if (!spotId) throw new Error('spotId is required');
 
-      const response = await getNWSForecast({ spot_id: spotId });
+      const response = await getNWSForecast({ spot_id: spotId, ...(includePartial && { include_partial: true }) });
 
       // Check if response is successful
       if (!response.data) {

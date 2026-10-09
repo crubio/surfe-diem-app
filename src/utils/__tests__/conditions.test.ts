@@ -8,6 +8,11 @@ import {
   transformConditionsToConditionResult
 } from '../conditions';
 import { CurrentConditions } from '@/types/conditions';
+import { vi } from 'vitest';
+import { swellPowerFixture } from './fixtures/swell-power-fixture';
+
+const getBatchConditions = vi.fn();
+vi.mock('@features/conditions', () => ({ getBatchConditions: (...args: unknown[]) => getBatchConditions(...args) }));
 
 describe('Surf Condition Scoring', () => {
   describe('getSwellPeriodScore', () => {
@@ -130,14 +135,16 @@ describe('Surf Condition Scoring', () => {
       expect(result.color).toBe('success');
     });
 
-    it('should include score in description', () => {
+    it('should include the numeric 0-100 score', () => {
       const result = getEnhancedConditionScore({
         swellPeriod: 15,
         windSpeed: 10,
         waveHeight: 4
       });
       
-      expect(result.description).toMatch(/\d+\/100/);
+      expect(result.value).toBeGreaterThanOrEqual(0);
+      expect(result.value).toBeLessThanOrEqual(100);
+      expect(Number.isInteger(result.value)).toBe(true);
     });
 
     it('should handle missing data gracefully', () => {
@@ -157,7 +164,7 @@ describe('Surf Condition Scoring', () => {
       });
       
       expect(result.level).toBe('excellent');
-      expect(result.description).toMatch(/Prime conditions/);
+      expect(result.value).toBeGreaterThanOrEqual(80);
     });
 
     it('should score poor conditions correctly', () => {
@@ -169,7 +176,7 @@ describe('Surf Condition Scoring', () => {
       });
       
       expect(result.level).toBe('poor');
-      expect(result.description).toMatch(/Challenging conditions/);
+      expect(result.value).toBeLessThan(40);
     });
 
     it('should demonstrate scoring breakdown', () => {
@@ -220,11 +227,44 @@ describe('Surf Condition Scoring', () => {
       expect(result.conditions).toBe('Slight chop');
     });
 
-    it('should treat missing heights as zero', () => {
+    it('should treat missing heights as zero, without claiming glassy', () => {
       const result = transformConditionsToConditionResult(baseConditions, spot);
       expect(result.waveHeightValue).toBe(0);
       expect(result.waveHeight).toBe('0-1ft');
-      expect(result.conditions).toBe('Glassy');
+      expect(result.conditions).toBe('Current conditions');
+    });
+
+    it('should use the buoy swell when the API sourced power from it', () => {
+      // Westport-style: no NWS swell, buoy .spec split available
+      const result = transformConditionsToConditionResult({
+        ...baseConditions,
+        swell_power: 298,
+        swell_power_source: 'buoy_spec',
+        buoy_swell_height: 1.1,
+        buoy_swell_period: 11.1,
+        buoy_swell_direction: 248,
+        buoy_wind_wave_height: 0.6,
+        buoy_wave_station: '46211',
+        buoy_observed_at: '2026-10-07T19:56:00Z',
+      }, spot);
+      expect(result.waveHeightValue).toBeCloseTo(3.61, 2);
+      expect(result.swellPeriod).toBe(11.1);
+      expect(result.swellPower).toBe(298);
+      expect(result.swellPowerSource).toBe('buoy_spec');
+      expect(result.swellStation).toBe('46211');
+      expect(result.conditions).toBe('Slight chop'); // buoy wind wave 0.6 m = 1.97 ft
+    });
+
+    it('should keep NWS swell when the API sourced power from NWS', () => {
+      const result = transformConditionsToConditionResult({
+        ...baseConditions,
+        primary_swell_height: 1.5,
+        primary_swell_period: 14,
+        swell_power_source: 'nws',
+        buoy_swell_height: 0.9,
+      }, spot);
+      expect(result.waveHeightValue).toBeCloseTo(4.92, 2);
+      expect(result.swellStation).toBeUndefined();
     });
 
     it('should convert wind to mph, and leave it undefined when there is no reading', () => {
@@ -242,7 +282,7 @@ describe('Surf Condition Scoring', () => {
       expect(result).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null,
+        mostPowerful: null,
         bySpotId: {}
       });
     });
@@ -253,22 +293,47 @@ describe('Surf Condition Scoring', () => {
       expect(result1).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null,
+        mostPowerful: null,
         bySpotId: {}
       });
       expect(result2).toEqual({
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null,
+        mostPowerful: null,
         bySpotId: {}
       });
+    });
+
+    it('should rank most powerful by swell power, not height', async () => {
+      // 4 ft @ 8 s windswell (taller) vs 3 ft @ 16 s groundswell (more powerful)
+      getBatchConditions.mockResolvedValueOnce({
+        results: [
+          { spot_id: 1, conditions: swellPowerFixture(1.22, 8) },
+          { spot_id: 2, conditions: swellPowerFixture(0.91, 16) },
+        ],
+        errors: [],
+      });
+      const result = await getBatchRecommendationsFromAPI([
+        { id: 1, name: 'Windswell Beach', slug: 'windswell' },
+        { id: 2, name: 'Groundswell Point', slug: 'groundswell' },
+      ]);
+      expect(result.mostPowerful?.spot).toBe('Groundswell Point');
+    });
+
+    it('should leave most powerful empty when no spot has swell power', async () => {
+      getBatchConditions.mockResolvedValueOnce({
+        results: [{ spot_id: 1, conditions: { ...swellPowerFixture(1, 10), swell_power: null, swell_power_source: null } }],
+        errors: [],
+      });
+      const result = await getBatchRecommendationsFromAPI([{ id: 1, name: 'A', slug: 'a' }]);
+      expect(result.mostPowerful).toBeNull();
     });
 
     it('should return structured object with all three recommendation keys', async () => {
       const result = await getBatchRecommendationsFromAPI([]);
       expect(result).toHaveProperty('bestConditions');
       expect(result).toHaveProperty('cleanestConditions');
-      expect(result).toHaveProperty('highestWaves');
+      expect(result).toHaveProperty('mostPowerful');
     });
   });
 }); 

@@ -51,23 +51,3 @@ export const LATEST_OBSERVATION_1 = {
 
 export const LATEST_OBSERVATIONS = [LATEST_OBSERVATION_1];
 
-export const LATEST_SUMMARY_1 = {
-  "id": 211,
-  "location_id": "46269",
-  "timestamp": "2023-07-29T23:00:00",
-  "date_created": "2023-07-29T17:08:06.187178",
-  "wvht": " 3.0 ft",
-  "precipitation": null,
-  "wind": null,
-  "gust": null,
-  "peak_period": " 14 sec",
-  "water_temp": " 59.4 °F",
-  "swell": " 1.6 ft",
-  "period": " 14.3 sec",
-  "direction": " SSW",
-  "wind_wave": " 2.6 ft",
-  "ww_period": " 4.7 sec",
-  "ww_direction": " W"
-}
-
-export const LATEST_SUMMARIES = [LATEST_SUMMARY_1];

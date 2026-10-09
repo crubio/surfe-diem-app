@@ -8,8 +8,8 @@ import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherInline } from "@features/weather/components/weather-inline"
 import { getCurrentWeather } from "@features/weather/api"
 import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard } from "@features/locations/components"
-import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast, useLatestObservation } from "hooks"
-import { ForecastSection, buildDailyForecast } from "@features/forecasts"
+import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast, useLatestObservation, useConditions } from "hooks"
+import { ForecastSection, buildDailyForecast, getForecastHeightSeries } from "@features/forecasts"
 import { TideInline } from "@features/tides"
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
@@ -42,7 +42,11 @@ const SpotPage = () => {
     currentState: tideCurrentState,
     isLoading: isTideDataLoading,
   } = useTideData(spotData?.latitude, spotData?.longitude, { timezone: spotData?.timezone })
-  const { data: nwsForecastData, isLoading: isNWSLoading } = useNWSForecast(spotData?.id, { enabled: !!spotData?.id })
+  // includePartial: wave-height-only grids still give a wave height + wind
+  // forecast; the chart and cards handle the missing swell breakdown
+  const { data: nwsForecastData, isLoading: isNWSLoading } = useNWSForecast(spotData?.id, { enabled: !!spotData?.id, includePartial: true })
+  // Swell power, and buoy-measured swell where NWS has none
+  const { data: conditions, isLoading: isConditionsLoading } = useConditions(spotData?.id)
   const { data: mlForecastData } = useMLForecast(spotData?.id, { enabled: !!spotData?.id })
 
   // TODO: create hook for current weather if thats needed in the future.
@@ -58,6 +62,11 @@ const SpotPage = () => {
   const { data: latestObservation } = useLatestObservation(ndbcFallbackStation ?? undefined)
 
   const nwsUnavailable = !isNWSLoading && !nwsForecastData?.current
+  // NWS answered but has nothing to chart (e.g. a placeholder 0 wave height
+  // for the whole week): skip the chart and cards; the metric bar's buoy
+  // reading is the useful data here
+  const nwsHasNoWaveForecast =
+    !isNWSLoading && !!nwsForecastData?.current && getForecastHeightSeries(nwsForecastData.hourly) === 'none'
   const observation = latestObservation?.[0] ?? null
 
   // 5-day text forecast — derived client-side from the same hourly NWS data
@@ -120,6 +129,9 @@ const SpotPage = () => {
                 tideHeightFt={tideCurrentState?.currentHeight ?? null}
                 isNWSLoading={isNWSLoading}
                 isTideLoading={isTideDataLoading}
+                conditions={conditions}
+                isConditionsLoading={isConditionsLoading}
+                timezone={spotData.timezone}
                 weather={<WeatherInline weatherData={currentWeather} isLoading={isNWSLoading} />}
                 tide={
                   <TideInline
@@ -151,6 +163,10 @@ const SpotPage = () => {
             <Box sx={{ mb: 2 }}>
               {nwsUnavailable && observation && ndbcFallbackStation ? (
                 <NDBCObservationCard stationId={ndbcFallbackStation} observation={observation} timezone={spotData.timezone} />
+              ) : nwsHasNoWaveForecast ? (
+                <Typography color="text.secondary" sx={{ px: 0.5 }}>
+                  NWS has no wave forecast for this spot. Current conditions above come from the nearest reporting buoy.
+                </Typography>
               ) : (
                 <ForecastSection
                   nwsData={nwsForecastData ?? null}

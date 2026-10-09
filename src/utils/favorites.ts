@@ -82,25 +82,3 @@ export const getFavoritesByType = (favorites: Favorite[], type: FavoriteType): F
   return favorites.filter(fav => fav.type === type);
 };
 
-/**
- * Get unique favorite by id and type
- */
-export const getFavoriteById = (favorites: Favorite[], id: string, type: 'spot' | 'buoy'): Favorite | undefined => {
-  return favorites.find(fav => fav.id === id && fav.type === type);
-};
-
-/**
- * Get display location for a favorite
- * Handles both coordinate-based (spots) and string-based (buoys) locations
- */
-export const getFavoriteDisplayLocation = (favorite: Favorite): string => {
-  if (favorite.location) {
-    return favorite.location;
-  }
-  
-  if (favorite.latitude !== undefined && favorite.longitude !== undefined) {
-    return `${favorite.latitude.toFixed(3)}, ${favorite.longitude.toFixed(3)}`;
-  }
-  
-  return 'Location unavailable';
-}; 

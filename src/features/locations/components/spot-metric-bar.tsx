@@ -5,6 +5,12 @@ import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { ParsedNWSCurrent } from 'utils/nws-parser';
 import { formatDirection, kilometersPerHourToMph } from 'utils/formatting';
+import { metersToFeet } from 'utils/nws-parser';
+import { getDisplaySwell, formatSwellPower } from 'utils/swell-power';
+import { formatLocationTime } from 'utils/timezone';
+import { DEFAULT_TIMEZONE } from 'utils/constants';
+import { SwellPowerInfo } from '@features/conditions';
+import type { CurrentConditions } from '@/types/conditions';
 
 interface SpotMetricBarProps {
   current: ParsedNWSCurrent | null | undefined;
@@ -16,6 +22,11 @@ interface SpotMetricBarProps {
   weather?: ReactNode;
   /** Condensed inline tide readout — replaces the old standalone TideSparklineCard on this bar. */
   tide?: ReactNode;
+  /** GET /conditions for this spot: swell power, and buoy swell when NWS has none */
+  conditions?: CurrentConditions | null;
+  isConditionsLoading?: boolean;
+  /** Spot's IANA timezone, for the buoy reading time */
+  timezone?: string;
   children?: ReactNode;
 }
 
@@ -26,6 +37,9 @@ export const SpotMetricBar = ({
   isTideLoading,
   weather,
   tide,
+  conditions,
+  isConditionsLoading = false,
+  timezone = DEFAULT_TIMEZONE,
   children,
 }: SpotMetricBarProps) => {
   const theme = useTheme();
@@ -39,24 +53,52 @@ export const SpotMetricBar = ({
     textSecondary: theme.palette.text.secondary,
   };
 
+  // NWS has no primary swell right now (wave-height-only grid, or a forecast
+  // run without the swell series): show the buoy-measured swell instead.
+  const displaySwell = conditions ? getDisplaySwell(conditions) : null;
+  const buoySwell = !current?.primary_swell_height && displaySwell?.station ? displaySwell : null;
+  const buoyNote = buoySwell
+    ? `Buoy ${buoySwell.station}${buoySwell.observedAt ? ` · ${formatLocationTime(buoySwell.observedAt, timezone)}` : ''}`
+    : undefined;
+
+  const swellHeightFt = buoySwell ? metersToFeet(buoySwell.heightM) : current?.primary_swell_height;
+  const swellPeriod = buoySwell ? buoySwell.periodS : current?.primary_swell_period;
+  const swellDirection = buoySwell ? buoySwell.direction : current?.primary_swell_direction;
+
   const tiles = [
     {
       label: 'Wave height',
-      tooltip: 'Estimated average height of the highest one-third of the swells.',
-      value: current?.primary_swell_height ? `${current.primary_swell_height.toFixed(1)}ft` : null,
-      isLoading: isNWSLoading,
+      tooltip: buoySwell
+        ? 'Measured at the nearest buoy reporting waves. NWS has no swell forecast here right now.'
+        : 'Estimated average height of the highest one-third of the swells.',
+      value: swellHeightFt ? `${swellHeightFt.toFixed(1)}ft` : null,
+      sub: buoyNote,
+      isLoading: isNWSLoading || (!current?.primary_swell_height && isConditionsLoading),
     },
     {
       label: 'Swell period',
       tooltip: 'Peak period in seconds of the dominant swell.',
-      value: current?.primary_swell_period ? `${current.primary_swell_period}s` : null,
+      value: swellPeriod ? `${Math.round(swellPeriod)}s` : null,
       isLoading: isNWSLoading,
     },
     {
       label: 'Direction',
       tooltip: 'Compass direction the swells are coming from.',
-      value: current?.primary_swell_direction ? formatDirection(current.primary_swell_direction) : null,
+      value: swellDirection ? formatDirection(swellDirection) : null,
       isLoading: isNWSLoading,
+    },
+    {
+      label: 'Swell power',
+      value: formatSwellPower(conditions?.swell_power),
+      info: (
+        <SwellPowerInfo
+          power={conditions?.swell_power}
+          heightM={displaySwell?.heightM}
+          periodS={displaySwell?.periodS}
+          totalPower={conditions?.total_power}
+        />
+      ),
+      isLoading: isConditionsLoading,
     },
     {
       label: 'Wind',

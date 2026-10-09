@@ -61,16 +61,6 @@ export const TYPOGRAPHY_VARIANTS = {
   CAPTION: 'caption',
 } as const;
 
-// Layout variants for different content types
-export const LAYOUT_VARIANTS = {
-  PAGE: 'page',
-  SECTION: 'section',
-  CARD: 'card',
-  FORM: 'form',
-  LIST: 'list',
-  GRID: 'grid',
-} as const;
-
 // Background variants
 export const BACKGROUND_VARIANTS = {
   DEFAULT: 'background.default',
@@ -78,11 +68,3 @@ export const BACKGROUND_VARIANTS = {
   TRANSPARENT: 'transparent',
 } as const;
 
-// Responsive breakpoint helpers
-export const BREAKPOINTS = {
-  XS: 'xs',   // 0px and up
-  SM: 'sm',   // 600px and up
-  MD: 'md',   // 900px and up
-  LG: 'lg',   // 1200px and up
-  XL: 'xl',   // 1536px and up
-} as const;

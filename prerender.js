@@ -35,7 +35,7 @@ async function run() {
         path: '',
         title: 'Surfe Diem - Free Surf Conditions for the Community',
         desc: 'Real-time surf forecasting, ocean tracking tools, and live data telemetry.',
-        lastmod: '2026-05-29',
+        lastmod: '2026-10-08',
       },
       {
         path: 'about',
@@ -53,7 +53,7 @@ async function run() {
         path: 'spots',
         title: 'Surf Spots | Surfe Diem',
         desc: 'Browse 2,000+ surf spots with real-time conditions, forecasts, and wave data.',
-        lastmod: '2026-05-29',
+        lastmod: '2026-10-08',
       },
 
       ...spots.map(spot => ({

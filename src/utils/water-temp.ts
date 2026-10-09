@@ -2,34 +2,6 @@
  * Water temperature utilities for surf conditions
  */
 
-export interface WaterTempData {
-  temperature: number; // Celsius
-  unit: 'C' | 'F';
-}
-
-/**
- * Extract water temperature data from API forecast
- * @param forecast API forecast response
- * @returns WaterTempData or null if not available
- */
-export function extractWaterTempFromForecast(forecast: any): WaterTempData | null {
-  if (!forecast?.current) {
-    return null;
-  }
-
-  const { current } = forecast;
-  const seaSurfaceTemp = current.sea_surface_temperature;
-  
-  if (seaSurfaceTemp === undefined || seaSurfaceTemp === null) {
-    return null;
-  }
-  
-  return {
-    temperature: seaSurfaceTemp,
-    unit: 'C' // API returns Celsius
-  };
-}
-
 /**
  * Get water temperature quality description
  * @param tempC Temperature in Celsius
@@ -56,33 +28,6 @@ export function getWaterTempColor(tempC: number): 'success' | 'warning' | 'error
   if (tempC < 25) return 'success';    // Warm - green
   if (tempC < 30) return 'warning';    // Very warm - orange
   return 'error';                      // Hot - red
-}
-
-/**
- * Format water temperature for display
- * @param tempC Temperature in Celsius
- * @param unit Target unit ('C' or 'F')
- * @returns Formatted temperature string
- */
-export function formatWaterTemp(tempC: number, unit: 'C' | 'F' = 'C'): string {
-  if (unit === 'F') {
-    const tempF = (tempC * 9/5) + 32;
-    return `${tempF.toFixed(1)}°F`;
-  }
-  return `${tempC.toFixed(1)}°C`;
-}
-
-/**
- * Get water temperature percentage for progress bar
- * @param tempC Temperature in Celsius
- * @returns Percentage (0-100) for UI progress bar
- */
-export function getWaterTempPercentage(tempC: number): number {
-  // Normalize to 0-100 scale based on typical surf water temps (5-35°C)
-  const minTemp = 5;
-  const maxTemp = 35;
-  const normalized = Math.max(0, Math.min(100, ((tempC - minTemp) / (maxTemp - minTemp)) * 100));
-  return Math.round(normalized);
 }
 
 /**

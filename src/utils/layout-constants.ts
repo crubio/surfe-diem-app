@@ -4,6 +4,4 @@ export const SECTION_MARGIN_BOTTOM = 3;
 export const TITLE_FONT_WEIGHT = 600;
 export const SECTION_TITLE_MB = 3;
 export const SUBSECTION_TITLE_MB = 2;
-export const FAVORITES_SECTION_MB = "20px";
 export const DASHBOARD_CARD_SECTION_MB = "20px";
-export const SEARCH_SECTION_MT = "20px";

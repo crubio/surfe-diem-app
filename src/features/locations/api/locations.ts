@@ -1,7 +1,7 @@
 import { GeoJSON } from '@features/maps/types';
 import {axios} from '../../../lib/axios';
 import {API_ROUTES} from '../../../utils/routing'
-import { BuoyLocation, BuoyLocationLatestObservation, BuoyNearestType } from '../../../types';
+import { BuoyLocation, BuoyNearestType } from '../../../types';
 import { Spot, Buoy } from '../../../types/core';
 import { BatchForecastResponse, ApiResponse } from '../../../types/api';
 
@@ -156,10 +156,6 @@ export const getLocationBuoyNearby = (lng: number, lat: number): Promise<BuoyNea
     // Return empty array on error to prevent component from breaking
     return [];
   })
-}
-
-export const getLatestObservations = (): Promise<BuoyLocationLatestObservation[]> => {
-  return axios.get(`${API_ROUTES.LATEST_OBSERVATIONS}`);
 }
 
 export const getLatestObservation = (id: string): Promise<LatestObservationItem[]> => {

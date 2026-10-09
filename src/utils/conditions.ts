@@ -5,6 +5,7 @@
 import { formatDirection, kilometersPerHourToMph } from "./formatting";
 import { metersToFeet } from "./nws-parser";
 import { CurrentConditions } from "@/types/conditions";
+import { getDisplaySwell, SwellPowerSource } from "./swell-power";
 
 /**
  * Condition quality levels
@@ -18,7 +19,8 @@ export interface ConditionScore {
   level: ConditionLevel;
   color: 'success' | 'warning' | 'error' | 'info';
   label: string;
-  description: string;
+  /** Overall 0-100 score, for ranking ("Best right now") */
+  value: number;
 }
 
 /**
@@ -44,6 +46,11 @@ export interface ConditionResult {
   windWaveHeight?: number;
   windWaveDirection?: number;
   swellDirection?: number;
+  // Swell power, and where the shown swell came from (see utils/swell-power.ts)
+  swellPower?: number;
+  swellPowerSource?: SwellPowerSource;
+  swellStation?: string;
+  swellObservedAt?: string;
 }
 
 /**
@@ -195,49 +202,40 @@ export function getEnhancedConditionScore(conditions: {
       level: 'excellent',
       color: 'success',
       label: 'Excellent',
-      description: `Prime conditions (${overallScore}/100)`
+      value: overallScore
     };
   } else if (overallScore >= 60) {
     return {
       level: 'good',
       color: 'success',
       label: 'Good',
-      description: `Solid conditions (${overallScore}/100)`
+      value: overallScore
     };
   } else if (overallScore >= 40) {
     return {
       level: 'fair',
       color: 'warning',
       label: 'Fair',
-      description: `Decent conditions (${overallScore}/100)`
+      value: overallScore
     };
   } else {
     return {
       level: 'poor',
       color: 'error',
       label: 'Poor',
-      description: `Challenging conditions (${overallScore}/100)`
+      value: overallScore
     };
   }
 }
 
 /**
- * Get color for wave height ranges
- */
-export function getWaveHeightColor(waveHeight: number): 'success' | 'warning' | 'error' | 'info' {
-  if (waveHeight >= 4) return 'success'; // Big waves
-  if (waveHeight >= 2) return 'warning'; // Medium waves
-  if (waveHeight >= 1) return 'info';    // Small waves
-  return 'error'; // Very small
-}
-
-/**
  * Transform /conditions data to ConditionResult format for scoring.
  *
- * /conditions has no generic bulk wave_height/wave_period the way the old
- * NWS forecast response did, so there's only
- * one modeled period here (primary_swell_period), not two to average —
- * see the periodQualityScore note inline below.
+ * Height/period/direction come from getDisplaySwell: NWS primary swell, else
+ * the buoy's measured swell, else its combined reading, the same order the
+ * API used for swell_power. Buoy-only spots (no NWS swell) get real numbers
+ * instead of 0 ft. One period only, so the two-input period average in
+ * getEnhancedConditionScore gets the same value twice.
  *
  * @param conditions CurrentConditions from GET /conditions or /batch-conditions
  * @param spot Spot data with location and metadata
@@ -247,19 +245,20 @@ export function transformConditionsToConditionResult(
   conditions: CurrentConditions,
   spot: { id: number; name: string; slug: string; distance?: string }
 ): ConditionResult {
+  const swell = getDisplaySwell(conditions);
   // /conditions returns heights in meters; scoring thresholds and display are in feet
-  const waveHeight = metersToFeet(conditions.primary_swell_height ?? 0);
-  const wavePeriod = conditions.primary_swell_period ?? 0;
+  const waveHeight = metersToFeet(swell?.heightM ?? 0);
+  const wavePeriod = swell?.periodS ?? 0;
+  const waveDirection = swell?.direction ?? 0;
   // undefined (not 0) when there's no wind reading, so the UI can omit it
   const windSpeedMph = conditions.wind_speed != null
     ? Math.floor(kilometersPerHourToMph(conditions.wind_speed))
     : undefined;
-  const windWaveHeight = metersToFeet(conditions.wind_wave_height ?? 0);
-  const waveDirection = conditions.primary_swell_direction ?? 0;
+  // Chop indicator: NWS wind wave, else the buoy's measured one when its swell is shown
+  const windWaveM = conditions.wind_wave_height
+    ?? (swell?.source === 'buoy_spec' ? conditions.buoy_wind_wave_height : null);
+  const windWaveHeight = windWaveM != null ? metersToFeet(windWaveM) : undefined;
 
-  // Only one modeled period available here (primary_swell_period) — the old
-  // two-input average (wave_period + primary_swell_period) collapses to a
-  // single score, not a behavior change, just no second input to average.
   const conditionScore = getEnhancedConditionScore({
     wavePeriod: wavePeriod,
     swellPeriod: wavePeriod,
@@ -271,15 +270,18 @@ export function transformConditionsToConditionResult(
     ? `${waveHeight.toFixed(1)}-${(waveHeight + 1).toFixed(1)}ft`
     : '0-1ft';
 
+  // No wind-wave reading at all: don't claim "Glassy"
   let conditionsDescription = 'Current conditions';
-  if (windWaveHeight < 0.5) {
-    conditionsDescription = 'Glassy';
-  } else if (windWaveHeight < 1.0) {
-    conditionsDescription = 'Clean';
-  } else if (windWaveHeight < 2.0) {
-    conditionsDescription = 'Slight chop';
-  } else {
-    conditionsDescription = 'Choppy';
+  if (windWaveHeight != null) {
+    if (windWaveHeight < 0.5) {
+      conditionsDescription = 'Glassy';
+    } else if (windWaveHeight < 1.0) {
+      conditionsDescription = 'Clean';
+    } else if (windWaveHeight < 2.0) {
+      conditionsDescription = 'Slight chop';
+    } else {
+      conditionsDescription = 'Choppy';
+    }
   }
 
   const waveDirectionDisplay = formatDirection(waveDirection);
@@ -300,7 +302,11 @@ export function transformConditionsToConditionResult(
     swellPeriod: wavePeriod,
     swellHeight: waveHeight,
     windWaveHeight,
-    swellDirection: waveDirection
+    swellDirection: waveDirection,
+    swellPower: conditions.swell_power ?? undefined,
+    swellPowerSource: conditions.swell_power_source ?? undefined,
+    swellStation: swell?.station ?? undefined,
+    swellObservedAt: swell?.observedAt ?? undefined,
   };
 }
 
@@ -312,14 +318,14 @@ export function transformConditionsToConditionResult(
 export async function getBatchRecommendationsFromAPI(closestSpots: { id: number; name: string; slug: string; latitude?: number; longitude?: number; distance?: string }[]): Promise<{
   bestConditions: ConditionResult | null;
   cleanestConditions: ConditionResult | null;
-  highestWaves: ConditionResult | null;
+  mostPowerful: ConditionResult | null;
   bySpotId: Record<number, { conditions: CurrentConditions; conditionResult: ConditionResult }>;
 }> {
   if (!closestSpots || closestSpots.length === 0) {
     return {
       bestConditions: null,
       cleanestConditions: null,
-      highestWaves: null,
+      mostPowerful: null,
       bySpotId: {}
     };
   }
@@ -355,7 +361,7 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
       return {
         bestConditions: null,
         cleanestConditions: null,
-        highestWaves: null,
+        mostPowerful: null,
         bySpotId: {}
       };
     }
@@ -372,8 +378,7 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
     
     validResults.forEach(result => {
       if (result) {
-        const scoreMatch = result.conditionResult.score.description.match(/\((\d+)\/100\)/);
-        const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+        const score = result.conditionResult.score.value;
         
         if (score > bestScore) {
           bestScore = score;
@@ -401,23 +406,18 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
       }
     });
     
-    // Process highest waves (highest wave height)
-    let highestResult = validResults[0];
-    let highestWaveHeight = 0;
-    
-    validResults.forEach(result => {
-      if (result && result.conditionResult.waveHeightValue) {
-        if (result.conditionResult.waveHeightValue > highestWaveHeight) {
-          highestWaveHeight = result.conditionResult.waveHeightValue;
-          highestResult = result;
-        }
-      }
-    });
+    // Most powerful swell: highest swell_power. Ranks groundswell above
+    // short-period windswell of the same height, unlike ranking by height.
+    const mostPowerfulResult = validResults.reduce<(typeof validResults)[number] | null>((best, result) => {
+      const power = result.conditionResult.swellPower;
+      if (power == null) return best;
+      return best === null || power > (best.conditionResult.swellPower ?? -1) ? result : best;
+    }, null);
     
     const result = {
       bestConditions: bestResult ? bestResult.conditionResult : null,
       cleanestConditions: bestCleanlinessScore >= 40 ? cleanestResult.conditionResult : null,
-      highestWaves: highestWaveHeight >= 1 ? highestResult.conditionResult : null,
+      mostPowerful: mostPowerfulResult?.conditionResult ?? null,
       bySpotId
     };
 
@@ -429,7 +429,7 @@ export async function getBatchRecommendationsFromAPI(closestSpots: { id: number;
     return {
       bestConditions: null,
       cleanestConditions: null,
-      highestWaves: null,
+      mostPowerful: null,
       bySpotId: {}
     };
   }

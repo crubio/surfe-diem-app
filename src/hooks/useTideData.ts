@@ -6,14 +6,15 @@ import {
   getTidePredictionsChart,
   toNoaaDate,
 } from '@features/tides/api/tide-explorer';
-import { calculateCurrentTideState, type TideState } from 'utils/tides';
+import { calculateCurrentTideState, getLatestTideReading, type TideState } from 'utils/tides';
+import { formatNoaaTime12h } from '@features/tides/utils';
+import { getZoneAbbreviation } from 'utils/timezone';
 import { TIDE_STATION_MAX_MILES, DEFAULT_TIMEZONE } from 'utils/constants';
 import { QUERY_KEYS, QUERY_CONFIG } from '../config/query-config';
 
 /**
- * Tide data for the spot page and dashboard, backed by the Tide Explorer API
- * (richer than the legacy `/api/v1/tides/*` routes still used directly by
- * spots.tsx — see .docs/forecast-spot-plan.md §2b / §3.F for why).
+ * Tide data, backed by the Tide Explorer API — the standard tide source for
+ * the app (see .docs/forecast-spot-plan.md §2b / §3.F).
  */
 
 /**
@@ -133,5 +134,36 @@ export const useTideData = (
     tideAvailable,
     currentState,
     isLoading: station.isLoading || (tideAvailable === true && (hiLo.isLoading || chart.isLoading)),
+  };
+};
+
+/**
+ * "Current tide" for a location: nearest Tide Explorer station (within
+ * TIDE_STATION_MAX_MILES) and its latest reading at or before now. Observed
+ * water level where the station has a sensor, else the interpolated
+ * prediction (isPredicted).
+ *
+ * @param timezone IANA zone the station-local times are read in (the closest
+ *   spot's); defaults to the viewer's, which is right for "near me" use
+ */
+export const useCurrentTide = (
+  latitude: number | undefined,
+  longitude: number | undefined,
+  timezone?: string
+) => {
+  const station = useNearbyTideStation(latitude, longitude);
+  const inRange = !!station.data && station.data.distance <= TIDE_STATION_MAX_MILES;
+  const recent = useTideRecent(inRange ? station.data!.station_id : undefined);
+
+  const zone = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const latest = getLatestTideReading(recent.data?.data, new Date(), zone);
+
+  return {
+    station: station.data ?? null,
+    height: latest?.height ?? null,
+    time: latest ? `${formatNoaaTime12h(latest.t)} ${getZoneAbbreviation(zone)}` : null,
+    isPredicted: recent.data?.meta.product === 'predictions',
+    isLoading: station.isLoading || recent.isLoading,
+    isError: station.isError || recent.isError || (!!station.data && !inRange),
   };
 };

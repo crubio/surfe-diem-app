@@ -16,13 +16,6 @@ declare module '@mui/material/Typography' {
   }
 }
 
-// Shadow scale
-export const shadows = {
-  sm: '0 4px 12px -4px rgba(8,40,52,0.12)',
-  md: '0 8px 24px -8px rgba(8,40,52,0.18)',
-  lg: '0 24px 60px -20px rgba(8,40,52,0.22)',
-};
-
 export const getThemeOptions = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
     mode,

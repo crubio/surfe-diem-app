@@ -10,11 +10,8 @@ import { useColorMode } from "providers/theme-provider";
 import { colorTokens } from "config/theme";
 import HeroWidget from "components/common/hero-widget";
 import { useUserLocation, useGeolocationStore } from "../stores/geolocation-store";
-import { useNWSForecast } from "hooks/useNWSForecast";
-import { getClostestTideStation, getCurrentTides } from "@features/tides/api/tides";
-import { getCurrentTideValue } from "utils/tides";
-import { kilometersPerHourToMph } from "utils/formatting";
-import { getEnhancedConditionScore, getBatchRecommendationsFromAPI } from "utils/conditions";
+import { useCurrentTide } from "hooks";
+import { getBatchRecommendationsFromAPI } from "utils/conditions";
 import { useEffect, useMemo, useState } from "react";
 
 function sortBySubregion(data: Spot[]) {
@@ -57,11 +54,6 @@ const SpotsPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: nwsForecastData } = useNWSForecast(
-    closestSpots?.[0]?.id,
-    { enabled: !!closestSpots && closestSpots.length > 0 }
-  );
-
   const { data: batchRecommendations } = useQuery({
     queryKey: ['batch_recommendations', closestSpots?.map(s => s.id).join(',')],
     queryFn: () => getBatchRecommendationsFromAPI(closestSpots!.map(spot => ({
@@ -73,33 +65,14 @@ const SpotsPage = () => {
     gcTime: 10 * 60 * 1000,
   });
 
-  const { data: closestTideStation } = useQuery({
-    queryKey: ['closest_tide_station', coordinates?.latitude, coordinates?.longitude],
-    queryFn: () => getClostestTideStation({ lat: coordinates!.latitude, lng: coordinates!.longitude }),
-    enabled: !!coordinates?.latitude && !!coordinates?.longitude,
-  });
-
-  const { data: currentTides } = useQuery({
-    queryKey: ['current_tides', closestTideStation?.station_id],
-    queryFn: () => getCurrentTides({ station: closestTideStation!.station_id }),
-    enabled: !!closestTideStation?.station_id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-
   const bestConditions = batchRecommendations?.bestConditions ?? null;
   const cleanestConditions = batchRecommendations?.cleanestConditions ?? null;
-  const currentTideValue = currentTides ? getCurrentTideValue(currentTides) : null;
-
-  const nwsCurrent = nwsForecastData?.current;
-  const closestSpotData = closestSpots?.[0] && nwsCurrent ? {
-    spot: closestSpots[0].name,
-    waveHeight: `${nwsCurrent.wave_height.toFixed(1)}-${(nwsCurrent.wave_height + 1).toFixed(1)}ft`,
-    score: getEnhancedConditionScore({
-      waveHeight: nwsCurrent.wave_height,
-      windSpeed: Math.floor(kilometersPerHourToMph(nwsCurrent.wind_speed || 0)),
-    }),
-  } : null;
+  // Same data as the home page: closest spot from the shared batch result,
+  // tide from Tide Explorer
+  const closestSpotData = closestSpots?.[0]
+    ? batchRecommendations?.bySpotId[closestSpots[0].id]?.conditionResult ?? null
+    : null;
+  const currentTideValue = useCurrentTide(coordinates?.latitude, coordinates?.longitude, closestSpots?.[0]?.timezone).height;
 
   const showWidget = !!(bestConditions && cleanestConditions && closestSpotData && currentTideValue != null);
 
@@ -148,7 +121,7 @@ const SpotsPage = () => {
               {
                 label: 'Closest to you',
                 spot: closestSpotData!.spot,
-                value: closestSpotData!.waveHeight,
+                value: closestSpotData!.waveHeight ?? '—',
                 score: closestSpotData!.score,
               },
               {

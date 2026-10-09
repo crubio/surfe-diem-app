@@ -6,7 +6,6 @@ import { useParams } from "react-router-dom"
 import { formatLatLong } from "utils/common"
 import ErrorPage from "./error"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
-import { Loading } from "components/layout/loading"
 import { MetricTile } from "components/common/metric-tile"
 import { useFavorites } from "providers/favorites-provider"
 import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material'

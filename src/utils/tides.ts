@@ -3,8 +3,7 @@
  */
 
 import { DateTime } from "luxon";
-import { TidesDataDaily, TidesDataCurrent } from "@features/tides/api/tides";
-import type { TideChartPoint } from "@features/tides/api/tide-explorer";
+import type { TideChartPoint, TidePrediction } from "@features/tides/api/tide-explorer";
 
 export interface TideState {
   currentHeight: number;
@@ -58,7 +57,7 @@ function nowInStationFrame(currentTime: Date, timezone?: string): number {
  * @returns TideState with current conditions
  */
 export function calculateCurrentTideState(
-  tidesData: TidesDataDaily,
+  tidesData: { predictions: TidePrediction[] },
   currentTime: Date = new Date(),
   timezone?: string
 ): TideState | null {
@@ -155,26 +154,6 @@ export function getLatestTideReading(
 }
 
 /**
- * Format time to next tide change
- * @param minutes Minutes until next change
- * @returns Formatted string
- */
-export function formatTimeToNext(minutes: number): string {
-  if (minutes < 60) {
-    return `${minutes} minutes`;
-  }
-  
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  
-  if (remainingMinutes === 0) {
-    return `${hours} hour${hours > 1 ? 's' : ''}`;
-  }
-  
-  return `${hours}h ${remainingMinutes}m`;
-}
-
-/**
  * Get tide direction description
  * @param direction Rising or falling
  * @returns User-friendly description
@@ -183,37 +162,3 @@ export function getTideDirectionDescription(direction: 'rising' | 'falling'): st
   return direction === 'rising' ? 'Rising' : 'Falling';
 }
 
-/**
- * Get tide quality indicator based on rate of change
- * @param rateOfChange Rate of change in ft/hr
- * @returns Quality description
- */
-export function getTideQualityDescription(rateOfChange: number): string {
-  if (rateOfChange < 0.5) {
-    return 'Slow change';
-  } else if (rateOfChange < 1.0) {
-    return 'Moderate change';
-  } else {
-    return 'Fast change';
-  }
-}
-
-/**
- * Get current tide value from current tide data
- * @param currentTideData Current tide data from API
- * @returns Current tide height in feet, or null if data is invalid
- */
-export function getCurrentTideValue(currentTideData: TidesDataCurrent): number | null {
-  if (!currentTideData?.data || currentTideData.data.length === 0 ) {
-    return null;
-  }
-  
-  // Get the most recent tide reading (last index)
-  const latestReading = currentTideData.data[currentTideData.data.length - 1];
-  if (!latestReading?.v) {
-    return null;
-  }
-  
-  const tideValue = parseFloat(latestReading.v);
-  return isNaN(tideValue) ? null : tideValue;
-}

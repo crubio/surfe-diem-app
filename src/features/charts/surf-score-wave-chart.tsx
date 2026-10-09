@@ -20,6 +20,7 @@ import { colorTokens } from 'config/theme';
 import { TransformedNWSForecast } from 'hooks/useNWSForecast';
 import { parseNoaaLocalTime } from '@features/tides/utils';
 import type { TideChartPoint } from '@features/tides/api/tide-explorer';
+import { getForecastHeightSeries } from '@features/forecasts/utils/forecast-height-series';
 import { DEFAULT_TIMEZONE } from 'utils/constants';
 
 interface SurfScoreTimelineProps {
@@ -35,9 +36,13 @@ interface SurfScoreTimelineProps {
   timezone?: string;
 }
 
-type TooltipExtraProps = { theme: Theme; tokens: (typeof colorTokens)[keyof typeof colorTokens] };
+type TooltipExtraProps = {
+  theme: Theme;
+  tokens: (typeof colorTokens)[keyof typeof colorTokens];
+  primaryLabel: string;
+};
 
-const CustomTooltip = ({ active, payload, theme, tokens }: TooltipContentProps<ValueType, NameType> & TooltipExtraProps) => {
+const CustomTooltip = ({ active, payload, theme, tokens, primaryLabel }: TooltipContentProps<ValueType, NameType> & TooltipExtraProps) => {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
@@ -46,7 +51,7 @@ const CustomTooltip = ({ active, payload, theme, tokens }: TooltipContentProps<V
         {d.timeLabel}
       </Typography>
       <Typography variant="caption" sx={{ color: theme.palette.primary.light, fontWeight: 700 }}>
-        Primary: {d.primary?.toFixed(1)}ft
+        {primaryLabel}: {d.primary?.toFixed(1)}ft
       </Typography>
       {d.secondary > 0 && (
         <Typography variant="caption" display="block" sx={{ color: tokens.secondarySwellColor, fontWeight: 700 }}>
@@ -73,6 +78,9 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
+  // No swell breakdown (wave-height-only grid, or a run with an empty primary
+  // series): chart combined wave height instead of an all-zero primary swell.
+  const combinedOnly = getForecastHeightSeries(data?.hourly) === 'combined';
 
   // Tide points keyed by local "YYYY-MM-DDTHH" so they can be joined onto the
   // NWS hourly series without any timezone conversion — see tides/utils.ts.
@@ -102,12 +110,12 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         dateKey,
         dayLabel: dt.toFormat('ccc L/d'),
         timeLabel: dt.setLocale('en-US').toFormat('ccc, LLL d, h a ZZZZ'),
-        primary: point.primarySwellHeightFt ?? 0,
-        secondary: point.secondarySwellHeightFt ?? 0,
+        primary: (combinedOnly ? point.waveHeightFt : point.primarySwellHeightFt) ?? 0,
+        secondary: combinedOnly ? 0 : point.secondarySwellHeightFt ?? 0,
         tide: tideByHourKey?.get(hourKey) ?? null,
       };
     });
-  }, [data, tideByHourKey, timezone]);
+  }, [data, tideByHourKey, timezone, combinedOnly]);
 
   // One reference line + axis tick per day boundary (skip index 0 — the "NOW" line already marks it).
   const dayBoundaries = React.useMemo(() => {
@@ -166,7 +174,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               color: theme.palette.text.primary,
             }}
           >
-            Swell Height — next 72 hours
+            {combinedOnly ? 'Wave Height' : 'Swell Height'} — next 72 hours
           </Typography>
         </Box>
 
@@ -174,12 +182,16 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: theme.palette.primary.light }} />
-            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>Primary swell</Typography>
+            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>
+              {combinedOnly ? 'Wave height (combined; no swell breakdown for this spot)' : 'Primary swell'}
+            </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: tokens.secondarySwellColor }} />
-            <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>Secondary swell</Typography>
-          </Box>
+          {!combinedOnly && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box sx={{ width: 20, height: 2.5, borderRadius: 1, backgroundColor: tokens.secondarySwellColor }} />
+              <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary }}>Secondary swell</Typography>
+            </Box>
+          )}
           {tideByHourKey && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
               <Box sx={{ width: 20, height: 1.5, borderRadius: 1, backgroundColor: tokens.tideLine }} />
@@ -235,7 +247,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               <YAxis yAxisId="tide" orientation="right" domain={['dataMin - 1', 'dataMax + 1']} hide />
             )}
 
-            <Tooltip content={(props) => <CustomTooltip {...props} theme={theme} tokens={tokens} />} />
+            <Tooltip content={(props) => <CustomTooltip {...props} theme={theme} tokens={tokens} primaryLabel={combinedOnly ? 'Wave height' : 'Primary'} />} />
 
             {/* Day boundaries — subtle separators between calendar days (skip index 0: "NOW" already marks it) */}
             {dayBoundaries.filter((b) => b.index > 0).map((b) => (
@@ -261,7 +273,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               isAnimationActive={false}
             />
 
-            <Area
+            {!combinedOnly && <Area
               yAxisId="swell"
               type="basis"
               dataKey="secondary"
@@ -271,7 +283,7 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
               fill="url(#chartGradientSecondary)"
               dot={false}
               isAnimationActive={false}
-            />
+            />}
 
             {tideByHourKey && (
               <Line

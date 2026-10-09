@@ -1,4 +1,5 @@
 import { Box, Tooltip, Typography } from '@mui/material';
+import type { ReactNode } from 'react';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Loading } from 'components/layout/loading';
 
@@ -10,6 +11,8 @@ export interface MetricTileProps {
   textTertiary: string;
   accentColor: string;
   tooltip?: string;
+  /** Custom info control (e.g. a click-to-open explainer); replaces the tooltip icon */
+  info?: ReactNode;
   sub?: string;
   textSecondary?: string;
 }
@@ -22,6 +25,7 @@ export const MetricTile = ({
   textTertiary,
   accentColor,
   tooltip,
+  info,
   sub,
   textSecondary,
 }: MetricTileProps) => (
@@ -51,11 +55,11 @@ export const MetricTile = ({
           >
             {label}
           </Typography>
-          {tooltip && (
+          {info ?? (tooltip && (
             <Tooltip title={tooltip} placement="bottom" arrow>
               <InfoOutlinedIcon sx={{ fontSize: '0.8rem', color: textTertiary, cursor: 'help' }} />
             </Tooltip>
-          )}
+          ))}
         </Box>
         <Typography
           sx={{
