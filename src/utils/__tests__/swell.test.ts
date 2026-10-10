@@ -66,11 +66,13 @@ describe('Swell Utilities', () => {
   describe('formatSwellPeriod', () => {
     it('should format period correctly', () => {
       expect(formatSwellPeriod(12)).toBe('12s');
-      expect(formatSwellPeriod(0)).toBe('0s');
     });
 
-    it('should handle invalid data', () => {
-      expect(formatSwellPeriod(-1)).toBe('0s');
+    it('should show a dash for an unknown period', () => {
+      expect(formatSwellPeriod(null)).toBe('—');
+      expect(formatSwellPeriod(undefined)).toBe('—');
+      expect(formatSwellPeriod(0)).toBe('—');
+      expect(formatSwellPeriod(-1)).toBe('—');
     });
   });
 

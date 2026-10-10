@@ -177,24 +177,27 @@ export function getEnhancedConditionScore(conditions: {
   windSpeed?: number;
   waveHeight?: number;
 }): ConditionScore {
-  const { swellPeriod, windSpeed = 0, waveHeight = 0 } = conditions;
-  
+  const { windSpeed = 0, waveHeight = 0 } = conditions;
+
   // Calculate individual scores
-  const wavePeriodScore = getSwellPeriodScore(conditions.wavePeriod || 0);
-  const swellPeriodScore = getSwellPeriodScore(swellPeriod || 0);
   const windQualityScore = getWindQualityScore(windSpeed || 0);
   const waveHeightScore = getWaveHeightScore(waveHeight || 0);
-  
-  // Average the two period scores (wave_period and primary_swell_period)
-  // Both represent different period metrics - combine for overall period quality assessment
-  const periodQualityScore = (wavePeriodScore + swellPeriodScore) / 2;
-  
-  // Calculate overall score
-  const overallScore = calculateOverallScore({
-    periodQuality: periodQualityScore,
-    windQuality: windQualityScore,
-    waveHeight: waveHeightScore
-  });
+
+  // Average the period scores we actually have (wave_period and primary_swell_period).
+  // An unknown period (undefined, or ≤ 0) is left out rather than scored as 0.
+  const periodScores = [conditions.wavePeriod, conditions.swellPeriod]
+    .filter((period): period is number => period != null && period > 0)
+    .map(getSwellPeriodScore);
+
+  // Calculate overall score. No known period: score wind and height alone, keeping
+  // their relative weights (35:25 of calculateOverallScore).
+  const overallScore = periodScores.length
+    ? calculateOverallScore({
+        periodQuality: periodScores.reduce((a, b) => a + b, 0) / periodScores.length,
+        windQuality: windQualityScore,
+        waveHeight: waveHeightScore
+      })
+    : Math.round((windQualityScore * 0.35 + waveHeightScore * 0.25) / 0.60);
   
   // Convert score to condition level
   if (overallScore >= 80) {
@@ -248,7 +251,8 @@ export function transformConditionsToConditionResult(
   const swell = getDisplaySwell(conditions);
   // /conditions returns heights in meters; scoring thresholds and display are in feet
   const waveHeight = metersToFeet(swell?.heightM ?? 0);
-  const wavePeriod = swell?.periodS ?? 0;
+  // undefined (not 0) when the period is unknown, so scoring leaves it out
+  const wavePeriod = swell?.periodS != null && swell.periodS > 0 ? swell.periodS : undefined;
   const waveDirection = swell?.direction ?? 0;
   // undefined (not 0) when there's no wind reading, so the UI can omit it
   const windSpeedMph = conditions.wind_speed != null
@@ -297,7 +301,7 @@ export function transformConditionsToConditionResult(
     direction: waveDirectionDisplay,
     distance: spot.distance,
     waveDirectionFormatted: waveDirectionDisplay,
-    wavePeriodFormatted: `${wavePeriod.toFixed(1)}s`,
+    wavePeriodFormatted: wavePeriod != null ? `${wavePeriod.toFixed(1)}s` : '—',
     score: conditionScore,
     swellPeriod: wavePeriod,
     swellHeight: waveHeight,

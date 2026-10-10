@@ -61,9 +61,10 @@ export function formatSwellHeight(height: number): string {
 /**
  * Format swell period for display
  * @param period Swell period in seconds
- * @returns Formatted period string
+ * @returns Formatted period string, or "—" when unknown (null, or ≤ 0: no swell
+ *   has a 0 s period, and the API leaves a period null rather than estimating it)
  */
-export function formatSwellPeriod(period: number): string {
-  if (!period || period < 0) return '0s';
+export function formatSwellPeriod(period: number | null | undefined): string {
+  if (period == null || period <= 0) return '—';
   return `${period.toFixed(0)}s`;
 }

@@ -152,6 +152,29 @@ describe('Surf Condition Scoring', () => {
       expect(result.level).toBeDefined();
       expect(result.color).toBeDefined();
     });
+
+    it('should leave an unknown period out instead of scoring it as 0', () => {
+      const withPeriod = getEnhancedConditionScore({ swellPeriod: 14, windSpeed: 8, waveHeight: 5 });
+      const unknown = getEnhancedConditionScore({ swellPeriod: undefined, windSpeed: 8, waveHeight: 5 });
+      const zero = getEnhancedConditionScore({ swellPeriod: 0, windSpeed: 8, waveHeight: 5 });
+      const scoredAsZero = calculateOverallScore({
+        periodQuality: getSwellPeriodScore(0),
+        windQuality: getWindQualityScore(8),
+        waveHeight: getWaveHeightScore(5)
+      });
+      // Wind and height alone, at their relative weights
+      const expected = Math.round((getWindQualityScore(8) * 0.35 + getWaveHeightScore(5) * 0.25) / 0.60);
+      expect(unknown.value).toBe(expected);
+      expect(zero.value).toBe(expected);
+      expect(unknown.value).toBeGreaterThan(scoredAsZero);
+      expect(withPeriod.value).toBeDefined();
+    });
+
+    it('should score a single known period on its own, not averaged with a missing one', () => {
+      const swellOnly = getEnhancedConditionScore({ swellPeriod: 14, windSpeed: 8, waveHeight: 5 });
+      const both = getEnhancedConditionScore({ wavePeriod: 14, swellPeriod: 14, windSpeed: 8, waveHeight: 5 });
+      expect(swellOnly.value).toBe(both.value);
+    });
   });
 
   describe('Practical Examples', () => {
