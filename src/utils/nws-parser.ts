@@ -194,8 +194,11 @@ export interface NWSHourlyPoint {
   primarySwellHeightFt: number | null;
   primarySwellPeriod: number | null;    // seconds
   primarySwellDirection: number | null; // degrees
-  // Secondary swell — supplemental
+  // Secondary swell — supplemental. Period only when the API has one for it
+  // (NWS publishes one swell period, usually on the leading swell).
   secondarySwellHeightFt: number | null;
+  secondarySwellPeriod: number | null;    // seconds
+  secondarySwellDirection: number | null; // degrees
   // Wind
   windSpeed: number | null;             // km/h
 }
@@ -218,6 +221,8 @@ export const buildHourlyForecast = (
     primary_swell_direction?: NWSDataPoint[];
     primary_swell_period?: NWSDataPoint[];
     secondary_swell_height?: NWSDataPoint[];
+    secondary_swell_period?: NWSDataPoint[];
+    secondary_swell_direction?: NWSDataPoint[];
     wind_speed?: NWSDataPoint[];
   },
   timezone: string,
@@ -229,6 +234,8 @@ export const buildHourlyForecast = (
   const primarySwellPeriods = groupNWSDataByHour(waveData.primary_swell_period || [], timezone, hours);
   const primarySwellDirections = groupNWSDataByHour(waveData.primary_swell_direction || [], timezone, hours);
   const secondarySwellHeights = groupNWSDataByHour(waveData.secondary_swell_height || [], timezone, hours);
+  const secondarySwellPeriods = groupNWSDataByHour(waveData.secondary_swell_period || [], timezone, hours);
+  const secondarySwellDirections = groupNWSDataByHour(waveData.secondary_swell_direction || [], timezone, hours);
   const windSpeeds = groupNWSDataByHour(waveData.wind_speed || [], timezone, hours);
 
   return primarySwellHeights.map((slot, i) => ({
@@ -244,6 +251,8 @@ export const buildHourlyForecast = (
     secondarySwellHeightFt: secondarySwellHeights[i]?.value !== null && secondarySwellHeights[i]?.value !== undefined
       ? metersToFeet(secondarySwellHeights[i].value as number)
       : null,
+    secondarySwellPeriod: secondarySwellPeriods[i]?.value ?? null,
+    secondarySwellDirection: secondarySwellDirections[i]?.value ?? null,
     windSpeed: windSpeeds[i]?.value ?? null,
   }));
 };

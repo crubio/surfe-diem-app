@@ -51,11 +51,11 @@ const CustomTooltip = ({ active, payload, theme, tokens, primaryLabel }: Tooltip
         {d.timeLabel}
       </Typography>
       <Typography variant="caption" sx={{ color: theme.palette.primary.light, fontWeight: 700 }}>
-        {primaryLabel}: {d.primary?.toFixed(1)}ft
+        {primaryLabel}: {d.primary?.toFixed(1)}ft{d.primaryPeriod > 0 ? ` · ${Math.round(d.primaryPeriod)}s` : ''}
       </Typography>
       {d.secondary > 0 && (
         <Typography variant="caption" display="block" sx={{ color: tokens.secondarySwellColor, fontWeight: 700 }}>
-          Secondary: {d.secondary?.toFixed(1)}ft
+          Secondary: {d.secondary?.toFixed(1)}ft{d.secondaryPeriod > 0 ? ` · ${Math.round(d.secondaryPeriod)}s` : ''}
         </Typography>
       )}
       {d.tide != null && (
@@ -112,6 +112,8 @@ export const SurfScoreWaveChart: React.FC<SurfScoreTimelineProps> = ({
         timeLabel: dt.setLocale('en-US').toFormat('ccc, LLL d, h a ZZZZ'),
         primary: (combinedOnly ? point.waveHeightFt : point.primarySwellHeightFt) ?? 0,
         secondary: combinedOnly ? 0 : point.secondarySwellHeightFt ?? 0,
+        primaryPeriod: combinedOnly ? null : point.primarySwellPeriod,
+        secondaryPeriod: combinedOnly ? null : point.secondarySwellPeriod,
         tide: tideByHourKey?.get(hourKey) ?? null,
       };
     });

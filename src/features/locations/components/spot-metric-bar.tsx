@@ -53,17 +53,48 @@ export const SpotMetricBar = ({
     textSecondary: theme.palette.text.secondary,
   };
 
+  // Leading NWS swell: from /conditions when loaded (its period may be measured by a
+  // buoy, and it's what swell power is computed from), else the forecast while it loads.
+  const leading = conditions?.primary_swell_height != null
+    ? {
+        heightFt: metersToFeet(conditions.primary_swell_height),
+        periodS: conditions.primary_swell_period,
+        direction: conditions.primary_swell_direction,
+        periodSource: conditions.primary_swell_period_source ?? null,
+      }
+    : current
+      ? {
+          heightFt: current.primary_swell_height,
+          periodS: current.primary_swell_period,
+          direction: current.primary_swell_direction,
+          periodSource: null,
+        }
+      : null;
+
   // NWS has no primary swell right now (wave-height-only grid, or a forecast
   // run without the swell series): show the buoy-measured swell instead.
   const displaySwell = conditions ? getDisplaySwell(conditions) : null;
-  const buoySwell = !current?.primary_swell_height && displaySwell?.station ? displaySwell : null;
+  const buoySwell = !leading?.heightFt && displaySwell?.station ? displaySwell : null;
   const buoyNote = buoySwell
     ? `Buoy ${buoySwell.station}${buoySwell.observedAt ? ` · ${formatLocationTime(buoySwell.observedAt, timezone)}` : ''}`
     : undefined;
+  const measuredNote = conditions?.buoy_wave_station ? `Measured · buoy ${conditions.buoy_wave_station}` : 'Measured';
 
-  const swellHeightFt = buoySwell ? metersToFeet(buoySwell.heightM) : current?.primary_swell_height;
-  const swellPeriod = buoySwell ? buoySwell.periodS : current?.primary_swell_period;
-  const swellDirection = buoySwell ? buoySwell.direction : current?.primary_swell_direction;
+  const swellHeightFt = buoySwell ? metersToFeet(buoySwell.heightM) : leading?.heightFt;
+  const swellPeriod = buoySwell ? buoySwell.periodS : leading?.periodS;
+  const swellDirection = buoySwell ? buoySwell.direction : leading?.direction;
+  const periodMeasured = !!buoySwell || leading?.periodSource === 'buoy';
+
+  // Second NWS swell, when there is one worth showing (same 0.5 ft cut as the daily cards)
+  const secondaryHeightFt = conditions?.secondary_swell_height != null
+    ? metersToFeet(conditions.secondary_swell_height)
+    : null;
+  const secondaryPeriod = conditions?.secondary_swell_period;
+  const secondaryDetail = [
+    secondaryPeriod != null && secondaryPeriod > 0 ? `${Math.round(secondaryPeriod)}s` : null,
+    conditions?.secondary_swell_direction != null ? formatDirection(conditions.secondary_swell_direction) : null,
+    conditions?.secondary_swell_period_source === 'buoy' ? 'measured' : null,
+  ].filter(Boolean).join(' · ');
 
   const tiles = [
     {
@@ -73,20 +104,32 @@ export const SpotMetricBar = ({
         : 'Estimated average height of the highest one-third of the swells.',
       value: swellHeightFt ? `${swellHeightFt.toFixed(1)}ft` : null,
       sub: buoyNote,
-      isLoading: isNWSLoading || (!current?.primary_swell_height && isConditionsLoading),
+      isLoading: !leading && (isNWSLoading || isConditionsLoading),
     },
     {
       label: 'Swell period',
-      tooltip: 'Peak period in seconds of the dominant swell.',
+      tooltip: periodMeasured
+        ? 'Peak period in seconds of the dominant swell, measured right now by the nearest buoy.'
+        : 'Peak period in seconds of the dominant swell, from the NWS forecast.',
       value: swellPeriod ? `${Math.round(swellPeriod)}s` : null,
-      isLoading: isNWSLoading,
+      sub: periodMeasured && !buoySwell ? measuredNote : undefined,
+      isLoading: !leading && (isNWSLoading || isConditionsLoading),
     },
     {
       label: 'Direction',
       tooltip: 'Compass direction the swells are coming from.',
       value: swellDirection ? formatDirection(swellDirection) : null,
-      isLoading: isNWSLoading,
+      isLoading: !leading && (isNWSLoading || isConditionsLoading),
     },
+    ...(secondaryHeightFt != null && secondaryHeightFt > 0.5
+      ? [{
+          label: 'Second swell',
+          tooltip: 'The smaller of the two NWS swells. Its period shows when the forecast or a buoy has one.',
+          value: `${secondaryHeightFt.toFixed(1)}ft`,
+          sub: secondaryDetail || undefined,
+          isLoading: false,
+        }]
+      : []),
     {
       label: 'Swell power',
       value: formatSwellPower(conditions?.swell_power),

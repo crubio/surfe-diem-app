@@ -23,6 +23,8 @@ export interface NWSWaveData {
   primary_swell_period: NWSDataPoint[];
   secondary_swell_height: NWSDataPoint[];
   secondary_swell_direction: NWSDataPoint[];
+  // Hourly; null where NWS's single swell period belongs to the primary swell
+  secondary_swell_period?: NWSDataPoint[];
   wind_wave_height: NWSDataPoint[];
 }
 

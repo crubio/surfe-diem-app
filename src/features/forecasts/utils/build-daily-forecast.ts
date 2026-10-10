@@ -33,6 +33,9 @@ export interface DailyForecastDay {
     maxFt: number | null;
   };
   secondaryMaxFt: number | null;
+  // At the secondary swell's peak hour; period null when the API has none for it
+  secondaryPeriodS: number | null;
+  secondaryDirectionDeg: number | null;
   wvht: { minFt: number | null; maxFt: number | null };
   tides: DailyForecastTide[];
 }
@@ -99,6 +102,11 @@ export const buildDailyForecast = (
     }
 
     const secondaryHeights = definedValues(points, (p) => p.secondarySwellHeightFt);
+    const secondaryPeak = secondaryHeights.length
+      ? points.reduce((best, p) =>
+          (p.secondarySwellHeightFt ?? -Infinity) > (best.secondarySwellHeightFt ?? -Infinity) ? p : best
+        )
+      : null;
     const wvhtHeights = definedValues(points, (p) => p.waveHeightFt);
 
     return {
@@ -114,6 +122,8 @@ export const buildDailyForecast = (
         maxFt: primaryHeights.length ? Math.max(...primaryHeights) : null,
       },
       secondaryMaxFt: secondaryHeights.length ? Math.max(...secondaryHeights) : null,
+      secondaryPeriodS: secondaryPeak?.secondarySwellPeriod ?? null,
+      secondaryDirectionDeg: secondaryPeak?.secondarySwellDirection ?? null,
       wvht: {
         minFt: wvhtHeights.length ? Math.min(...wvhtHeights) : null,
         maxFt: wvhtHeights.length ? Math.max(...wvhtHeights) : null,

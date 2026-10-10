@@ -99,7 +99,7 @@ export const DailyForecastCards = ({ days, tideAvailable = true, isLoading, time
               </Typography>
               <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
                 {day.primary.peakTime ? `@ ${day.primary.peakTime.toFormat('h a')}` : ''}
-                {day.primary.periodS != null ? ` · ${Math.round(day.primary.periodS)}s` : ''}
+                {day.primary.periodS != null && day.primary.periodS > 0 ? ` · ${Math.round(day.primary.periodS)}s` : ''}
                 {day.primary.directionDeg != null ? ` · ${getSwellDirectionText(day.primary.directionDeg)}` : ''}
               </Typography>
             </Box>
@@ -136,6 +136,8 @@ export const DailyForecastCards = ({ days, tideAvailable = true, isLoading, time
             {day.secondaryMaxFt != null && day.secondaryMaxFt > 0.5 && (
               <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary }}>
                 Secondary <strong>{day.secondaryMaxFt.toFixed(1)} ft</strong>
+                {day.secondaryPeriodS != null && day.secondaryPeriodS > 0 ? ` · ${Math.round(day.secondaryPeriodS)}s` : ''}
+                {day.secondaryDirectionDeg != null ? ` · ${getSwellDirectionText(day.secondaryDirectionDeg)}` : ''}
               </Typography>
             )}
             {day.wvht.minFt != null && day.wvht.maxFt != null && (

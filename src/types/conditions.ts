@@ -8,10 +8,14 @@ export interface CurrentConditions {
   timestamp: string;
   primary_swell_height: number | null; // meters
   primary_swell_period: number | null; // seconds
+  // Where a swell's period came from: the NWS forecast, or measured right now by
+  // the nearest buoy (matched to the swell by direction). null when there's no period.
+  primary_swell_period_source?: 'nws' | 'buoy' | null;
   primary_swell_direction: number | null; // degrees
   secondary_swell_height: number | null;
   secondary_swell_period: number | null;
   secondary_swell_period_is_estimated: boolean | null;
+  secondary_swell_period_source?: 'nws' | 'buoy' | null;
   secondary_swell_direction: number | null;
 
   wind_wave_height: number | null;

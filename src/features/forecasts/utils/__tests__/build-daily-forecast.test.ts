@@ -19,6 +19,8 @@ const point = (
   primarySwellPeriod: 10,
   primarySwellDirection: 280,
   secondarySwellHeightFt: 1,
+  secondarySwellPeriod: null,
+  secondarySwellDirection: 200,
   windSpeed: 15,
   ...overrides,
 });
@@ -51,6 +53,19 @@ describe('buildDailyForecast', () => {
     expect(today.primary.minFt).toBe(2);
     expect(today.primary.maxFt).toBe(5);
     expect(today.primary.peakTime?.hour).toBe(start.plus({ hours: 1 }).hour);
+  });
+
+  it("reports the secondary swell's period and direction at its own peak hour", () => {
+    const hourly = [
+      point(start, 0, { secondarySwellHeightFt: 1, secondarySwellPeriod: null }),
+      point(start, 1, { secondarySwellHeightFt: 2.5, secondarySwellPeriod: 16, secondarySwellDirection: 190 }),
+      point(start, 2, { secondarySwellHeightFt: 2 }),
+    ];
+    const [today] = buildDailyForecast(hourly, null, TZ, 5);
+
+    expect(today.secondaryMaxFt).toBe(2.5);
+    expect(today.secondaryPeriodS).toBe(16);
+    expect(today.secondaryDirectionDeg).toBe(190);
   });
 
   it('caps output at `days` and skips days with no hourly data', () => {
