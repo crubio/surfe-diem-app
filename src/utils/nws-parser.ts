@@ -150,18 +150,23 @@ export const groupNWSDataByHour = (
   const result: Array<{ hour: number; validTime: string | null; value: number | null }> = [];
   const now = DateTime.now().setZone(timezone).startOf('hour');
 
+  // Parse each interval once (as epoch ms), not once per hour: the API's swell
+  // series are hourly. Points that don't parse are skipped.
+  const intervals = dataPoints.flatMap((point) => {
+    const parsed = parseNWSValidTime(point.validTime, timezone);
+    if (!parsed.start || !parsed.end) return [];
+    return [{ start: parsed.start.toMillis(), end: parsed.end.toMillis(), value: point.value }];
+  });
+
   for (let i = 0; i < hours; i++) {
     const targetHour = now.plus({ hours: i });
-    const targetEnd = targetHour.plus({ hours: 1 });
+    const targetStart = targetHour.toMillis();
+    const targetEnd = targetStart + 60 * 60 * 1000;
 
-    // Find data point that covers this hour
-    const matchingPoint = dataPoints.find((point) => {
-      const parsed = parseNWSValidTime(point.validTime, timezone);
-      // Skip if we couldn't parse valid times
-      if (!parsed.start || !parsed.end) return false;
-      // Check if this interval overlaps with our target hour
-      return parsed.start < targetEnd && parsed.end > targetHour;
-    });
+    // First data point whose interval overlaps this hour
+    const matchingPoint = intervals.find(
+      (interval) => interval.start < targetEnd && interval.end > targetStart
+    );
 
     result.push({
       hour: i,
