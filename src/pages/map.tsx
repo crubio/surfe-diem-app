@@ -5,6 +5,7 @@ import { useEffect, useState, lazy, Suspense, useMemo } from "react"
 import { Box, CircularProgress, Typography, useTheme } from "@mui/material"
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
+import { STATIC_PAGES } from "config/seo-meta"
 
 // Lazy load the map component to reduce initial bundle size
 const MapBox = lazy(() => import("@features/maps").then(module => ({ default: module.MapBox })))
@@ -48,7 +49,7 @@ const MapPage = () => {
 
   return (
     <>
-      <SEO title="Explore - Surfe Diem" />
+      <SEO {...STATIC_PAGES.map} />
 
       {/* Page header */}
       <Box sx={{ px: { xs: 2, md: 4 }, pt: 3, pb: 2 }}>

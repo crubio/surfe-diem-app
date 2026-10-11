@@ -12,6 +12,7 @@ import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
 import type { Favorite } from "types"
+import { buoyMeta } from "config/seo-meta"
 
 
 const LocationsPage = () => {
@@ -65,7 +66,7 @@ const LocationsPage = () => {
     <>
       {locationData && (
         <>
-          <SEO title={`${locationData.name} - Surfe Diem`} />
+          <SEO {...buoyMeta(locationData)} />
           <BuoyStructuredData
             name={locationData.name}
             description={locationData.description || `Weather buoy providing real-time surf conditions`}
