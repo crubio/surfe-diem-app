@@ -37,10 +37,11 @@ export const SurfSpotStructuredData = ({
       "latitude": latitude,
       "longitude": longitude
     },
+    // No addressCountry: spots span the US, Mexico, Central and South America,
+    // and spot data carries no country
     "address": {
       "@type": "PostalAddress",
-      "addressRegion": subregion,
-      "addressCountry": "US"
+      "addressRegion": subregion
     },
     "url": url,
     "additionalProperty": [

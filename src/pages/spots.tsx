@@ -13,6 +13,7 @@ import { useUserLocation, useGeolocationStore } from "../stores/geolocation-stor
 import { useCurrentTide } from "hooks";
 import { getBatchRecommendationsFromAPI } from "utils/conditions";
 import { useEffect, useMemo, useState } from "react";
+import { STATIC_PAGES } from "config/seo-meta";
 
 function sortBySubregion(data: Spot[]) {
   const sortedData: { [key: string]: Spot[] } = {};
@@ -94,7 +95,7 @@ const SpotsPage = () => {
 
   return (
     <>
-      <SEO title="Surf Spots - Surfe Diem" />
+      <SEO {...STATIC_PAGES.spots} />
 
       <HeroSection
         image={surfImage}

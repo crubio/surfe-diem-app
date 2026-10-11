@@ -28,6 +28,7 @@ import { useGeolocationStore, useUserLocation } from "../stores/geolocation-stor
 import { metersToFeet } from "utils/nws-parser";
 import { formatTemperature } from "utils/formatting";
 import { getWaterTempQualityDescription, getWaterTempColor, getWaterTempComfortLevel } from "utils/water-temp";
+import { STATIC_PAGES } from "config/seo-meta";
 
 
 /** "8 mph wind", or undefined when there's no reading so the card omits the line. */
@@ -196,7 +197,7 @@ const DashboardHome = () => {
 
   return (
     <>
-      <SEO title="Surfe Diem - What's the surf like now?" />
+      <SEO {...STATIC_PAGES.home} />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify({

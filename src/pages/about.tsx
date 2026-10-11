@@ -3,6 +3,7 @@ import { Box, Typography, Stack, Link, Divider, Chip } from '@mui/material';
 import { Email, Share } from '@mui/icons-material';
 import heroImageWebp from '../assets/trmp_dont_sarf.webp';
 import { SEO, PageContainer, SectionContainer, ContentWrapper, HeroSection } from 'components';
+import { STATIC_PAGES } from 'config/seo-meta';
 
 const FeatureHeading = ({ children }: { children: React.ReactNode }) => (
   <Typography variant="h6" sx={{ mb: { xs: 0.5, sm: 1 }, fontSize: { xs: '1rem', sm: '1.125rem' } }}>
@@ -13,7 +14,7 @@ const FeatureHeading = ({ children }: { children: React.ReactNode }) => (
 const AboutPage = () => {
   return (
     <>
-      <SEO title="About Surfe Diem - Free Surf Conditions for the Community" />
+      <SEO {...STATIC_PAGES.about} />
       {/* Hero Section */}
       <HeroSection
         image={heroImageWebp}

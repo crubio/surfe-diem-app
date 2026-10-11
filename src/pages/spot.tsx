@@ -13,6 +13,7 @@ import { ForecastSection, buildDailyForecast, getForecastHeightSeries } from "@f
 import { TideInline } from "@features/tides"
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
+import { spotMeta } from "config/seo-meta"
 import { DEFAULT_TIMEZONE } from "utils/constants"
 /* eslint-disable @typescript-eslint/no-unused-vars -- kept for the commented-out
    Weather & Tide grid below (phase 2 resurrection candidate, see
@@ -91,7 +92,7 @@ const SpotPage = () => {
     <>
       {spotData && (
         <>
-          <SEO title={`${spotData.name} Surf Spot - Surfe Diem`} />
+          <SEO {...spotMeta(spotData)} />
           <SurfSpotStructuredData
             name={spotData.name}
             description={`Surf spot in ${spotData.subregion_name} with current conditions and forecasts`}
