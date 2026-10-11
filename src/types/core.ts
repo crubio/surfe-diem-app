@@ -16,6 +16,8 @@ export interface Spot {
   subregion_name: string;
   timezone: string;
   distance?: number;
+  /** NWS forecast coverage; only on single-spot responses (/spots/{id}, /spots/slug/{slug}) */
+  forecast?: 'full' | 'partial' | null;
 }
 
 /**

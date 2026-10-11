@@ -141,6 +141,7 @@ export const MapBox = (props: MapProps) => {
 
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const [mapUnavailable, setMapUnavailable] = useState(false);
   const isMounted = useRef(false);
 
   // Refs so effect callbacks always read latest values without re-registering
@@ -196,13 +197,24 @@ export const MapBox = (props: MapProps) => {
     const validLng = typeof props.lng === 'number' && !isNaN(props.lng) ? props.lng : DEFAULT_CENTER[0];
     const validLat = typeof props.lat === 'number' && !isNaN(props.lat) ? props.lat : DEFAULT_CENTER[1];
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: STYLE_URLS[mapStyle],
-      center: [validLng, validLat],
-      zoom: props.zoom || 5,
-      attributionControl: true,
-    });
+    // No WebGL: Mapbox throws, which would take down the whole page
+    if (!mapboxgl.supported()) {
+      setMapUnavailable(true);
+      return;
+    }
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: STYLE_URLS[mapStyle],
+        center: [validLng, validLat],
+        zoom: props.zoom || 5,
+        attributionControl: true,
+      });
+    } catch (error) {
+      console.error('Map failed to start:', error);
+      setMapUnavailable(true);
+      return;
+    }
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
@@ -434,6 +446,11 @@ export const MapBox = (props: MapProps) => {
       {/* ------------------------------------------------------------------ */}
       <Box sx={{ flex: 1, position: 'relative' }}>
         <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
+        {mapUnavailable && (
+          <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', fontSize: '0.875rem' }}>
+            Map unavailable in this browser.
+          </Box>
+        )}
 
         {/* Top-left controls + selected card column */}
         <Box

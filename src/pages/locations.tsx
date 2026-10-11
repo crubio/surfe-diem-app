@@ -12,7 +12,9 @@ import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
 import type { Favorite } from "types"
-import { buoyMeta } from "config/seo-meta"
+import { buoyMeta, buoyLabel, spotPath, cleanName, NEARBY_TEXT, NEARBY_SPOTS_LIMIT } from "config/seo-meta"
+import { NearbyPlaces } from "@features/locations/components"
+import { useNearbySpots } from "hooks"
 
 
 const LocationsPage = () => {
@@ -35,6 +37,7 @@ const LocationsPage = () => {
   });
 
   const latLong = formatLatLong(locationData?.location || "")
+  const { data: closestSpots } = useNearbySpots(latLong[0] || undefined, latLong[1] || undefined)
 
   const latestReading = Object.assign({}, ...(latestObservationData ?? []));
 
@@ -107,7 +110,7 @@ const LocationsPage = () => {
                       color: theme.palette.text.primary,
                     }}
                   >
-                    {locationData?.name ?? '—'}
+                    {locationData ? buoyLabel(locationData) : '—'}
                   </Typography>
                 </Box>
 
@@ -196,6 +199,25 @@ const LocationsPage = () => {
                 ))}
               </Box>
             </Paper>
+          </Box>
+
+          {/* Nearby spots: crawlable links, mirrored in the prerendered HTML */}
+          <Box sx={{ mb: 2 }}>
+            <NearbyPlaces
+              title={NEARBY_TEXT.buoyTitle}
+              subtitle={NEARBY_TEXT.subtitle}
+              groups={[
+                {
+                  heading: NEARBY_TEXT.spots,
+                  places: (closestSpots ?? []).slice(0, NEARBY_SPOTS_LIMIT).map((spot) => ({
+                    key: spot.id,
+                    label: cleanName(spot.name),
+                    to: `/${spotPath(spot)}`,
+                    distance: spot.distance ?? 0,
+                  })),
+                },
+              ]}
+            />
           </Box>
 
           {/* Map */}
