@@ -145,7 +145,14 @@ async function run() {
         .filter(spot => spot.slug && spot.slug !== String(spot.id))
         .map(spot => ({ from: `spot/${spot.id}`, to: spotPath(spot) })),
     ];
+    // A spot whose slug is all digits ("880") shares a path with another
+    // spot's old id link; the real page wins
+    const routePaths = new Set(routes.map(route => route.path));
     for (const { from, to } of redirects) {
+      if (routePaths.has(from)) {
+        console.warn(`Skipped redirect /${from} → /${to}: a page already lives there`);
+        continue;
+      }
       writePage(from, redirectPage(to));
     }
 
