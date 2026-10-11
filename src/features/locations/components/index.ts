@@ -3,3 +3,4 @@ export { SpotMetricBar } from './spot-metric-bar';
 export { MLForecastCard } from './ml-forecast-card';
 export { default as SpotHero } from './spot-hero';
 export { NDBCObservationCard } from './ndbc-observation-card';
+export { NearbyPlaces } from './nearby-places';

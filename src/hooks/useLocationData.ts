@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getLocation, getLatestObservation, getLocationBuoyNearby } from '@features/locations/api/locations';
+import { getLocation, getLatestObservation, getLocationBuoyNearby, getSurfSpotClosest } from '@features/locations/api/locations';
 import { QUERY_KEYS, QUERY_CONFIG } from '../config/query-config';
 
 /**
@@ -31,6 +31,19 @@ export const useNearbyBuoys = (latitude: number | undefined, longitude: number |
   return useQuery({
     queryKey: [QUERY_KEYS.NEARBY_BUOYS, latitude, longitude],
     queryFn: () => getLocationBuoyNearby(longitude!, latitude!),
+    enabled: !!latitude && !!longitude,
+    staleTime: QUERY_CONFIG.STALE_TIME.SHORT,
+  });
+};
+
+/**
+ * Hook for fetching surf spots within 100 mi of a point, nearest first.
+ * Empty when there are none (the API answers 404).
+ */
+export const useNearbySpots = (latitude: number | undefined, longitude: number | undefined) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.CLOSEST_SPOTS, latitude, longitude],
+    queryFn: () => getSurfSpotClosest(latitude!, longitude!).catch(() => []),
     enabled: !!latitude && !!longitude,
     staleTime: QUERY_CONFIG.STALE_TIME.SHORT,
   });

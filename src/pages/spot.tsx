@@ -7,13 +7,13 @@ import { SEO, SurfSpotStructuredData, PageContainer } from "components"
 import MapBoxSingle from "@features/maps/mapbox/single-instance"
 import { WeatherInline } from "@features/weather/components/weather-inline"
 import { getCurrentWeather } from "@features/weather/api"
-import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard } from "@features/locations/components"
-import { useTideData, useSpotData, useNearbyBuoys, useNWSForecast, useMLForecast, useLatestObservation, useConditions } from "hooks"
+import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard, NearbyPlaces } from "@features/locations/components"
+import { useTideData, useSpotData, useNearbyBuoys, useNearbySpots, useNWSForecast, useMLForecast, useLatestObservation, useConditions } from "hooks"
 import { ForecastSection, buildDailyForecast, getForecastHeightSeries } from "@features/forecasts"
 import { TideInline } from "@features/tides"
 import { useColorMode } from "providers/theme-provider"
 import { colorTokens } from "config/theme"
-import { spotMeta } from "config/seo-meta"
+import { spotMeta, coverageText, buoyLabel, buoyPath, spotPath, cleanName, NEARBY_TEXT, NEARBY_BUOYS_LIMIT, NEARBY_SPOTS_LIMIT } from "config/seo-meta"
 import { DEFAULT_TIMEZONE } from "utils/constants"
 /* eslint-disable @typescript-eslint/no-unused-vars -- kept for the commented-out
    Weather & Tide grid below (phase 2 resurrection candidate, see
@@ -62,6 +62,7 @@ const SpotPage = () => {
   })
 
   const { data: nearbyBuoys } = useNearbyBuoys(spotData?.latitude, spotData?.longitude)
+  const { data: closestSpots } = useNearbySpots(spotData?.latitude, spotData?.longitude)
 
   const ndbcFallbackStation = nwsForecastData?.raw?.ndbc_fallback_station
   const { data: latestObservation } = useLatestObservation(ndbcFallbackStation ?? undefined)
@@ -211,6 +212,38 @@ const SpotPage = () => {
                 </Grid>
               </Box>
             )} */}
+
+            {/* Nearby buoys and spots: crawlable links, mirrored in the prerendered HTML */}
+            <Box sx={{ mb: 2 }}>
+              <NearbyPlaces
+                title={NEARBY_TEXT.spotTitle}
+                subtitle={NEARBY_TEXT.subtitle}
+                intro={coverageText(spotData.forecast)}
+                groups={[
+                  {
+                    heading: NEARBY_TEXT.buoys,
+                    places: (nearbyBuoys ?? []).slice(0, NEARBY_BUOYS_LIMIT).map((buoy) => ({
+                      key: buoy.location_id,
+                      label: buoyLabel(buoy),
+                      to: `/${buoyPath(buoy)}`,
+                      distance: Number(buoy.distance),
+                    })),
+                  },
+                  {
+                    heading: NEARBY_TEXT.spots,
+                    places: (closestSpots ?? [])
+                      .filter((spot) => spot.id !== spotData.id)
+                      .slice(0, NEARBY_SPOTS_LIMIT)
+                      .map((spot) => ({
+                        key: spot.id,
+                        label: cleanName(spot.name),
+                        to: `/${spotPath(spot)}`,
+                        distance: spot.distance ?? 0,
+                      })),
+                  },
+                ]}
+              />
+            </Box>
 
             {/* Map */}
             <Box>

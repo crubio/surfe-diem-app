@@ -10,6 +10,7 @@ import {
   spotPath,
   canonicalUrl,
 } from './src/config/seo-meta.js';
+import { escapeHtml, spotBody, buoyBody, spotsIndexBody } from './prerender-content.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, 'dist');
@@ -23,15 +24,8 @@ const STATIC_LASTMOD = {
   home: '2026-10-08',
   about: '2026-05-29',
   map: '2026-05-29',
-  spots: '2026-10-08',
+  spots: '2026-10-10',
 };
-
-const escapeHtml = (value) =>
-  String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 
 // data-rh marks the tags as react-helmet-async's, so the client replaces them
 // instead of adding duplicates once the page renders
@@ -98,16 +92,34 @@ async function run() {
     .replace(/<link\s+rel="canonical"[^>]*>/gi, '');
 
   try {
-    console.log('Fetching slugs from API...');
-    const [spots, buoys] = await Promise.all([
-      fetch(`${API_BASE_URL}/spots?limit=5000`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/locations?limit=5000`).then(res => res.json())
+    console.log('Fetching spots and buoys from API...');
+    const [spotsGeo, buoysGeo] = await Promise.all([
+      fetch(`${API_BASE_URL}/spots/geojson`).then(res => res.json()),
+      fetch(`${API_BASE_URL}/locations/geojson`).then(res => res.json())
     ]);
 
+    // Spot text depends on NWS coverage; an older API without it would make
+    // every spot read as "no forecast"
+    if (!spotsGeo.features?.length || !('forecast' in spotsGeo.features[0].properties)) {
+      throw new Error('/spots/geojson has no `forecast` property; deploy the API first');
+    }
+    const spots = spotsGeo.features.map(({ geometry, properties }) => ({
+      ...properties,
+      longitude: Number(geometry.coordinates[0]),
+      latitude: Number(geometry.coordinates[1]),
+    }));
+    const buoys = buoysGeo.features.map(({ geometry, properties }) => ({
+      ...properties,
+      location_id: properties.id,
+      longitude: Number(geometry.coordinates[0]),
+      latitude: Number(geometry.coordinates[1]),
+    }));
+
+    const staticBodies = { spots: () => spotsIndexBody(spots) };
     const allRoutes = [
-      ...Object.entries(STATIC_PAGES).map(([key, page]) => ({ ...page, lastmod: STATIC_LASTMOD[key] })),
-      ...spots.map(spot => ({ ...spotMeta(spot), lastmod: BUILD_DATE })),
-      ...buoys.map(buoy => ({ ...buoyMeta(buoy), lastmod: BUILD_DATE })),
+      ...Object.entries(STATIC_PAGES).map(([key, page]) => ({ ...page, lastmod: STATIC_LASTMOD[key], body: staticBodies[key] })),
+      ...spots.map(spot => ({ ...spotMeta(spot), lastmod: BUILD_DATE, body: () => spotBody(spot, spots, buoys) })),
+      ...buoys.map(buoy => ({ ...buoyMeta(buoy), lastmod: BUILD_DATE, body: () => buoyBody(buoy, spots) })),
     ];
     // Duplicate spot rows can share a slug; keep the first so the sitemap lists each URL once
     const seen = new Set();
@@ -118,7 +130,13 @@ async function run() {
 
     console.log(`Compiling HTML shells for ${routes.length} routes...`);
     for (const route of routes) {
-      writePage(route.path, template.replace('<head>', `<head>${seoTags(route)}`));
+      const body = route.body ? route.body() : '';
+      writePage(
+        route.path,
+        template
+          .replace('<head>', `<head>${seoTags(route)}`)
+          .replace('<div id="root"></div>', `<div id="root">${body}</div>`)
+      );
     }
 
     const redirects = [
