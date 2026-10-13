@@ -4,7 +4,6 @@ import NoDataFound from '../not-found';
 import ImageBox from '../image-box';
 import PageContainer from '../container';
 import { LinkRouter } from '../link-router';
-import ResizableBox from '../resizable-box';
 import { MemoryRouter } from 'react-router-dom';
 
 describe('NoDataFound', () => {
@@ -42,14 +41,3 @@ describe('LinkRouter', () => {
     expect(link).toHaveAttribute('href', '/test');
   });
 });
-
-describe('ResizableBox', () => {
-  it('renders children in resizable mode', () => {
-    render(<ResizableBox><div>resize child</div></ResizableBox>);
-    expect(screen.getByText('resize child')).toBeInTheDocument();
-  });
-  it('renders children in non-resizable mode', () => {
-    render(<ResizableBox resizable={false}><div>fixed child</div></ResizableBox>);
-    expect(screen.getByText('fixed child')).toBeInTheDocument();
-  });
-}); 

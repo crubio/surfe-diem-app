@@ -14,7 +14,7 @@ interface ColorModeContextType {
 
 const ColorModeContext = createContext<ColorModeContextType>({
   mode: 'dark',
-  toggleColorMode: () => {},
+  toggleColorMode: () => undefined,
 });
 
 export const useColorMode = () => useContext(ColorModeContext);

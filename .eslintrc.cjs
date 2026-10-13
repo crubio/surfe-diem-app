@@ -9,6 +9,13 @@ module.exports = {
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
   plugins: ['react-refresh'],
+  overrides: [
+    {
+      // Build scripts run in Node, not the browser
+      files: ['prerender.js', 'prerender-content.js'],
+      env: { node: true, browser: false },
+    },
+  ],
   rules: {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-explicit-any': 'off',

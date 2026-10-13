@@ -77,7 +77,10 @@ const SpotsPage = () => {
 
   const showWidget = !!(bestConditions && cleanestConditions && closestSpotData && currentTideValue != null);
 
-  const spotsArray: Spot[] = Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : []);
+  const spotsArray: Spot[] = useMemo(
+    () => (Array.isArray(data) ? data : (data && data.status === "success" && Array.isArray(data.data) ? data.data : [])),
+    [data]
+  );
   const totalCount = spotsArray.length;
 
   // Client-side filter — only active after 3 characters

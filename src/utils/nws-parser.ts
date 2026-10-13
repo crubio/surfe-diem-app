@@ -145,7 +145,7 @@ export const findCurrentDataPoint = (
 export const groupNWSDataByHour = (
   dataPoints: NWSDataPoint[],
   timezone: string,
-  hours: number = 168 // Default 7 days
+  hours = 168 // Default 7 days
 ): Array<{ hour: number; validTime: string | null; value: number | null }> => {
   const result: Array<{ hour: number; validTime: string | null; value: number | null }> = [];
   const now = DateTime.now().setZone(timezone).startOf('hour');
@@ -226,7 +226,7 @@ export const buildHourlyForecast = (
     wind_speed?: NWSDataPoint[];
   },
   timezone: string,
-  hours: number = 168
+  hours = 168
 ): NWSHourlyPoint[] => {
   const waveHeights = groupNWSDataByHour(waveData.wave_height || [], timezone, hours);
   const waveDirections = groupNWSDataByHour(waveData.wave_direction || [], timezone, hours);
