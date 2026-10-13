@@ -197,7 +197,7 @@ export const MapBox = (props: MapProps) => {
     const validLng = typeof props.lng === 'number' && !isNaN(props.lng) ? props.lng : DEFAULT_CENTER[0];
     const validLat = typeof props.lat === 'number' && !isNaN(props.lat) ? props.lat : DEFAULT_CENTER[1];
 
-    // No WebGL: Mapbox throws, which would take down the whole page
+    // Mapbox throws without WebGL; show a note in place of the map
     if (!mapboxgl.supported()) {
       setMapUnavailable(true);
       return;

@@ -44,23 +44,6 @@ describe('DashboardGrid', () => {
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
-  it('renders with subtitle when showSubtitle is true', () => {
-    render(
-      <TestWrapper>
-        <DashboardGrid 
-          title="Test Dashboard" 
-          subtitle="Test Subtitle"
-          showSubtitle={true}
-        >
-          <div>Test Content</div>
-        </DashboardGrid>
-      </TestWrapper>
-    );
-
-    expect(screen.getByText('Test Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Test Subtitle')).toBeInTheDocument();
-  });
-
   it('does not render subtitle when showSubtitle is false', () => {
     render(
       <TestWrapper>

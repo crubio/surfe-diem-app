@@ -78,7 +78,8 @@ const Summary = ({ location_id }: SummaryProps) => {
               <Typography>
                 Current Conditions
               </Typography>
-              {data && !isEmpty(data) && !isError ? (
+              {/* A stale reading shows as no data */}
+              {data && !isEmpty(data) && !isError && !data[0]?.is_stale ? (
                 renderLatestObservation(data[0])
               ) : (
                 <p>No data available</p>

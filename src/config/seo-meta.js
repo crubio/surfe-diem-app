@@ -1,19 +1,19 @@
-// Page titles, descriptions, canonical URLs and the facts behind the
-// "nearby" content, shared by prerender.js (plain Node at build time) and the
-// client. Plain JS so Node can import it without a TypeScript step; types
-// live in seo-meta.d.ts. Rationale: .docs/seo-plan.md.
+/**
+ * @file Page titles, descriptions, canonical URLs and "nearby" helpers, shared
+ * by prerender.js (Node, build time) and the client. Plain JS so Node can
+ * import it directly; types are in seo-meta.d.ts.
+ */
 
 export const SITE_URL = 'https://surfe-diem.com';
 export const SITE_NAME = 'Surfe Diem';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.jpg`;
 
-// Same limits as the API's /spots/find_closest and /locations/find_closest,
-// so the build-time lists match what the page fetches
+/** Same limits as the API's find_closest routes, so build-time lists match what the page fetches */
 export const NEARBY_RADIUS_MI = 100;
 export const NEARBY_SPOTS_LIMIT = 8;
 export const NEARBY_BUOYS_LIMIT = 3;
 
-// Headings for the "nearby" section; the static HTML and the page use the same words
+/** Headings for the "nearby" section, shared by the static HTML and the page */
 export const NEARBY_TEXT = {
   spotTitle: 'Around this spot',
   buoyTitle: 'Around this buoy',
@@ -45,15 +45,17 @@ export const STATIC_PAGES = {
   },
 };
 
-// Some names carry stray whitespace from the source data
+/** Collapses and trims whitespace ("Jug Handle State Beach " → "Jug Handle State Beach") */
 export const cleanName = (name) => String(name ?? '').replace(/\s+/g, ' ').trim();
 
 export const spotPath = (spot) => `spot/${spot.slug || spot.id}`;
 export const buoyPath = (buoy) => `location/${buoy.location_id}`;
 export const canonicalUrl = (path) => (path ? `${SITE_URL}/${path}` : SITE_URL);
 
-// What each NWS coverage level ('full' | 'partial' | null, from the API)
-// lets the spot page show. Only claims that hold for every spot at that level.
+/**
+ * Title and text per NWS coverage level ('full' | 'partial' | null from the
+ * API). Each claim holds for every spot at that level.
+ */
 const COVERAGE = {
   full: {
     title: 'Surf Report & Forecast',
@@ -89,9 +91,10 @@ export const spotMeta = (spot) => {
   };
 };
 
-// "Station 46265  - Nome, AK (241)" → "Nome, AK". Names without the
-// "Station <id> -" prefix ("HALF MOON BAY - 24NM SSW of San Francisco, CA")
-// are kept as they are.
+/**
+ * Place part of a buoy name: "Station 46265  - Nome, AK (241)" → "Nome, AK".
+ * Names without the "Station <id> -" prefix are returned trimmed.
+ */
 export const buoyPlace = (buoy) => {
   const name = cleanName(buoy.name);
   const match = name.match(/^Station\s+\S+\s*-?\s*(.*)$/i);
@@ -129,8 +132,10 @@ export const milesBetween = (lat1, lng1, lat2, lng2) => {
 
 export const formatMiles = (miles) => (miles < 1 ? '<1 mi' : `${Math.round(miles)} mi`);
 
-// Places within NEARBY_RADIUS_MI of a point, nearest first. Items need
-// numeric latitude/longitude; excludeKey drops the place itself.
+/**
+ * Places within NEARBY_RADIUS_MI of a point, nearest first, each with `distance` (mi).
+ * Items need numeric latitude/longitude; `excludeKey` drops the place itself.
+ */
 export const nearestTo = (items, lat, lng, { limit, keyOf = (item) => item.id, excludeKey } = {}) =>
   items
     .filter((item) => keyOf(item) !== excludeKey)

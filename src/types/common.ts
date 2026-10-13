@@ -52,6 +52,8 @@ export type BuoyLocationSummaryProps = {
  */
 export interface BuoyLocationLatestObservation {
   observed_at?: string; // ISO 8601 UTC reading time
+  /** /latest-observation only: true when older than 4 h or undated */
+  is_stale?: boolean;
   wave_height?: string;
   peak_period?: string;
   water_temp?: string;

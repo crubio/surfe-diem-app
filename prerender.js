@@ -17,9 +17,10 @@ const DIST_DIR = path.join(__dirname, 'dist');
 const TEMPLATE_PATH = path.join(DIST_DIR, 'index.html');
 const API_BASE_URL = process.env.API_BASE_URL || 'https://api.surfe-diem.com/api/v1';
 
-// Used for dynamic pages (spots/buoys) whose HTML shells are genuinely regenerated at each deploy.
-// Static pages use hardcoded dates — only update these when content/SEO intent meaningfully changes.
+/** Sitemap lastmod for spot and buoy pages, which are regenerated every deploy */
 const BUILD_DATE = new Date().toISOString().split('T')[0];
+
+/** Sitemap lastmod per static page; update a date only when that page's content changes */
 const STATIC_LASTMOD = {
   home: '2026-10-08',
   about: '2026-05-29',
@@ -27,8 +28,10 @@ const STATIC_LASTMOD = {
   spots: '2026-10-10',
 };
 
-// data-rh marks the tags as react-helmet-async's, so the client replaces them
-// instead of adding duplicates once the page renders
+/**
+ * Head tags for one page. data-rh marks them as react-helmet-async's, so the
+ * client replaces them instead of adding duplicates.
+ */
 const seoTags = (route) => {
   const url = escapeHtml(canonicalUrl(route.path));
   const title = escapeHtml(route.title);
@@ -50,8 +53,7 @@ const seoTags = (route) => {
     <meta name="twitter:image" content="${DEFAULT_OG_IMAGE}" data-rh="true">`;
 };
 
-// Old /spot/<id> links (still in Google's index) land on the slug page.
-// Google treats an instant meta refresh like a 301.
+/** Page that sends an old URL to `target`: instant meta refresh plus a canonical link */
 const redirectPage = (target) => {
   const url = escapeHtml(canonicalUrl(target));
   return `<!doctype html>
@@ -98,8 +100,7 @@ async function run() {
       fetch(`${API_BASE_URL}/locations/geojson`).then(res => res.json())
     ]);
 
-    // Spot text depends on NWS coverage; an older API without it would make
-    // every spot read as "no forecast"
+    // Spot titles and text need the API's `forecast` coverage field
     if (!spotsGeo.features?.length || !('forecast' in spotsGeo.features[0].properties)) {
       throw new Error('/spots/geojson has no `forecast` property; deploy the API first');
     }
@@ -121,7 +122,7 @@ async function run() {
       ...spots.map(spot => ({ ...spotMeta(spot), lastmod: BUILD_DATE, body: () => spotBody(spot, spots, buoys) })),
       ...buoys.map(buoy => ({ ...buoyMeta(buoy), lastmod: BUILD_DATE, body: () => buoyBody(buoy, spots) })),
     ];
-    // Duplicate spot rows can share a slug; keep the first so the sitemap lists each URL once
+    // One route per path; duplicate spot rows can share a slug
     const seen = new Set();
     const routes = allRoutes.filter(route => !seen.has(route.path) && seen.add(route.path));
     if (routes.length < allRoutes.length) {
@@ -145,8 +146,7 @@ async function run() {
         .filter(spot => spot.slug && spot.slug !== String(spot.id))
         .map(spot => ({ from: `spot/${spot.id}`, to: spotPath(spot) })),
     ];
-    // A spot whose slug is all digits ("880") shares a path with another
-    // spot's old id link; the real page wins
+    // Never replace a real page with a redirect (an all-digit slug can equal another spot's id)
     const routePaths = new Set(routes.map(route => route.path));
     for (const { from, to } of redirects) {
       if (routePaths.has(from)) {

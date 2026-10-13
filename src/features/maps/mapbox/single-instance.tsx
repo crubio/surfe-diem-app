@@ -23,8 +23,7 @@ const MapBoxSingle = (props: MapProps) => {
   useEffect(() => {
     if (map.current) return; // initialize map only once
     if (!mapContainer.current) return; // check if container is available
-    // No WebGL (old devices, some headless browsers and crawlers): Mapbox
-    // throws, which would take down the whole page; show a note instead
+    // Mapbox throws without WebGL; show a note in place of the map
     if (!mapboxgl.supported()) {
       setUnavailable(true);
       return;

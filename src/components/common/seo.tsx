@@ -1,8 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { SITE_NAME, DEFAULT_OG_IMAGE, canonicalUrl, type PageMeta } from 'config/seo-meta';
 
-// Same tags prerender.js writes into each page's HTML (built from the same
-// config/seo-meta helpers), so the page keeps them once JS takes over
+/** Head tags for a page: the same set prerender.js writes, from the same config/seo-meta values */
 const SEO = ({ title, description, path }: PageMeta) => {
   const url = canonicalUrl(path);
   return (

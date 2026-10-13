@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import ErrorPage from "./error"
 import { SEO, SurfSpotStructuredData, PageContainer } from "components"
-import MapBoxSingle from "@features/maps/mapbox/single-instance"
+import { LazySingleMap } from "@features/maps/lazy-single-map"
 import { WeatherInline } from "@features/weather/components/weather-inline"
 import { getCurrentWeather } from "@features/weather/api"
 import { ForecastRatingComponent, SpotMetricBar, MLForecastCard, SpotHero, NDBCObservationCard, NearbyPlaces } from "@features/locations/components"
@@ -213,7 +213,7 @@ const SpotPage = () => {
               </Box>
             )} */}
 
-            {/* Nearby buoys and spots: crawlable links, mirrored in the prerendered HTML */}
+            {/* Nearby buoys and spots; prerender-content.js renders the same lists */}
             <Box sx={{ mb: 2 }}>
               <NearbyPlaces
                 title={NEARBY_TEXT.spotTitle}
@@ -289,7 +289,7 @@ const SpotPage = () => {
                     Open in map ↗
                   </Button>
                 </Box>
-                <MapBoxSingle
+                <LazySingleMap
                   lat={spotData.latitude}
                   lng={spotData.longitude}
                   zoom={8}

@@ -2,10 +2,8 @@ import { Box, Paper, Typography, useTheme } from '@mui/material';
 import { useColorMode } from 'providers/theme-provider';
 import { colorTokens } from 'config/theme';
 import { BuoyLocationLatestObservation } from 'types';
-import { formatLocationTime } from 'utils/timezone';
+import { formatLocationDateTime, formatLocationTime } from 'utils/timezone';
 import { DEFAULT_TIMEZONE } from 'utils/constants';
-
-const BUOY_MAX_AGE_MS = 4 * 60 * 60 * 1000;
 
 interface NDBCObservationCardProps {
   stationId: string;
@@ -34,12 +32,11 @@ export const NDBCObservationCard = ({ stationId, observation, timezone = DEFAULT
   const theme = useTheme();
   const { mode } = useColorMode();
   const tokens = colorTokens[mode];
-  const observedAt = formatLocationTime(observation.observed_at, timezone);
-  // Same 4 h cutoff the API applies to buoy readings in /conditions; this
-  // endpoint doesn't filter, so flag it instead of presenting it as current
-  const isStale = observation.observed_at
-    ? Date.now() - new Date(observation.observed_at).getTime() > BUOY_MAX_AGE_MS
-    : false;
+  // is_stale comes from the API; a stale reading shows its date
+  const isStale = observation.is_stale === true;
+  const observedAt = isStale
+    ? formatLocationDateTime(observation.observed_at, timezone)
+    : formatLocationTime(observation.observed_at, timezone);
 
   return (
     <Paper sx={{ p: 3.5 }}>
@@ -69,7 +66,7 @@ export const NDBCObservationCard = ({ stationId, observation, timezone = DEFAULT
         </Typography>
         {observedAt && (
           <Typography sx={{ fontSize: '0.75rem', color: tokens.textTertiary, mt: 0.5 }}>
-            As of {observedAt}{isStale ? ' · over 4 h old, buoy may be offline' : ''}
+            {isStale ? `Last reading ${observedAt} · buoy may be offline` : `As of ${observedAt}`}
           </Typography>
         )}
       </Box>

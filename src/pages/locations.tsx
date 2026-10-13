@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query"
 import { SEO, BuoyStructuredData, PageContainer } from "components"
 import { useParams } from "react-router-dom"
 import { formatLatLong } from "utils/common"
+import { formatReadingAge } from "utils/timezone"
 import ErrorPage from "./error"
-import MapBoxSingle from "@features/maps/mapbox/single-instance"
+import { LazySingleMap } from "@features/maps/lazy-single-map"
 import { MetricTile } from "components/common/metric-tile"
 import { useFavorites } from "providers/favorites-provider"
 import { Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon } from '@mui/icons-material'
@@ -40,6 +41,14 @@ const LocationsPage = () => {
   const { data: closestSpots } = useNearbySpots(latLong[0] || undefined, latLong[1] || undefined)
 
   const latestReading = Object.assign({}, ...(latestObservationData ?? []));
+  // observed_at and is_stale are on the first entry
+  const readingTime = latestObservationData?.[0]?.observed_at;
+  const readingIsStale = latestObservationData?.[0]?.is_stale === true;
+  const readingNote = readingTime
+    ? readingIsStale
+      ? `Last reading ${formatReadingAge(readingTime)} · buoy may be offline`
+      : `Reading from ${formatReadingAge(readingTime)}`
+    : 'Most recent buoy reading';
 
   const favorited = isFavorited(String(locationData?.location_id ?? ''), 'buoy');
 
@@ -181,7 +190,7 @@ const LocationsPage = () => {
                   Latest Observation
                 </Typography>
                 <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, mt: 0.25 }}>
-                  Most recent buoy reading
+                  {readingNote}
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2.5, borderColor: tokens.rule }} />
@@ -201,7 +210,7 @@ const LocationsPage = () => {
             </Paper>
           </Box>
 
-          {/* Nearby spots: crawlable links, mirrored in the prerendered HTML */}
+          {/* Nearby spots; prerender-content.js renders the same list */}
           <Box sx={{ mb: 2 }}>
             <NearbyPlaces
               title={NEARBY_TEXT.buoyTitle}
@@ -265,7 +274,7 @@ const LocationsPage = () => {
                   Open in map ↗
                 </Button>
               </Box>
-              <MapBoxSingle lat={latLong[0]} lng={latLong[1]} zoom={8} />
+              <LazySingleMap lat={latLong[0]} lng={latLong[1]} zoom={8} />
             </Box>
           )}
 

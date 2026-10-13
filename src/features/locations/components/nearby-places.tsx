@@ -19,8 +19,10 @@ interface NearbyPlacesProps {
   groups: { heading: string; places: NearbyPlace[] }[];
 }
 
-// Crawlable links to nearby spots and buoys. prerender.js writes the same
-// lists into the static HTML (same 100 mi radius and limits, config/seo-meta).
+/**
+ * Links to nearby spots and buoys with their distances. prerender.js renders
+ * the same lists from the same config/seo-meta limits.
+ */
 export const NearbyPlaces = ({ title, subtitle, intro, groups }: NearbyPlacesProps) => {
   const theme = useTheme();
   const { mode } = useColorMode();

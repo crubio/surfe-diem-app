@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { DateTime } from 'luxon';
-import { getZoneAbbreviation, formatLocationTime } from '../timezone';
+import { getZoneAbbreviation, formatLocationTime, formatLocationDateTime, formatReadingAge } from '../timezone';
 import { toNoaaDate } from '@features/tides/api/tide-explorer';
 
 describe('Location-local time', () => {
@@ -50,5 +50,20 @@ describe('Location-local time', () => {
       expect(toNoaaDate('Pacific/Honolulu')).toBe('20260715');
       expect(toNoaaDate('Pacific/Honolulu', 5)).toBe('20260720');
     });
+  });
+});
+
+describe('buoy reading times', () => {
+  it('formatLocationDateTime includes the date for old readings', () => {
+    expect(formatLocationDateTime('2026-10-03T16:12:00+00:00', 'America/Los_Angeles')).toBe('Oct 3, 9:12 AM PDT');
+    expect(formatLocationDateTime(undefined, 'America/Los_Angeles')).toBe('');
+  });
+
+  it('formatReadingAge says how long ago, with no timezone needed', () => {
+    const fortyMinAgo = new Date(Date.now() - 40 * 60 * 1000).toISOString();
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString();
+    expect(formatReadingAge(fortyMinAgo)).toBe('40 min. ago');
+    expect(formatReadingAge(threeDaysAgo)).toBe('3 days ago');
+    expect(formatReadingAge(null)).toBe('');
   });
 });

@@ -38,3 +38,22 @@ export const formatLocationTime = (
   if (!dt.isValid) return '';
   return dt.setZone(timezone).setLocale(LOCALE).toFormat('h:mm a ZZZZ');
 };
+
+/** Like formatLocationTime, with the date: "Oct 3, 9:12 AM PDT". */
+export const formatLocationDateTime = (
+  value: string | null | undefined,
+  timezone: string
+): string => {
+  if (!value) return '';
+  const dt = DateTime.fromISO(value, { setZone: true });
+  if (!dt.isValid) return '';
+  return dt.setZone(timezone).setLocale(LOCALE).toFormat('LLL d, h:mm a ZZZZ');
+};
+
+/** Time since `value` ("40 min. ago", "3 days ago"); needs no timezone. */
+export const formatReadingAge = (value: string | null | undefined): string => {
+  if (!value) return '';
+  const dt = DateTime.fromISO(value, { setZone: true });
+  if (!dt.isValid) return '';
+  return dt.setLocale(LOCALE).toRelative({ style: 'short' }) ?? '';
+};

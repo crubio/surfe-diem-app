@@ -1,8 +1,8 @@
-// Static page bodies written into #root at build time. React's createRoot
-// replaces them on load, so visitors see the app; crawlers that don't run JS
-// (and link discovery) see real content. Every section here has a matching
-// section in the React page, built from the same config/seo-meta helpers, so
-// the static and rendered pages say the same things.
+/**
+ * @file Static page bodies written into #root at build time; React's createRoot
+ * replaces them on load. Each section matches a section of the React page and
+ * uses the same config/seo-meta helpers.
+ */
 import {
   NEARBY_TEXT,
   NEARBY_SPOTS_LIMIT,
@@ -23,8 +23,7 @@ export const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-// Colors from config/theme.ts. The body rule uses :has() so it stops applying
-// once React replaces the static content.
+/** Colors from config/theme.ts. body:has() stops applying once React replaces the static content. */
 const STYLE = `<style>
 .sd-static{max-width:760px;margin:0 auto;padding:32px 16px 48px;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#082834;line-height:1.5}
 .sd-static a{color:#006978}
@@ -113,7 +112,7 @@ export const buoyBody = (buoy, spots) => {
   );
 };
 
-// Same grouping as the /spots page: by subregion, in API order
+/** Spot links grouped by subregion in API order, like the /spots page */
 export const spotsIndexBody = (spots) => {
   const groups = new Map();
   for (const spot of spots) {
