@@ -9,13 +9,17 @@ import {
   buoyMeta,
   spotPath,
   canonicalUrl,
+  SITE_URL as BASE_URL,
 } from './src/config/seo-meta.js';
 import { escapeHtml, spotBody, buoyBody, spotsIndexBody } from './prerender-content.js';
+import { MANIFEST_FILE, pageHash, changedPaths, fetchPreviousManifest, submitUrls } from './indexnow.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, 'dist');
 const TEMPLATE_PATH = path.join(DIST_DIR, 'index.html');
 const API_BASE_URL = process.env.API_BASE_URL || 'https://api.surfe-diem.com/api/v1';
+/** Set to "true" on the production build only; other builds never ping IndexNow */
+const INDEXNOW_ENABLED = process.env.INDEXNOW_ENABLED === 'true';
 
 /** Sitemap lastmod for spot and buoy pages, which are regenerated every deploy */
 const BUILD_DATE = new Date().toISOString().split('T')[0];
@@ -77,6 +81,22 @@ const writePage = (routePath, html) => {
   fs.writeFileSync(path.join(targetDir, 'index.html'), html);
 };
 
+/** Submits pages changed since the live deploy. Never fails the build: problems are logged. */
+async function notifyIndexNow(manifest) {
+  const previous = await fetchPreviousManifest(BASE_URL);
+  const urls = changedPaths(previous, manifest).map(canonicalUrl);
+  if (urls.length === 0) {
+    console.log('IndexNow: no changed pages');
+    return;
+  }
+  const results = await submitUrls(urls, BASE_URL);
+  for (const { count, status } of results) {
+    // 200/202 accepted; 4xx means the key file or URL list was rejected
+    const ok = status === 200 || status === 202;
+    (ok ? console.log : console.warn)(`IndexNow: ${count} URLs → ${status}`);
+  }
+}
+
 async function run() {
   if (!fs.existsSync(TEMPLATE_PATH)) {
     console.error('Build template index.html missing! Run vite build first.');
@@ -130,8 +150,10 @@ async function run() {
     }
 
     console.log(`Compiling HTML shells for ${routes.length} routes...`);
+    const manifest = {};
     for (const route of routes) {
       const body = route.body ? route.body() : '';
+      manifest[route.path] = pageHash(route.title, route.description, body);
       writePage(
         route.path,
         template
@@ -167,8 +189,13 @@ async function run() {
     ].join('\n');
 
     fs.writeFileSync(path.join(DIST_DIR, 'sitemap.xml'), sitemapEntries);
+    fs.writeFileSync(path.join(DIST_DIR, MANIFEST_FILE), JSON.stringify(manifest));
 
     console.log(`SEO compilation complete. ${routes.length} routes pre-rendered, ${redirects.length} redirects. Sitemap written.`);
+
+    if (INDEXNOW_ENABLED) {
+      await notifyIndexNow(manifest);
+    }
   } catch (error) {
     console.error('Prerender failed:', error);
     process.exit(1);

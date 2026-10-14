@@ -12,7 +12,7 @@ module.exports = {
   overrides: [
     {
       // Build scripts run in Node, not the browser
-      files: ['prerender.js', 'prerender-content.js'],
+      files: ['prerender.js', 'prerender-content.js', 'indexnow.js'],
       env: { node: true, browser: false },
     },
   ],
